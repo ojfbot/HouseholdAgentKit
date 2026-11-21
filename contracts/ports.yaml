@@ -1,0 +1,8 @@
+# Default local ports, one owner each. `kit doctor` (check ports_agree) fails if two services share a
+# port or if a code default drifts from this file. Change a port here and in the code in the same PR.
+version: ports@0
+ports:
+  console: 8765     # apps/demo-console/server/host.py (stage, phones)
+  engine: 8790      # packages/discovery-engine `serve` (was 8765 until the founding PR; collided with the console)
+  poll_bus: 8791    # K10/K23 bus, when PD's lands (console.example.json)
+  model: 8080       # local OpenAI-compatible model endpoint (P01), when serving

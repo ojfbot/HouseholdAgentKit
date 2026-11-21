@@ -1,0 +1,45 @@
+# Eval gates v0 and per-lane fine-tune plan (owner: Fork D). Thresholds from components@1 and the planning project.
+lanes:
+  K01: {name: intent parser, base: Qwen/Qwen3.5-2B, split: {train: 6000, val: 800, test: 800}, gold: slots-first rendering (exact),
+        accept: {slot_f1_min: 0.95, slots: [deadline, headcount, budget, locks]}, latency_p95_s_max: 1.5, when: Nov 22-24}
+  K02: {name: Sparky brief writer, base: Qwen/Qwen3.5-4B, split: {train: 3000, val: 400, test: 400},
+        gold: deterministic mandate->brief renderer; request text from seed templates + open-weight teacher, all K03-checked,
+        accept: {hard_constraints_carried: 1.0, minimum_disclosure: pass, follow_ups_max: 2}, when: Nov 22-24}
+  K11: {name: approval card writer, base: Qwen/Qwen3.5-4B, split: {train: 2000, val: 300, test: 300}, gold: seed templates + teacher; the owner reviews 100,
+        accept: {grounded_numbers: 1.0, tone_audit: pass}, when: stretch Nov 27-29}
+  K09: {name: trigger classifier, base: Qwen/Qwen3.5-0.8B or embedding classifier, accept: {precision_min: 0.95}, when: weeks 3-6}
+  K13: {name: on-hand pantry memory, base: Qwen/Qwen3.5-2B, accept: {precision_min: 0.9}, when: weeks 3-6}
+  K16: {name: catalog attribute resolver, base: Qwen/Qwen3.5-4B, accept: {precision_min: 0.98}, when: weeks 3-6}
+  judges: {base: Qwen/Qwen3.5-9B (prompted), calibrated_on: the owner stage-11 keep/kill labels only}
+fallback_bases: [Qwen/Qwen3-4B, google/gemma-4-E4B, ibm-granite 4.x 8B]   # all Apache 2.0; record LICENSE hash
+
+synthetic_data:   # the owner's ruling, Nov 19
+  seeds:
+    authors: [Claude Code, Codex]          # keep extending throughout the build
+    kinds: [seed templates, few-shot hypothesis examples, semantic pattern structures (slot grammars, persona/occasion patterns)]
+    provenance: {source: agent_seed, author, commit}   # auditable; can be dropped and regenerated if the terms reading changes
+    split_rule: seeds belong to a template family; a family is wholly train, test or holdout (spaghetti night seeds are holdout)
+  bulk_generation:
+    local: [Qwen3.8-27B (8-bit on the larger host / 4-bit on the smaller), Qwen3.6-35B-A3B (4-bit), Gemma 4 31B (4-bit)]   # $0
+    cloud_optional: {cap_usd: 50, DeepSeek-V4-Pro: {license: MIT, est_usd: 18}, GLM-5.2: {license: MIT, est_usd: 8, slice: hard K02/K11}}
+    rules: [thinking off, provenance {teacher, revision, host} on every example, K03 pass required, host terms confirmed before first paid call]
+  never: [frontier models generating training examples or labels in bulk, frontier preference pairs, frontier filters, frontier judge verdicts as calibration signal]
+
+layers:
+  lane: {runs: adapter-eval on every adapter PR}
+  episode: {case_set: taco night tiers 0-2, k: 5, pass: [tier0 >= Sparky twin on fixed request set (K20), tier1 regret within bar,
+            tier2 booked by deadline, approvals present, locks == 0, audit chain complete]}
+  blind_transfer: {case_set: spaghetti night + held-out profiles + held-out templates, runs_on: release bundles only (Nov 24, Nov 30, Dec 1), tuned_against: never}
+  engine: {from: the planning project, stability_top10_jaccard_min: 0.6, seeds: 3, plus: [hello world, metamorphic, coverage, sizing band, judge agreement, control sanity, hypothesis honesty, guardrails]}
+  fairness_parity: {K19: no cell below floor; counterfactual swaps (name, ZIP, language, benefits) within tolerance}
+  cost_latency: {report: [p50, p95, tokens, usd_per_1000_calls], gated: {K01_p95_s: 1.5, hello_world_total_s: 180}}
+
+gate:   # `kit gate`, deterministic, machine-decided
+  1_one_part: refuse if `kit bundle diff` shows > 1 changed block (unless kind: release)
+  2_zero_tolerance: [hard_constraints_carried, locks, unverified_numbers, unlabeled_synthetic_numbers, parity_floors]
+  3_rate_metrics: {method: paired bootstrap on identical cases, resamples: 2000, fail_if: "lower 95% bound of (candidate - baseline) < -0.01 on any lane"}
+  4_latency: fail if any gated p95 exceeds budget
+  5_record: gate record (inputs, report hashes, verdict) to the PR and LangSmith kit-eval
+
+leaderboard: {rows: lane x [base-local, tuned-local, frontier], columns: [metric with 95% CI, episode pass^5 with lane swapped in, p50, p95, tokens, usd_per_1000_calls],
+              frontier_rows: day shift, frontier is a baseline never a bulk teacher}

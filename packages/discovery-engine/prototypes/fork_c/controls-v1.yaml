@@ -1,0 +1,41 @@
+# Fork C control model v1 (2026-11-18). A control profile = one business function's priority weights
+# over segment x intent x value vector. Applied at stage 9, after scoring; never changes a score.
+control_model_version: controls@1
+priority: "score * w_segment(actor_type) * w_intent(job) * owner_boost * stake_fit"
+stake_fit: "(0.6 + 0.8 * max(value_weights[k] for k in family.stake) / max(value_weights)) / 1.4  # 0.43-1.0; 1.0 for every family under equal weights"
+owner_boost: 1.25        # family lists this function in business_owners
+bounds: {segment: [0.5, 3.0], intent: [0.5, 3.0]}
+scenario:
+  adoption_share: 0.10   # finance's scenario input: share of a segment delegating this job to an agent
+never_tunable:           # schema rejects these keys; attempts are logged as control.rejected
+  - price, per_person_price            # controls tune effort, priority, assortment; never what a person pays
+  - hard_rules, locks                  # allergies, religious law, safe foods, blocked categories
+  - fairness_floor                     # read-only to every function except trust & safety
+  - data_source                        # synthetic, public, own consented data only; never Gateway data
+fairness_floor:
+  rule: "a family tagged with a protected segment never gets w_segment or w_intent below 1.0; clamps are logged"
+  protected_tags: [benefits, older, disability, low_access, language, food_sensitive]
+profiles:
+  default:
+    function: none (balanced)
+    segment: {}            # all 1.0
+    intent: {}
+    value: {revenue: 0.25, trust: 0.25, cost: 0.25, risk: 0.25}
+  marketing_crm:
+    function: Marketing / CRM
+    owner: mkt
+    question: "Which households and segments should we court, and where do agents serve them worst?"
+    segment: {shopper: 1.6, never_shopper: 2.5, caregiver: 1.3, small_business: 0.7, community_org: 0.7,
+              walmart_team: 0.5, agent_builder: 0.5, store_associate: 0.5, spark_driver: 0.5,
+              marketplace_seller: 0.5, supplier_brand: 0.5}
+    intent: {feed: 1.5, restock: 1.4, host_or_celebrate: 1.5, gifts: 1.6, set_up_a_home: 1.4,
+             care_for_someone: 0.6}   # attempted down-weight; the fairness floor clamps protected families to 1.0
+    value: {revenue: 0.6, trust: 0.4, cost: 0.0, risk: 0.0}
+  supply_chain:
+    function: Supply chain / fulfillment
+    owner: sc
+    question: "Where will agent demand cluster into slot peaks and locked-line substitution risk?"
+    segment: {store_associate: 2.5, spark_driver: 2.0, small_business: 1.5, community_org: 1.3,
+              walmart_team: 1.3, supplier_brand: 1.5, never_shopper: 0.7}
+    intent: {prepare: 2.0, recover: 2.0, restock: 1.6, protect_someone: 1.5, gifts: 0.6, host_or_celebrate: 0.7}
+    value: {revenue: 0.1, trust: 0.2, cost: 0.5, risk: 0.2}

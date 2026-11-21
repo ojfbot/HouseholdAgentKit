@@ -1,0 +1,105 @@
+# Kit Fleet job kinds v0 (owner: Fork D). Installed commands on the fleet job runner's declared-command worker
+# (the fleet's worker-release notes). Modeled on an existing fleet job handler.
+# Status: proposal. Depends on fleet asks A1 (queue), A2 (long attempts + TERM grace), A3 (window-aware leasing),
+# A4 (capacity/reservation), A5 (>16 MiB artifacts / host affinity), A6 (routine admission).
+# Host priority (the owner, Nov 19): kit jobs take priority over other fleet work on both hosts until Dec 2;
+# the kit holds the G4 host reservation and releases it whenever its queue is empty.
+# Synthetic data (the owner, Nov 19): Claude Code and Codex write seeds (templates, few-shot examples, pattern structures);
+# open-weight teachers expand them in bulk inside case-gen.
+
+common:
+  command_contract:
+    stdin: '{"job": <claimed job>, "outDir": <folder>}'
+    writes: "<job.key>.<job.fence>.jsonl in outDir"
+    stdout: '{"file": "<key>.<fence>.jsonl", "sha256": "<64 hex>"}'
+    exit: 0 on success; nonzero with an error code line otherwise
+  executes: keyed params only; payload names host-local input locations only
+  pins_checked_every_attempt: [helper, model (repeated in params.model), inputs]
+  pin_mismatch: fail, no retry, helper never launched
+  runs_from: verified read-only content-addressed copies under $KIT_DATA/staged/
+  refused: generation settings outside the lane's fixed values; any credential-shaped field; holdout seed unless kind == bundle-eval
+  artifacts_over_16MiB: host-local store $KIT_DATA/cas/<sha256>; referenced by hash; named in the output manifest
+  network: none (night kinds); frontier/judge-frontier and cloud-teacher variants are day-shift, owner-admitted
+  logs: keys, kinds, counts, durations, error codes only
+  pins:
+    helper: "<kind>@sha256:<sha256 over entry-point sources, pyproject.toml, uv.lock, venv Python patch version>"
+    model: {repo, revision, sha256: "sha256 over sorted per-file sha256 of the weight dir (non-hidden files)"}
+    input: sha256 of each input file, resolved in the host's own store
+  capability: detected at worker start only when helper (and model) pins match; never declared
+  synthetic_tests: [pin detection, happy path with stub helper, helper/model/input mismatch, refused params,
+                    timeout and bounded failure, output contract, holdout-seed refusal, privacy scan of events/errors/logs]
+  admission_recipe:
+    1: each host — `uv run kit fleet pins <kind>`; same pins on both or the job is host-scoped
+    2: each host — stage inputs (≤16 MiB via Fleet input route; larger via `kit stage <file>`)
+    3: owner — declare/update the kind in the job runner's config; restart the worker so it detects the capability
+    4: conductor — `kit fleet plan <kind>` writes the job spec outside the repo (opaque ids, pins, placeholders only)
+    5: owner — admit on the queue named in A1 (lora-train: check the stage host's night window; the kit holds the host reservation until Dec 2)
+    6: pass — Fleet verify shows accepted SHA-256 matches; `kit fleet check <kind> job.json <accepted>` prints `contract: pass` + counts
+
+kinds:
+  case-gen:
+    does: synthetic cases from the case engine — seed templates and few-shot patterns (agent_seed) expanded by rules or by an open-weight teacher
+    inputs: [generator config, seed pack (hash)]
+    params: {occasions, persona_range, template_set_version, seed_pack_version, seed_range, count, split: train|val|test, teacher?: {repo, revision, sha256}}
+    capability: "kit-casegen-<helper12>[-<model12>]"
+    output: cases.jsonl shards ≤ 16 MiB
+    pass: [schema-valid, exact count, lineage {occasion, persona_id, template_id, seed, generator_sha} on every record,
+           "synthetic: true" on every record, no holdout seed, provenance {seed: agent_seed author+commit, teacher: repo+revision+host} on every record]
+    shift: night (local teachers); day if a cloud teacher is used
+    hosts: either
+  sft-build:
+    does: lane datasets, datasheet, contamination report
+    inputs: [case shards]
+    params: {lane, split_spec, template_version}
+    capability: "kit-sft-<helper12>"
+    output: manifest JSONL naming host-local splits by hash + datasheet + contamination report
+    pass: [lineage overlap = 0, shared 13-grams with holdout/test = 0, MinHash Jaccard < 0.8, canary hits = 0,
+           harness-prompt lineage scan clean, provenance on every example (rule | agent_seed | open-weight teacher; never a bulk frontier generation), split counts]
+    shift: night
+    hosts: either (CPU)
+  lora-train:
+    does: one training segment (≤ 30 min wall, checkpoint every 50 steps)
+    inputs: [dataset, base model, previous checkpoint or none]
+    params: {recipe: {method: qlora, rank: 16, lr: 1e-4, schedule: cosine_by_global_step, max_seq, batch: 4, seed}, step_from, step_to, val_loss_ceiling, expected_seconds}
+    capability: "kit-train-<helper12>-<base12>"
+    output: manifest {checkpoint sha256 (adapter + optimizer + step + rng), step, train_loss, val_loss}
+    pass: [step == step_to, losses finite, val_loss ≤ ceiling, checkpoint reloads]
+    shift: night on the stage host; any time on the build host
+    hosts: either; same host as previous segment (A5 affinity); on the stage host, refuses to start if it cannot end before its window closes (A3)
+    tests_extra: [kill at random step then resume to same loss on tiny fixture model]
+  adapter-eval:
+    does: lane acceptance metrics on the test split
+    inputs: [test split, adapter]
+    params: {lane, base pin, serving runtime pin, gen}
+    capability: "kit-eval-<helper12>-<base12>"
+    output: per-example scores + lane row
+    pass: [counts match, 20-example rerun byte-equal]
+    shift: night
+    hosts: either
+  judge-batch:
+    does: rubric scores from k judges
+    inputs: [items, rubric]
+    params: {judge pins, k, rubric_version}
+    capability: "kit-judge-<helper12>-<judge12>"
+    output: scores with variance
+    pass: [every item scored by every judge]
+    shift: night if all judges local; day (owner-admitted, dev host) if any frontier judge; frontier verdicts never feed training
+    hosts: either
+  engine-run:
+    does: one Fork C pipeline run
+    inputs: [run config, lattice@1, org@1, components@1, controls@1, passing hello-world bundle-eval result]
+    params: {control_profiles, lens, seeds, model pins per stage}
+    capability: "kit-engine-<helper12>"
+    output: problem bank + run report
+    pass: [hello world passed, zero unlabeled numbers, Fork C guardrail evals]
+    shift: night with local models
+    hosts: either
+  bundle-eval:
+    does: the whole agent on the episode ladder (taco tiers 0→2, pass^5); blind transfer on release bundles
+    inputs: [bundle manifest, case set, holdout reveal (release only)]
+    params: {k: 5, layers: [lane, episode, parity, blind?]}
+    capability: "kit-bundle-<bundle12>"
+    output: episode results, lane rows, parity rows, trace-chain check
+    pass: [every episode ran, every metric computed]   # the merge gate is `kit gate`, a separate deterministic compare
+    shift: night if all lanes local; day if any frontier lane
+    hosts: either

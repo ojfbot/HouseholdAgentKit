@@ -1,0 +1,115 @@
+{
+  "_fixture": "Shape of D05's input (Eval report@1 rows from K27 + K19, one trace link). PLACEHOLDER VALUES: the console marks every fixture view 'not for the room'. Replace with the Nov 30 release bundle's report; D05's oracle checks the report hash.",
+  "source": "fixture",
+  "report": "eval-report@1",
+  "report_hash": null,
+  "bundle_id": null,
+  "trace": {
+    "label": "One hello-world episode, mandate to order (HW-T2-01)",
+    "url": null,
+    "thread_id": "ep_hw_fixture_01"
+  },
+  "pass_k": {
+    "metric": "pass^k on hw-taco@1 (k up to 5, A's tier-2 bar is every seed)",
+    "points": [
+      {
+        "k": 1,
+        "claim": {
+          "id": "passk.1",
+          "display": "0.95",
+          "label": "synthetic",
+          "verified_by": "k27:fixture#pass1"
+        },
+        "pos": 0.95
+      },
+      {
+        "k": 2,
+        "claim": {
+          "id": "passk.2",
+          "display": "0.92",
+          "label": "synthetic",
+          "verified_by": "k27:fixture#pass2"
+        },
+        "pos": 0.92
+      },
+      {
+        "k": 3,
+        "claim": {
+          "id": "passk.3",
+          "display": "0.90",
+          "label": "synthetic",
+          "verified_by": "k27:fixture#pass3"
+        },
+        "pos": 0.9
+      },
+      {
+        "k": 4,
+        "claim": {
+          "id": "passk.4",
+          "display": "0.88",
+          "label": "synthetic",
+          "verified_by": "k27:fixture#pass4"
+        },
+        "pos": 0.88
+      },
+      {
+        "k": 5,
+        "claim": {
+          "id": "passk.5",
+          "display": "0.86",
+          "label": "synthetic",
+          "verified_by": "k27:fixture#pass5"
+        },
+        "pos": 0.86
+      }
+    ]
+  },
+  "parity": {
+    "metric": "pass^4 by segment (K19 counterfactual swaps)",
+    "floor_claim": {
+      "id": "parity.floor",
+      "display": "0.75",
+      "label": "synthetic",
+      "verified_by": "k19:fixture#floor"
+    },
+    "floor_pos": 0.75,
+    "rows": [
+      {
+        "segment": "Name swapped",
+        "claim": {
+          "id": "parity.name",
+          "display": "0.80",
+          "label": "synthetic",
+          "verified_by": "k19:fixture#name"
+        },
+        "pos": 0.8
+      },
+      {
+        "segment": "ZIP swapped",
+        "claim": {
+          "id": "parity.zip",
+          "display": "0.79",
+          "label": "synthetic",
+          "verified_by": "k19:fixture#zip"
+        },
+        "pos": 0.79
+      },
+      {
+        "segment": "Spanish request",
+        "claim": {
+          "id": "parity.lang",
+          "display": "0.78",
+          "label": "synthetic",
+          "verified_by": "k19:fixture#lang"
+        },
+        "pos": 0.78
+      }
+    ]
+  },
+  "blind": {
+    "status": "not_run",
+    "release": null,
+    "date": null,
+    "note": "hw-taco@1: shown only if the latest release bundle passed blind transfer, with its date"
+  }
+}

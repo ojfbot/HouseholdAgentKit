@@ -1,0 +1,264 @@
+{
+ "family_id": "PF-39",
+ "title": "Buy only what the donations didn't cover",
+ "actor_type": "community_org",
+ "job": "give_or_donate",
+ "segment": "volunteer-run food pantry with a treasurer and grant rules",
+ "situation": "Donations arrive unevenly; the pantry's inventory says what's short against this week's boxes; the agent buys the gap under grant rules with the treasurer's sign-off and a receipt pack.",
+ "sparky_today": "consumer or Walmart Business cart",
+ "specific_brief": "'gap vs boxes: 412 servings, $318, tax-exempt, ready Thu, grant line 4'",
+ "approval_moment": "Treasurer approves '$318 gap, 412 servings, grant line 4'.",
+ "ladder": {
+  "tier": 2,
+  "rule": "L2 gateway_only>=1",
+  "conditions": [
+   "outside_trigger",
+   "unattended",
+   "context_walmart_shouldnt_hold",
+   "other_people",
+   "completion_under_rules"
+  ],
+  "uplift_conditions": 5,
+  "tier_x": {
+   "value": 5,
+   "label": "score:rubric@2"
+  },
+  "rungs": {
+   "0": {
+    "sparky_today": "consumer or Walmart Business cart",
+    "covered_by": [
+     "COV-04",
+     "COV-05"
+    ]
+   },
+   "1": {
+    "specific_brief": "'gap vs boxes: 412 servings, $318, tax-exempt, ready Thu, grant line 4'",
+    "carries_context": true
+   },
+   "2": {
+    "gateway_only": [
+     "outside_trigger",
+     "unattended",
+     "context_walmart_shouldnt_hold",
+     "other_people",
+     "completion_under_rules"
+    ]
+   }
+  }
+ },
+ "evidence": {
+  "level": "E2",
+  "refs": [
+   "walmart_business"
+  ],
+  "unresolved_refs": [],
+  "synthetic": false,
+  "x": {
+   "value": 2,
+   "label": "score:rubric@2"
+  },
+  "notes": [],
+  "stage_impl": "passthrough@0 (owner ED)"
+ },
+ "sizing": {
+  "usd_per_year": {
+   "value": 23400000,
+   "label": "derived:synthetic"
+  },
+  "bottom_up": {
+   "value": 23400000,
+   "label": "derived:synthetic"
+  },
+  "top_down": {
+   "value": 15000000,
+   "label": "derived:synthetic"
+  },
+  "td_over_bu": {
+   "value": 0.64,
+   "label": "derived:synthetic"
+  },
+  "band": [
+   {
+    "value": 0.333,
+    "label": "synthetic"
+   },
+   {
+    "value": 3.0,
+    "label": "synthetic"
+   }
+  ],
+  "gap_flagged": false,
+  "driver_tree": {
+   "node": "value_at_stake_usd_per_year",
+   "value": {
+    "value": 23400000,
+    "label": "derived:synthetic"
+   },
+   "op": "product",
+   "children": [
+    {
+     "node": "segment_size",
+     "value": 60000.0,
+     "label": "public:pantries"
+    },
+    {
+     "node": "adoption_share",
+     "value": 0.1,
+     "label": "synthetic"
+    },
+    {
+     "node": "frequency_per_year",
+     "value": 52,
+     "label": "synthetic"
+    },
+    {
+     "node": "basket_usd",
+     "value": 300,
+     "label": "synthetic"
+    },
+    {
+     "node": "gap",
+     "value": 0.25,
+     "label": "synthetic"
+    }
+   ],
+   "top_down_check": {
+    "job_spend_per_unit": {
+     "value": 40000,
+     "label": "synthetic"
+    },
+    "occasion_share": {
+     "value": 0.25,
+     "label": "synthetic"
+    },
+    "version": "sizing-topdown@0"
+   }
+  },
+  "all_inputs_public": false
+ },
+ "decomposition": {
+  "components": [
+   "K01",
+   "K02",
+   "K03",
+   "K04",
+   "K05",
+   "K06",
+   "K07",
+   "K08",
+   "K09",
+   "K10",
+   "K11",
+   "K12",
+   "K13",
+   "K21",
+   "K24"
+  ],
+  "enhance": [],
+  "needs": [
+   "group_decision",
+   "household_rules",
+   "ledger",
+   "need_list",
+   "on_hand",
+   "outside_trigger",
+   "parse_intent",
+   "role_card",
+   "scoped_principal",
+   "slot_deadline",
+   "solve_cart",
+   "specific_brief",
+   "standing_mandate",
+   "verify",
+   "walmart_io"
+  ],
+  "provenance": {
+   "K01": "R0 always",
+   "K02": "R1 tier>=1",
+   "K03": "R1 tier>=1",
+   "K04": "R2 gateway_only:completion_under_rules",
+   "K05": "R2 gateway_only:completion_under_rules",
+   "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+   "K07": "R4 org/caregiver principal",
+   "K08": "R2 gateway_only:unattended",
+   "K09": "R2 gateway_only:outside_trigger",
+   "K10": "R2 gateway_only:other_people",
+   "K11": "R2 gateway_only:other_people",
+   "K12": "R2 gateway_only:completion_under_rules",
+   "K13": "T:on_hand",
+   "K21": "R11 occasion/checklist",
+   "K24": "R0 always"
+  },
+  "caps": [
+   "CAP-01",
+   "CAP-02",
+   "CAP-03",
+   "CAP-04",
+   "CAP-07",
+   "CAP-10",
+   "CAP-14",
+   "CAP-17",
+   "CAP-21",
+   "CAP-24",
+   "CAP-27",
+   "CAP-28"
+  ],
+  "unconfirmed_caps": [
+   "CAP-07",
+   "CAP-10",
+   "CAP-14",
+   "CAP-21",
+   "CAP-24",
+   "CAP-27",
+   "CAP-28"
+  ],
+  "adapters": [
+   "CAP-07",
+   "CAP-10",
+   "CAP-21",
+   "CAP-24",
+   "CAP-28"
+  ],
+  "build_effort_days": 25,
+  "catalog": "components@2"
+ },
+ "partner_fit": {
+  "builder_types": [
+   "nonprofit_ops"
+  ],
+  "build_effort": "L",
+  "build_effort_days": {
+   "value": 25,
+   "label": "derived:synthetic"
+  },
+  "conformance_risks": [
+   "CAP-07",
+   "CAP-10",
+   "CAP-14",
+   "CAP-21",
+   "CAP-24",
+   "CAP-27",
+   "CAP-28"
+  ],
+  "rule": "partner_fit@0"
+ },
+ "members": [
+  "RC-000edb8df4a4",
+  "RC-0b54ef1d2e95",
+  "RC-1ec02cd8b940",
+  "RC-2bc5b338bb4d",
+  "RC-4d9bf8a78cc2",
+  "RC-6111b3a7ce09",
+  "RC-9dd1363539d8",
+  "RC-be27b06a0da6",
+  "RC-cf86218ca468",
+  "RC-d495fa4956e3",
+  "RC-d77c2bd652a0",
+  "RC-f8521fd34fb5"
+ ],
+ "lineage": {
+  "prior_id": "PF-39",
+  "similarity": 1.0,
+  "matched": true
+ }
+}

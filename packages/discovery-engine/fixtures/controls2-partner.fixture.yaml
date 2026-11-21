@@ -1,0 +1,30 @@
+# Partner-lens control profiles, FIXTURE ONLY (Fork G, 2026-11-19). Fork C owns controls@2 and the partner profiles;
+# these two exist so the lens flip can be built and tested before controls@2 lands (Sat Nov 21). Replace, don't extend.
+# Partner value keys (stake term per lens, the planning project "Lenses"):
+#   market         the family serves a specific builder type or names a partner owner (market for a partner build)
+#   effort         the family's build effort (E14 components) is S or M
+#   platform_risk  the family depends on <= 2 unconfirmed Walmart capabilities (low platform risk)
+version: controls2-partner-fixture@0
+profiles:
+  partner_default:
+    lens: partner
+    function: Partner (balanced)
+    partner_owner: null
+    segment: {}
+    intent: {}
+    partner_value: {market: 0.34, effort: 0.33, platform_risk: 0.33}
+  partner_meal_planner:
+    lens: partner
+    function: Meal-planner startup (partner builder)
+    partner_owner: meal_planner
+    question: "Which agent-to-Walmart problems should a meal-planner app build for first, at what effort and platform risk?"
+    segment: {shopper: 1.5, never_shopper: 1.5, caregiver: 1.2}
+    intent: {feed: 1.8, restock: 1.4, host_or_celebrate: 1.3}
+    partner_value: {market: 0.5, effort: 0.3, platform_risk: 0.2}
+  partner_caregiving_app:
+    lens: partner
+    function: Caregiving app (partner builder)
+    partner_owner: caregiving_app
+    segment: {caregiver: 2.0, shopper: 1.2}
+    intent: {care_for_someone: 2.0, protect_someone: 1.5}
+    partner_value: {market: 0.4, effort: 0.2, platform_risk: 0.4}

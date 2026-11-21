@@ -1,0 +1,768 @@
+org: walmart
+org_model_version: org@2
+as_of: '2026-11-19'
+method:
+  evidence: 'hand-curated: which registry rows (fork-e/statements.yaml) state each priority'
+  weight: derived = sum over evidence rows of seniority x source_factor x recency, normalized to 1.0 within Walmart priorities and separately
+    within partner priorities; never typed by hand
+  seniority: CEO 1.0; CFO/EVP 0.8; corporate primary doc 0.9; SVP/VP or named staff 0.6; partner org 0.7; job posting or engineering blog 0.5;
+    press/analyst 0.4
+  source_factor: walmart_primary or partner 1.0; press quoting a named person 0.8; other press 0.5; analyst 0.5; forum 0.2
+  recency: <=6 months 1.0; <=12 0.8; <=24 0.6; older 0.4 (as of 2026-11-19)
+  caveat: a weight measures how loudly and how senior, not how important; a quiet priority can still be decisive
+priorities:
+- id: PW-01
+  owner: walmart
+  statement: 'Customers stay in control of agents: approval by default, standing limits, separate identity and history, easy revocation; trust
+    before autonomy'
+  evidence:
+  - ST-004
+  - ST-005
+  - ST-006
+  - ST-009
+  - ST-015
+  - ST-016
+  - ST-018
+  - ST-027
+  - ST-036
+  - ST-052
+  - ST-074
+  - ST-131
+  n_sources: 7
+  walmart_primary_rows: 11
+  latest: '2026-10-21'
+  top_speaker: John Furner (President & CEO, letter to customers)
+  functions:
+  - trust_safety
+  - product
+  - marketing_crm
+  weight: 1.0
+  label: derived
+- id: PW-02
+  owner: walmart
+  statement: Agentic commerce is a growth engine (bigger baskets, e-commerce and membership growth), not mainly an efficiency play
+  evidence:
+  - ST-032
+  - ST-040
+  - ST-041
+  - ST-044
+  - ST-051
+  - ST-053
+  - ST-107
+  - ST-159
+  n_sources: 7
+  walmart_primary_rows: 2
+  latest: '2026-08-20'
+  top_speaker: John Furner (President & CEO (via MarketBeat))
+  functions:
+  - finance
+  - product
+  - connect_ads
+  weight: 0.57
+  label: derived
+- id: PW-03
+  owner: walmart
+  statement: Everyday low price holds everywhere, including for agents; no per-person or time-of-day pricing; keep investing in price
+  evidence:
+  - ST-008
+  - ST-042
+  - ST-054
+  - ST-129
+  - ST-130
+  - ST-132
+  n_sources: 5
+  walmart_primary_rows: 4
+  latest: '2026-10-21'
+  top_speaker: John Furner (President & CEO, letter to customers)
+  functions:
+  - finance
+  - trust_safety
+  - marketing_crm
+  weight: 0.45
+  label: derived
+- id: PW-04
+  owner: walmart
+  statement: 'Speed and fulfillment reach are the edge: same-day at nearly every store, under-3h and 30-minute delivery, density economics'
+  evidence:
+  - ST-041
+  - ST-049
+  - ST-102
+  - ST-136
+  - ST-143
+  - ST-170
+  - ST-171
+  - ST-192
+  n_sources: 8
+  walmart_primary_rows: 2
+  latest: '2026-09-14'
+  top_speaker: David Guggina (President & CEO, Walmart U.S. (via FoodNavigator))
+  functions:
+  - supply_chain
+  - finance
+  - marketplace
+  weight: 0.41
+  label: derived
+- id: PW-05
+  owner: walmart
+  statement: Assortment breadth, including Marketplace and long-tail items an agent can surface
+  evidence:
+  - ST-034
+  - ST-054
+  - ST-068
+  - ST-136
+  - ST-158
+  n_sources: 5
+  walmart_primary_rows: 2
+  latest: '2026-10-23'
+  top_speaker: Doug McMillon (then President & CEO, Investment Community Meeting)
+  functions:
+  - merchandising
+  - marketplace
+  - supply_chain
+  weight: 0.26
+  label: derived
+- id: PW-06
+  owner: walmart
+  statement: Be discoverable and chosen inside third-party AI (Sparky in ChatGPT and Gemini, UCP, open partnerships, agentic engine optimization)
+  evidence:
+  - ST-033
+  - ST-038
+  - ST-044
+  - ST-046
+  - ST-055
+  - ST-058
+  - ST-062
+  - ST-063
+  - ST-101
+  - ST-134
+  n_sources: 9
+  walmart_primary_rows: 6
+  latest: '2026-11-19'
+  top_speaker: David Guggina (President & CEO, Walmart U.S. (Goldman Sachs conf., via FoodNavigator))
+  functions:
+  - product
+  - partnerships
+  - finance
+  weight: 0.63
+  label: derived
+- id: PW-07
+  owner: walmart
+  statement: Personalize from what customers choose to share without exposing their broader history to agents or platforms
+  evidence:
+  - ST-007
+  - ST-026
+  - ST-131
+  - ST-137
+  - ST-138
+  n_sources: 5
+  walmart_primary_rows: 3
+  latest: '2026-10-21'
+  top_speaker: John Furner (President & CEO, letter to customers)
+  functions:
+  - product
+  - trust_safety
+  - marketing_crm
+  weight: 0.35
+  label: derived
+- id: PW-08
+  owner: walmart
+  statement: 'Take routine chores off customers: from a described problem or intent to a delivered solution; reorders and replenishment'
+  evidence:
+  - ST-030
+  - ST-031
+  - ST-060
+  - ST-061
+  - ST-108
+  - ST-122
+  - ST-160
+  - ST-169
+  - ST-186
+  n_sources: 7
+  walmart_primary_rows: 3
+  latest: '2026-07-01'
+  top_speaker: John Furner / Suresh Kumar (CEO / Global CTO & CDO (fireside))
+  functions:
+  - product
+  - marketing_crm
+  - supply_chain
+  weight: 0.51
+  label: derived
+- id: PW-09
+  owner: walmart
+  statement: Ads stay relevant and paid on outcomes as shopping becomes conversational (Sparky ads, Marty, intent over keywords)
+  evidence:
+  - ST-035
+  - ST-064
+  - ST-067
+  - ST-070
+  - ST-163
+  - ST-164
+  n_sources: 6
+  walmart_primary_rows: 1
+  latest: '2026-10-22'
+  top_speaker: Daniel Danker (EVP AI Acceleration, Product & Design)
+  functions:
+  - connect_ads
+  - finance
+  - marketing_crm
+  weight: 0.26
+  label: derived
+- id: PW-10
+  owner: walmart
+  statement: 'An AI-enabled workforce: associate agents and tools that remove tasks and guide the next action'
+  evidence:
+  - ST-048
+  - ST-109
+  - ST-110
+  - ST-111
+  - ST-139
+  - ST-157
+  n_sources: 6
+  walmart_primary_rows: 2
+  latest: '2026-06-10'
+  top_speaker: John Furner / Daniel Danker (CEO / EVP (Associates Week, via Retail Brew))
+  functions:
+  - store_ops
+  - finance
+  - product
+  weight: 0.34
+  label: derived
+- id: PW-11
+  owner: walmart
+  statement: 'Protect customer data and the platform: identified agents, scoped tokens, signed mandates, no secondary data use, enforcement'
+  evidence:
+  - ST-011
+  - ST-014
+  - ST-017
+  - ST-019
+  - ST-020
+  - ST-023
+  - ST-047
+  - ST-190
+  n_sources: 3
+  walmart_primary_rows: 8
+  latest: '2026-10-21'
+  top_speaker: Walmart, corporate (newsroom)
+  functions:
+  - trust_safety
+  - partnerships
+  - connect_ads
+  weight: 0.72
+  label: derived
+- id: PW-12
+  owner: walmart
+  statement: 'Agent quality is measurable: evaluations, accuracy of data and claims, failure-rate and conversion metrics'
+  evidence:
+  - ST-021
+  - ST-022
+  - ST-045
+  - ST-073
+  - ST-076
+  - ST-123
+  - ST-125
+  - ST-126
+  - ST-127
+  n_sources: 8
+  walmart_primary_rows: 8
+  latest: '2026-10-21'
+  top_speaker: Walmart, corporate (Agentic Access Terms)
+  functions:
+  - product
+  - trust_safety
+  - merchandising
+  weight: 0.51
+  label: derived
+- id: PW-13
+  owner: walmart
+  statement: Enable suppliers and sellers with agentic tools and standards (Supplier One, Marty, Scintilla, fulfillment standards)
+  evidence:
+  - ST-071
+  - ST-075
+  - ST-097
+  - ST-098
+  - ST-158
+  n_sources: 5
+  walmart_primary_rows: 3
+  latest: '2026-11-19'
+  top_speaker: Walmart Marketplace (Seller Center release notes)
+  functions:
+  - marketplace
+  - merchandising
+  - connect_ads
+  weight: 0.32
+  label: derived
+- id: PW-14
+  owner: walmart
+  statement: 'Responsible AI: transparency, fairness, privacy, people accountable for AI outcomes'
+  evidence:
+  - ST-045
+  - ST-166
+  - ST-167
+  - ST-168
+  n_sources: 3
+  walmart_primary_rows: 4
+  latest: '2026-03-31'
+  top_speaker: Walmart, corporate (Form 10-K FY2026, Risk Factors)
+  functions:
+  - trust_safety
+  - product
+  weight: 0.17
+  label: derived
+- id: PW-15
+  owner: walmart
+  statement: A multi-agent ecosystem with Sparky as the agent outside agents work through (agent-to-agent, MCP, orchestrator over specialist agents)
+  evidence:
+  - ST-013
+  - ST-025
+  - ST-038
+  - ST-072
+  - ST-077
+  - ST-128
+  - ST-136
+  n_sources: 7
+  walmart_primary_rows: 5
+  latest: '2026-11-19'
+  top_speaker: Walmart, corporate (technology page)
+  functions:
+  - product
+  - partnerships
+  - supply_chain
+  weight: 0.43
+  label: derived
+- id: PP-01
+  owner: supplier_brand
+  statement: Brands want to be chosen by agents and want one accurate, correctable product-data source across retailers
+  evidence:
+  - ST-103
+  - ST-104
+  - ST-105
+  - ST-106
+  - ST-179
+  - ST-187
+  n_sources: 5
+  walmart_primary_rows: 0
+  latest: '2026-10-28'
+  top_speaker: Procter & Gamble (W3C/GS1 workshop position statement)
+  functions:
+  - merchandising
+  - connect_ads
+  - marketplace
+  weight: 0.65
+  label: derived
+- id: PP-02
+  owner: advertiser_agency
+  statement: Advertisers want visibility into, and measurement of, ads and sponsorship inside agent experiences
+  evidence:
+  - ST-065
+  - ST-066
+  - ST-069
+  - ST-106
+  n_sources: 3
+  walmart_primary_rows: 0
+  latest: '2026-11-03'
+  top_speaker: Mike O'Donnell (SVP Innovation, Flywheel (agency))
+  functions:
+  - connect_ads
+  - merchandising
+  weight: 0.4
+  label: derived
+- id: PP-03
+  owner: marketplace_seller
+  statement: Sellers want listings ready for agent discovery and to know what agents need; no separate enrollment exists
+  evidence:
+  - ST-095
+  - ST-096
+  - ST-099
+  - ST-179
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: '2026-10-22'
+  top_speaker: Eva (seller agency) (partner guidance)
+  functions:
+  - marketplace
+  - finance
+  - trust_safety
+  weight: 0.35
+  label: derived
+- id: PP-04
+  owner: payments
+  statement: Payment networks want agents identified and trusted so merchants can tell good agents from bots
+  evidence:
+  - ST-088
+  - ST-089
+  - ST-090
+  - ST-091
+  - ST-092
+  n_sources: 5
+  walmart_primary_rows: 0
+  latest: '2026-09-08'
+  top_speaker: Ryan McInerney (CEO, Visa (Goldman Sachs conference))
+  functions:
+  - trust_safety
+  - partnerships
+  - finance
+  weight: 1.0
+  label: derived
+- id: PP-05
+  owner: protocols
+  statement: Protocol groups want verifiable user intent (mandates) carried with every agent purchase
+  evidence:
+  - ST-081
+  - ST-083
+  - ST-084
+  - ST-085
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: '2026-05-01'
+  top_speaker: Amit Handa / Ashish Gupta (Google Commerce engineering)
+  functions:
+  - product
+  - partnerships
+  - trust_safety
+  weight: 0.39
+  label: derived
+- id: PP-06
+  owner: ai_platform
+  statement: AI platforms want discovery inside their apps and completion through merchant experiences; AI referrals convert
+  evidence:
+  - ST-086
+  - ST-087
+  - ST-093
+  - ST-155
+  - ST-177
+  - ST-178
+  n_sources: 6
+  walmart_primary_rows: 0
+  latest: '2026-10-29'
+  top_speaker: Mark Zuckerberg (CEO, Meta (Connect 2026, via Benzinga))
+  functions:
+  - partnerships
+  - marketing_crm
+  - finance
+  weight: 0.76
+  label: derived
+- id: PP-07
+  owner: agent_builder
+  statement: Builders want a documented developer platform to integrate ordering (Instacart-style), plus docs over MCP
+  evidence:
+  - ST-080
+  - ST-151
+  - ST-152
+  - ST-162
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: '2026-11-19'
+  top_speaker: AI Tinkerers DFW (event page)
+  functions:
+  - partnerships
+  - marketplace
+  weight: 0.59
+  label: derived
+- id: PP-08
+  owner: agent_builder
+  statement: Family and background agents want to act proactively on noticed needs, under the user's permission
+  evidence:
+  - ST-094
+  - ST-151
+  - ST-153
+  - ST-156
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: 2026-11
+  top_speaker: Carly (comparison blog) (agent-builder roundup)
+  functions:
+  - partnerships
+  - trust_safety
+  weight: 0.53
+  label: derived
+- id: PP-09
+  owner: spark_driver
+  statement: Drivers want honest pay displays and fair access to offers (no bots)
+  evidence:
+  - ST-112
+  - ST-113
+  - ST-114
+  n_sources: 3
+  walmart_primary_rows: 0
+  latest: 2026-10
+  top_speaker: app-review analysis (forum signal)
+  functions:
+  - supply_chain
+  - trust_safety
+  weight: 0.13
+  label: derived
+- id: PP-10
+  owner: watchdog
+  statement: Labor and consumer groups oppose surveillance pricing and personalized upsell; regulators ask about checkout privacy
+  evidence:
+  - ST-133
+  - ST-174
+  - ST-175
+  - ST-176
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: '2026-03-06'
+  top_speaker: UFCW (union statement)
+  functions:
+  - trust_safety
+  - connect_ads
+  - store_ops
+  weight: 0.38
+  label: derived
+- id: PP-11
+  owner: agent_builder
+  statement: The field needs agents that complete tasks reliably and identify themselves; platforms restrict those that don't
+  evidence:
+  - ST-145
+  - ST-146
+  - ST-183
+  - ST-184
+  n_sources: 4
+  walmart_primary_rows: 0
+  latest: '2026-11-12'
+  top_speaker: Visa (press release (Agentic Commerce Benchmark))
+  functions:
+  - partnerships
+  - trust_safety
+  - product
+  weight: 0.38
+  label: derived
+family_alignment:
+  PF-39:
+    serves:
+    - PW-01
+    - PW-08
+    unnamed_need: organizations as principals with multi-approver rules; no Walmart statement found
+  PF-51:
+    serves:
+    - PW-08
+    - PW-03
+    - PW-04
+    - PW-01
+    - PW-15
+  PF-44:
+    serves:
+    - PW-08
+    - PW-04
+    - PW-01
+  PF-28:
+    serves:
+    - PW-01
+    - PW-07
+    - PP-08
+    unnamed_need: a profile per person cared for (Walmart's profiles are per agent)
+  PF-48:
+    serves:
+    - PW-11
+    - PW-12
+    - PW-01
+  PF-20:
+    serves:
+    - PW-06
+    - PW-03
+    - PW-04
+    - PW-05
+  PF-03:
+    serves:
+    - PW-04
+    - PW-08
+    - PP-08
+  PF-01:
+    serves:
+    - PW-03
+    - PW-08
+    - PW-07
+  PF-45:
+    serves:
+    - PW-08
+    - PW-02
+  PF-46:
+    serves:
+    - PW-12
+    - PP-07
+    - PP-11
+  PF-47:
+    serves:
+    - PW-04
+    - PW-15
+    - PW-12
+  PF-15:
+    serves:
+    - PW-14
+    - PW-12
+    - PP-01
+  PF-23:
+    serves:
+    - PW-01
+    - PW-07
+  PF-22:
+    serves:
+    - PW-01
+    - PW-02
+  PF-33:
+    serves:
+    - PP-01
+    - PW-12
+    - PW-13
+  PF-37:
+    serves:
+    - PW-10
+    - PW-01
+  PF-10:
+    serves:
+    - PW-08
+    - PW-02
+  PF-21:
+    serves:
+    - PW-02
+    - PW-06
+  PF-17:
+    serves:
+    - PW-08
+  PF-35:
+    serves:
+    - PW-10
+    - PW-12
+    - PW-01
+  PF-43:
+    serves:
+    - PW-04
+    unnamed_need: community organizations as principals in an emergency; no Walmart statement found
+  PF-26:
+    serves:
+    - PW-04
+  PF-27:
+    serves:
+    - PW-08
+    - PW-07
+  PF-49:
+    serves:
+    - PW-09
+    - PP-02
+    - PW-14
+  PF-08:
+    serves:
+    - PW-08
+    - PW-01
+  PF-24:
+    serves:
+    - PW-01
+    - PW-03
+  PF-12:
+    serves:
+    - PW-03
+    - PW-08
+  PF-30:
+    serves:
+    - PW-01
+    unnamed_need: the person cared for can ask; the payer approves
+  PF-40:
+    serves:
+    - PW-08
+  PF-05:
+    serves:
+    - PW-01
+  PF-09:
+    serves:
+    - PW-07
+    - PW-08
+  PF-25:
+    serves:
+    - PW-08
+    - PP-06
+  PF-31:
+    serves:
+    - PW-01
+    - PW-08
+    unnamed_need: one shopper across several households
+  PF-02:
+    serves:
+    - PW-01
+    - PW-14
+  PF-29:
+    serves:
+    - PW-01
+    - PW-11
+  PF-06:
+    serves:
+    - PW-08
+    - PW-07
+  PF-50:
+    serves:
+    - PW-04
+    - PW-02
+  PF-36:
+    serves:
+    - PW-04
+    unnamed_need: notes from the person receiving
+  PF-13:
+    serves:
+    - PW-01
+  PF-18:
+    serves:
+    - PW-04
+    - PW-08
+  PF-41:
+    serves:
+    - PW-03
+    unnamed_need: voucher programs as rules
+  PF-07:
+    serves:
+    - PW-08
+  PF-04:
+    serves:
+    - PW-08
+    - PW-04
+  G-03:
+    serves:
+    - PW-08
+    - PW-07
+  PF-14:
+    serves:
+    - PW-01
+    - PW-03
+  PF-32:
+    serves:
+    - PP-03
+    - PW-05
+    - PW-13
+  PF-11:
+    serves:
+    - PW-07
+    - PW-08
+  PF-16:
+    serves:
+    - PW-01
+  PF-19:
+    serves:
+    - PW-04
+  G-01:
+    serves:
+    - PW-08
+  G-07:
+    serves:
+    - PW-04
+  G-06:
+    serves:
+    - PW-02
+    - PW-12
+  G-05:
+    serves:
+    - PW-01
+    - PW-11
+  PF-42:
+    serves: []
+    unnamed_need: teachers and classrooms as principals; no Walmart statement found
+  G-02:
+    serves:
+    - PW-05
+  PF-34:
+    serves:
+    - PP-03
+    - PW-13
+  PF-38:
+    serves:
+    - PW-10
+  G-04:
+    serves:
+    - PW-08

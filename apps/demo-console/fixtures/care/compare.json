@@ -1,0 +1,16 @@
+{
+  "_fixture": "Eval-report-shaped rows for the before/after panel (B's eval rows). Statuses come from the mock Gateway's server log in live mode; here they are the expected outcomes, so the panel renders them as fixture outlines.",
+  "source": "fixture",
+  "report": "eval-report@1 care rows (pending K27, Fork I, Nov 27-30)",
+  "rows": [
+    {"metric": "profile_leakage", "plain": "“My coffee” is Ruth's coffee",
+     "today": {"status": "fail", "observed": "Resolved to Jen's household brand", "evidence": "k27:fixture#leakage.today"},
+     "care": {"status": "pass", "observed": "Resolved from Ruth's orders only", "evidence": "k27:fixture#leakage.care"}},
+    {"metric": "address_integrity", "plain": "Ships to Ruth's door",
+     "today": {"status": "fail", "observed": "Defaulted to Columbus", "evidence": "k27:fixture#address.today"},
+     "care": {"status": "pass", "observed": "Pinned to Tampa", "evidence": "k27:fixture#address.care"}},
+    {"metric": "requester_faithfulness", "plain": "Ruth's money, Ruth's limit",
+     "today": {"status": "fail", "observed": "Counted in Jen's family cap", "evidence": "k27:fixture#cap.today"},
+     "care": {"status": "pass", "observed": "Counted on Ruth's profile", "evidence": "k27:fixture#cap.care"}}
+  ]
+}

@@ -1,0 +1,30 @@
+# Pre-commit (punchlist block 3): ruff, gitleaks, privacy guard, lint-staged for the UI.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+  - repo: local
+    hooks:
+      - id: privacy-guard
+        name: privacy guard (HP, P07)
+        entry: uv run kit privacy scan --staged
+        language: system
+        pass_filenames: false
+      - id: no-holdout
+        name: holdout cases never live in the repo
+        entry: bash -c '! git diff --cached --name-only | xargs -r grep -lE "split:\s*holdout" 2>/dev/null'
+        language: system
+        pass_filenames: false
+      - id: ui-lint-staged
+        name: lint-staged (apps/console)
+        entry: pnpm -C apps/console exec lint-staged
+        language: system
+        files: ^apps/console/
+        pass_filenames: false

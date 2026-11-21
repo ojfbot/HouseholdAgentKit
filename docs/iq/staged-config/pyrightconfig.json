@@ -1,0 +1,23 @@
+{
+  "//": "IQ draft; fold into the root pyproject [tool.pyright] at founding. Tests are excluded: they index Result unions after asserting .ok.",
+  "include": [
+    "packages/contracts/src",
+    "packages/mock-gateway/src",
+    "packages/verifier/src",
+    "packages/eval-harness/src",
+    "packages/kit-gate/src",
+    "kit/src"
+  ],
+  "extraPaths": [
+    "packages/contracts/src",
+    "packages/mock-gateway/src",
+    "packages/verifier/src",
+    "packages/eval-harness/src",
+    "packages/kit-gate/src",
+    "kit/src",
+    "tests"
+  ],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "reportMissingModuleSource": "none"
+}

@@ -1,0 +1,4602 @@
+{
+ "stage": "decomposition@2",
+ "catalog": "components@2",
+ "bank": "run-0",
+ "deterministic": true,
+ "family_components": {
+  "PF-39": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K13",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "on_hand",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 org/caregiver principal"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 23400000
+  },
+  "PF-51": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 585000000
+  },
+  "PF-44": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K13",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "on_hand",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 business approver"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 84960000
+  },
+  "PF-28": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:approver_payer"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 4914000000
+  },
+  "PF-48": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K10",
+    "K11",
+    "K12",
+    "K18",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "support_view",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K18": "R9 support",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "closure"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-25",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-25",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-25",
+    "CAP-28"
+   ],
+   "vas": 123552000
+  },
+  "PF-20": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 936000000
+  },
+  "PF-03": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 75000000
+  },
+  "PF-01": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K16",
+    "K19",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "fairness_floor",
+    "household_rules",
+    "item_attributes",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K16": "T:item_attributes",
+    "K19": "R8 protected segment",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-20",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-24"
+   ],
+   "vas": 1175200000
+  },
+  "PF-45": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 112500000
+  },
+  "PF-46": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K12",
+    "K20",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "conformance",
+    "ledger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K20": "R10 partner conformance",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-05",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-26",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-05",
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-26",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 109824000
+  },
+  "PF-47": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 549120000
+  },
+  "PF-15": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K13",
+    "K14",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "change_notice",
+    "household_rules",
+    "ledger",
+    "on_hand",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K14": "R5 notice trigger",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K16": "closure",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-22",
+    "CAP-24"
+   ],
+   "vas": 41580000
+  },
+  "PF-23": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:requester"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-28"
+   ],
+   "vas": 72000000
+  },
+  "PF-22": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R3 lane:mandate",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 business approver"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 120000000
+  },
+  "PF-33": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K14",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "change_notice",
+    "household_rules",
+    "item_attributes",
+    "outside_trigger",
+    "parse_intent",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K14": "R3 lane:notice",
+    "K24": "R0 always",
+    "K12": "closure",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K16": "R7 lock/listing"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-12",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-12",
+    "CAP-22",
+    "CAP-24"
+   ],
+   "vas": 10400000
+  },
+  "PF-37": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K11",
+    "K12",
+    "K14",
+    "K15",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "change_notice",
+    "fulfiller_note",
+    "household_rules",
+    "item_attributes",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K15": "R6 fulfiller",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R3 lane:card",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K14": "R3 lane:notice",
+    "K01": "R0 always",
+    "K09": "closure",
+    "K02": "R1 tier>=1",
+    "K16": "R7 lock/listing",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-13",
+    "CAP-17",
+    "CAP-19",
+    "CAP-20",
+    "CAP-22",
+    "CAP-23",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-13",
+    "CAP-19",
+    "CAP-20",
+    "CAP-22",
+    "CAP-23",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-22",
+    "CAP-23",
+    "CAP-24"
+   ],
+   "vas": 15600000
+  },
+  "PF-10": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 135000000
+  },
+  "PF-21": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R3 lane:card",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 90000000
+  },
+  "PF-17": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "closure",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-24"
+   ],
+   "vas": 486000000
+  },
+  "PF-35": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K11",
+    "K12",
+    "K14",
+    "K15",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "change_notice",
+    "fulfiller_note",
+    "household_rules",
+    "item_attributes",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K15": "R6 fulfiller",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K14": "R3 lane:notice",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K11": "R3 lane:card",
+    "K01": "R0 always",
+    "K09": "closure",
+    "K02": "R1 tier>=1",
+    "K16": "R7 lock/listing",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-13",
+    "CAP-17",
+    "CAP-19",
+    "CAP-20",
+    "CAP-22",
+    "CAP-23",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-13",
+    "CAP-19",
+    "CAP-20",
+    "CAP-22",
+    "CAP-23",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-22",
+    "CAP-23"
+   ],
+   "vas": 20280000
+  },
+  "PF-43": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 org/caregiver principal"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-28"
+   ],
+   "vas": 4000000
+  },
+  "PF-26": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 112500000
+  },
+  "PF-27": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 90000000
+  },
+  "PF-49": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R3 lane:card",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 102960000
+  },
+  "PF-08": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 multi-home"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-28"
+   ],
+   "vas": 37800000
+  },
+  "PF-24": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "parse_intent",
+    "role_card",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 166400000
+  },
+  "PF-12": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K19",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "fairness_floor",
+    "household_rules",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K19": "R8 protected segment",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 270000000
+  },
+  "PF-30": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R3 lane:mandate",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:requester"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 195000000
+  },
+  "PF-40": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R3 lane:mandate",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 org/caregiver principal"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 72000000
+  },
+  "PF-05": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R3 lane:mandate",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:requester"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 120000000
+  },
+  "PF-09": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K07",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "item_attributes",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "closure",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K16": "R7 lock/listing",
+    "K07": "R4 multi-home"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-12",
+    "CAP-14",
+    "CAP-17",
+    "CAP-20",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-12",
+    "CAP-14",
+    "CAP-20",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-12",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 156000000
+  },
+  "PF-25": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K13",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "on_hand",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 702000000
+  },
+  "PF-31": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 org/caregiver principal"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-28"
+   ],
+   "vas": 702000000
+  },
+  "PF-02": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K14",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "change_notice",
+    "household_rules",
+    "item_attributes",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K14": "R3 lane:notice",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K16": "R7 lock/listing",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-20",
+    "CAP-22",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-22",
+    "CAP-24"
+   ],
+   "vas": 12480000
+  },
+  "PF-29": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K10",
+    "K11",
+    "K12",
+    "K18",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "support_view",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K18": "T:support_view",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:approver_payer"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-25",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-25",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-25",
+    "CAP-28"
+   ],
+   "vas": 150000000
+  },
+  "PF-06": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K08",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "group_decision",
+    "household_rules",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "closure",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-24"
+   ],
+   "vas": 77760000
+  },
+  "PF-50": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K12",
+    "K16",
+    "K19",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "fairness_floor",
+    "item_attributes",
+    "ledger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K16": "T:item_attributes",
+    "K19": "R8 protected segment",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-20",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-24"
+   ],
+   "vas": 102960000
+  },
+  "PF-36": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K07",
+    "K10",
+    "K11",
+    "K15",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "fulfiller_note",
+    "group_decision",
+    "household_rules",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K15": "R6 fulfiller",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K07": "T:scoped_principal"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-13",
+    "CAP-14",
+    "CAP-17",
+    "CAP-19",
+    "CAP-21",
+    "CAP-23",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-13",
+    "CAP-14",
+    "CAP-19",
+    "CAP-21",
+    "CAP-23",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-21",
+    "CAP-23",
+    "CAP-28"
+   ],
+   "vas": 41600000
+  },
+  "PF-13": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 218400000
+  },
+  "PF-18": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 273000000
+  },
+  "PF-41": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K08",
+    "K10",
+    "K11",
+    "K12",
+    "K16",
+    "K19",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "fairness_floor",
+    "feedback_edits",
+    "group_decision",
+    "household_rules",
+    "item_attributes",
+    "ledger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R3 lane:mandate",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K16": "T:item_attributes",
+    "K19": "R8 protected segment",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:approver_payer"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-14",
+    "CAP-17",
+    "CAP-20",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-14",
+    "CAP-20",
+    "CAP-21",
+    "CAP-24",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-12",
+    "CAP-21",
+    "CAP-24",
+    "CAP-28"
+   ],
+   "vas": 18000000
+  },
+  "PF-07": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K07",
+    "K09",
+    "K10",
+    "K11",
+    "K12",
+    "K21",
+    "K24"
+   ],
+   "enhance": [
+    "K22"
+   ],
+   "needs": [
+    "feedback_edits",
+    "group_decision",
+    "ledger",
+    "need_list",
+    "outside_trigger",
+    "parse_intent",
+    "role_card",
+    "scoped_principal",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K11": "R2 gateway_only:other_people",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K10": "R2 gateway_only:other_people",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules",
+    "K07": "R4 role:requester"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-17",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-14",
+    "CAP-21",
+    "CAP-27",
+    "CAP-28"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-21",
+    "CAP-28"
+   ],
+   "vas": 22500000
+  },
+  "PF-04": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K13",
+    "K21",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "need_list",
+    "on_hand",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K21": "R11 occasion/checklist",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 36000000
+  },
+  "G-03": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K13",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "on_hand",
+    "parse_intent",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 624000000
+  },
+  "PF-14": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 180000000
+  },
+  "PF-32": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "item_attributes",
+    "parse_intent",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K16": "R7 lock/listing",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-12",
+    "CAP-20",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-12"
+   ],
+   "vas": 18000000
+  },
+  "PF-11": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K06",
+    "K08",
+    "K12",
+    "K13",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "on_hand",
+    "parse_intent",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K01": "R0 always",
+    "K02": "R1 tier>=1",
+    "K13": "T:on_hand",
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K24": "R0 always",
+    "K12": "closure"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-24"
+   ],
+   "vas": 1029600000
+  },
+  "PF-16": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K08",
+    "K09",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "standing_mandate",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K08": "R2 gateway_only:unattended",
+    "K03": "R1 tier>=1",
+    "K06": "closure",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-24"
+   ],
+   "vas": 120000000
+  },
+  "PF-19": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K04",
+    "K05",
+    "K06",
+    "K09",
+    "K12",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "household_rules",
+    "ledger",
+    "outside_trigger",
+    "parse_intent",
+    "slot_deadline",
+    "solve_cart",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K06": "R2 gateway_only:context_walmart_shouldnt_hold",
+    "K05": "R2 gateway_only:completion_under_rules",
+    "K24": "R0 always",
+    "K12": "R2 gateway_only:completion_under_rules",
+    "K01": "R0 always",
+    "K09": "R2 gateway_only:outside_trigger",
+    "K02": "R1 tier>=1",
+    "K04": "R2 gateway_only:completion_under_rules"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-10",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-10",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07",
+    "CAP-10"
+   ],
+   "vas": 72000000
+  },
+  "G-01": {
+   "components": [
+    "K01",
+    "K02",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K02": "R3 lane:brief",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 58500000
+  },
+  "G-07": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K02": "R1 tier>=1",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 36000000
+  },
+  "G-06": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K11",
+    "K19",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "fairness_floor",
+    "parse_intent",
+    "role_card",
+    "specific_brief",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K01": "R0 always",
+    "K02": "R3 lane:brief",
+    "K03": "closure",
+    "K19": "R8 protected segment",
+    "K11": "R3 lane:card",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 135200000
+  },
+  "G-05": {
+   "components": [
+    "K01",
+    "K03",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R3 lane:verify",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-17"
+   ],
+   "unconfirmed_caps": [],
+   "adapters": [],
+   "vas": 19200000
+  },
+  "PF-42": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K02": "R1 tier>=1",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 7000000
+  },
+  "G-02": {
+   "components": [
+    "K01",
+    "K02",
+    "K03",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R1 tier>=1",
+    "K02": "R1 tier>=1",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 144000000
+  },
+  "PF-34": {
+   "components": [
+    "K01",
+    "K03",
+    "K16",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "item_attributes",
+    "parse_intent",
+    "verify",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K03": "R3 lane:verify",
+    "K16": "R7 lock/listing",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-04",
+    "CAP-12",
+    "CAP-17",
+    "CAP-20"
+   ],
+   "unconfirmed_caps": [
+    "CAP-12",
+    "CAP-20"
+   ],
+   "adapters": [
+    "CAP-12"
+   ],
+   "vas": 7200000
+  },
+  "PF-38": {
+   "components": [
+    "K01",
+    "K02",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K02": "R3 lane:brief",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 9984000
+  },
+  "G-04": {
+   "components": [
+    "K01",
+    "K02",
+    "K24"
+   ],
+   "enhance": [],
+   "needs": [
+    "parse_intent",
+    "specific_brief",
+    "walmart_io"
+   ],
+   "provenance": {
+    "K02": "R3 lane:brief",
+    "K01": "R0 always",
+    "K24": "R0 always"
+   },
+   "caps": [
+    "CAP-01",
+    "CAP-02",
+    "CAP-03",
+    "CAP-07",
+    "CAP-17",
+    "CAP-27"
+   ],
+   "unconfirmed_caps": [
+    "CAP-07",
+    "CAP-27"
+   ],
+   "adapters": [
+    "CAP-07"
+   ],
+   "vas": 7200000
+  }
+ },
+ "reuse": {
+  "K01": 58,
+  "K24": 58,
+  "K02": 56,
+  "K03": 55,
+  "K06": 49,
+  "K12": 46,
+  "K04": 41,
+  "K05": 41,
+  "K09": 33,
+  "K11": 28,
+  "K08": 24,
+  "K10": 23,
+  "K21": 20,
+  "K07": 17,
+  "K16": 11,
+  "K13": 7,
+  "K14": 5,
+  "K19": 5,
+  "K15": 3,
+  "K18": 2,
+  "K20": 1
+ },
+ "curve_new_components_per_family": [
+  15,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  2,
+  0,
+  1,
+  0,
+  1,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "evals": {
+  "decomposition_truth_paper": {
+   "PF-51": {
+    "source": "A Family approval flow tab: M0 lanes 1,2,3,4,5,8,12,13 + platform packages",
+    "precision": 0.917,
+    "recall": 1.0,
+    "predicted_not_planned": [
+     "K09"
+    ],
+    "planned_not_predicted": []
+   },
+   "PF-28": {
+    "source": "B cycle-2 asks 1-8 (coordination log)",
+    "precision": 0.923,
+    "recall": 1.0,
+    "predicted_not_planned": [
+     "K09"
+    ],
+    "planned_not_predicted": []
+   }
+  },
+  "reuse": {
+   "product_mean_families": 28.9,
+   "product_serving_ge_3": 18,
+   "product_components": 20,
+   "new_components_after_first_10_families": 2
+  },
+  "unlock": [
+   {
+    "step": 1,
+    "component": "K01",
+    "name": "Intent parser",
+    "effort_cum_days": 1,
+    "families_unlocked": 0,
+    "vas_share": 0.0
+   },
+   {
+    "step": 2,
+    "component": "K03",
+    "name": "Constraint verifier",
+    "effort_cum_days": 2,
+    "families_unlocked": 0,
+    "vas_share": 0.0
+   },
+   {
+    "step": 3,
+    "component": "K24",
+    "name": "ShoppingPort client + adapters (H1 conversational / H2 UCP-shaped / H3 hybrid)",
+    "effort_cum_days": 4,
+    "families_unlocked": 1,
+    "vas_share": 0.001
+   },
+   {
+    "step": 4,
+    "component": "K02",
+    "name": "Sparky brief writer (lane 13)",
+    "effort_cum_days": 5,
+    "families_unlocked": 7,
+    "vas_share": 0.018
+   },
+   {
+    "step": 5,
+    "component": "K11",
+    "name": "Role-scoped card writer (ballot, approval, over-cap, digest)",
+    "effort_cum_days": 6,
+    "families_unlocked": 7,
+    "vas_share": 0.018
+   },
+   {
+    "step": 6,
+    "component": "K06",
+    "name": "Household and org model + rights (PDP)",
+    "effort_cum_days": 8,
+    "families_unlocked": 7,
+    "vas_share": 0.018
+   },
+   {
+    "step": 7,
+    "component": "K12",
+    "name": "Ledger and audit chain",
+    "effort_cum_days": 10,
+    "families_unlocked": 7,
+    "vas_share": 0.018
+   },
+   {
+    "step": 8,
+    "component": "K05",
+    "name": "Deadline-to-slot feasibility",
+    "effort_cum_days": 12,
+    "families_unlocked": 7,
+    "vas_share": 0.018
+   },
+   {
+    "step": 9,
+    "component": "K04",
+    "name": "Cart solver (menu builder)",
+    "effort_cum_days": 14,
+    "families_unlocked": 9,
+    "vas_share": 0.059
+   },
+   {
+    "step": 10,
+    "component": "K09",
+    "name": "Trigger gateway (source adapters + classifier)",
+    "effort_cum_days": 16,
+    "families_unlocked": 10,
+    "vas_share": 0.064
+   },
+   {
+    "step": 11,
+    "component": "K08",
+    "name": "Standing mandate + guard",
+    "effort_cum_days": 18,
+    "families_unlocked": 12,
+    "vas_share": 0.082
+   },
+   {
+    "step": 12,
+    "component": "K21",
+    "name": "Need-list builder (occasion, checklist or plan -> bill of materials)",
+    "effort_cum_days": 19,
+    "families_unlocked": 19,
+    "vas_share": 0.197
+   },
+   {
+    "step": 13,
+    "component": "K10",
+    "name": "Poll state machine + decision policies",
+    "effort_cum_days": 21,
+    "families_unlocked": 25,
+    "vas_share": 0.295
+   },
+   {
+    "step": 14,
+    "component": "K07",
+    "name": "Profile scopes (care, multi-address, org principal)",
+    "effort_cum_days": 23,
+    "families_unlocked": 35,
+    "vas_share": 0.69
+   },
+   {
+    "step": 15,
+    "component": "K13",
+    "name": "On-hand state (household pantry or org inventory)",
+    "effort_cum_days": 25,
+    "families_unlocked": 41,
+    "vas_share": 0.848
+   },
+   {
+    "step": 16,
+    "component": "K19",
+    "name": "Fairness and parity harness",
+    "effort_cum_days": 27,
+    "families_unlocked": 43,
+    "vas_share": 0.873
+   },
+   {
+    "step": 17,
+    "component": "K16",
+    "name": "Catalog attribute resolver",
+    "effort_cum_days": 29,
+    "families_unlocked": 49,
+    "vas_share": 0.967
+   },
+   {
+    "step": 18,
+    "component": "K18",
+    "name": "Support view over agent orders",
+    "effort_cum_days": 30,
+    "families_unlocked": 51,
+    "vas_share": 0.984
+   },
+   {
+    "step": 19,
+    "component": "K20",
+    "name": "Conformance suite (tier-0 Sparky parity + protocol conformance)",
+    "effort_cum_days": 31,
+    "families_unlocked": 52,
+    "vas_share": 0.991
+   },
+   {
+    "step": 20,
+    "component": "K14",
+    "name": "Change and recall notice ingest + lock watcher",
+    "effort_cum_days": 33,
+    "families_unlocked": 55,
+    "vas_share": 0.995
+   },
+   {
+    "step": 21,
+    "component": "K15",
+    "name": "Fulfiller handoff (picker line, driver note, put-away plan)",
+    "effort_cum_days": 35,
+    "families_unlocked": 58,
+    "vas_share": 1.0
+   }
+  ],
+  "stability": {
+   "v1_vs_v2_mean_jaccard": 0.949,
+   "v1_hand_overrides_recovered_by_rules": "43/44",
+   "structured_only_vs_with_text_mean_jaccard": 0.978,
+   "families_changed_by_text_cues": 12,
+   "seed_stability": "pending: needs runs 1-3 with fresh judges (Fork C, Nov 22+)"
+  },
+  "phantom": {
+   "count": 0,
+   "items": [],
+   "orphan_families": []
+  }
+ },
+ "diffs_vs_v1": {
+  "PF-39": {
+   "added_vs_v1": [
+    "K13"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-44": {
+   "added_vs_v1": [
+    "K13"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-48": {
+   "added_vs_v1": [
+    "K06"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-46": {
+   "added_vs_v1": [
+    "K06",
+    "K20"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-15": {
+   "added_vs_v1": [
+    "K16"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-33": {
+   "added_vs_v1": [
+    "K12"
+   ],
+   "dropped_vs_v1": [
+    "K15"
+   ]
+  },
+  "PF-37": {
+   "added_vs_v1": [
+    "K09",
+    "K16"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-17": {
+   "added_vs_v1": [
+    "K12"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-35": {
+   "added_vs_v1": [
+    "K09"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-05": {
+   "added_vs_v1": [
+    "K06"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-09": {
+   "added_vs_v1": [
+    "K12",
+    "K16"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-06": {
+   "added_vs_v1": [
+    "K12"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-50": {
+   "added_vs_v1": [
+    "K06",
+    "K16"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-07": {
+   "added_vs_v1": [
+    "K06",
+    "K07"
+   ],
+   "dropped_vs_v1": []
+  },
+  "G-03": {
+   "added_vs_v1": [
+    "K06"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-14": {
+   "added_vs_v1": [
+    "K06"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-11": {
+   "added_vs_v1": [
+    "K12"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-16": {
+   "added_vs_v1": [
+    "K06"
+   ],
+   "dropped_vs_v1": []
+  },
+  "G-06": {
+   "added_vs_v1": [
+    "K03"
+   ],
+   "dropped_vs_v1": []
+  },
+  "PF-34": {
+   "added_vs_v1": [
+    "K16"
+   ],
+   "dropped_vs_v1": []
+  }
+ },
+ "dag": {
+  "layers": {
+   "K01": 0,
+   "K26": 0,
+   "K24": 1,
+   "K02": 2,
+   "K03": 0,
+   "K04": 2,
+   "K05": 2,
+   "K06": 0,
+   "K07": 1,
+   "K12": 1,
+   "K08": 2,
+   "K23": 1,
+   "K09": 2,
+   "K10": 2,
+   "K11": 1,
+   "K13": 1,
+   "K16": 2,
+   "K14": 3,
+   "K15": 2,
+   "K18": 2,
+   "K21": 0,
+   "K22": 1,
+   "K17": 1,
+   "K25": 2,
+   "K27": 3,
+   "K19": 4,
+   "K20": 3,
+   "E01": 0,
+   "E02": 1,
+   "E03": 1,
+   "E04": 2,
+   "E05": 3,
+   "E06": 4,
+   "E07": 4,
+   "E08": 4,
+   "E09": 4,
+   "P03": 0,
+   "E10": 4,
+   "E11": 5,
+   "E12": 6,
+   "E13": 7,
+   "E14": 4,
+   "E15": 8,
+   "E16": 7,
+   "E17": 4,
+   "E18": 7,
+   "E19": 7,
+   "D01": 0,
+   "D02": 3,
+   "D03": 3,
+   "D04": 4,
+   "D05": 5,
+   "P01": 0,
+   "P02": 0,
+   "D06": 1,
+   "D07": 0,
+   "P04": 0,
+   "P05": 0,
+   "P06": 0,
+   "P07": 0
+  },
+  "longest_path_days": 13,
+  "longest_path": [
+   "E01",
+   "E02",
+   "E04",
+   "E05",
+   "E10",
+   "E11",
+   "E12",
+   "E13",
+   "E15"
+  ],
+  "product_longest_path": [
+   6,
+   [
+    "K24",
+    "K16",
+    "K14"
+   ]
+  ]
+ },
+ "plan": {
+  "schedule": {
+   "Contracts drafted (components@2 types)": {
+    "lane": "EL",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "days": 1,
+    "deps": [],
+    "milestone": "contracts",
+    "slack_days": 0
+   },
+   "Acks from A, B, C, D, E": {
+    "lane": "EL",
+    "start": "2026-11-20",
+    "end": "2026-11-21",
+    "days": 2,
+    "deps": [
+     "Contracts drafted (components@2 types)"
+    ],
+    "milestone": "contracts",
+    "slack_days": 1
+   },
+   "Contract freeze v1": {
+    "lane": "EL",
+    "start": "2026-11-22",
+    "end": "2026-11-22",
+    "days": 0,
+    "deps": [
+     "Acks from A, B, C, D, E"
+    ],
+    "milestone": "contracts",
+    "slack_days": 0
+   },
+   "K17 Gateway twin": {
+    "lane": "HP",
+    "start": "2026-11-19",
+    "end": "2026-11-21",
+    "days": 3,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K24 ShoppingPort H3": {
+    "lane": "HP",
+    "start": "2026-11-22",
+    "end": "2026-11-23",
+    "days": 2,
+    "deps": [
+     "K17 Gateway twin"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K05 slots (estimated mode)": {
+    "lane": "HP",
+    "start": "2026-11-24",
+    "end": "2026-11-24",
+    "days": 1,
+    "deps": [
+     "K24 ShoppingPort H3"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K26 Telemetry": {
+    "lane": "ED",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "days": 1,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 1
+   },
+   "K25 Synthetic world + taco cases": {
+    "lane": "ED",
+    "start": "2026-11-20",
+    "end": "2026-11-21",
+    "days": 2,
+    "deps": [
+     "Contracts drafted (components@2 types)"
+    ],
+    "milestone": "HW",
+    "slack_days": 2
+   },
+   "K03 Constraint verifier": {
+    "lane": "ED",
+    "start": "2026-11-22",
+    "end": "2026-11-22",
+    "days": 1,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K12 Ledger (append + verify)": {
+    "lane": "ED",
+    "start": "2026-11-23",
+    "end": "2026-11-23",
+    "days": 1,
+    "deps": [
+     "K26 Telemetry"
+    ],
+    "milestone": "HW",
+    "slack_days": 1
+   },
+   "K27 Eval harness (pass^k)": {
+    "lane": "ED",
+    "start": "2026-11-24",
+    "end": "2026-11-24",
+    "days": 1,
+    "deps": [
+     "K25 Synthetic world + taco cases"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K01 Intent parser (prompted + fallback)": {
+    "lane": "MF",
+    "start": "2026-11-20",
+    "end": "2026-11-20",
+    "days": 1,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 1
+   },
+   "K21 Need-list builder (taco, spaghetti)": {
+    "lane": "MF",
+    "start": "2026-11-21",
+    "end": "2026-11-21",
+    "days": 1,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 3
+   },
+   "K02 Brief writer": {
+    "lane": "MF",
+    "start": "2026-11-22",
+    "end": "2026-11-22",
+    "days": 1,
+    "deps": [
+     "K01 Intent parser (prompted + fallback)"
+    ],
+    "milestone": "HW",
+    "slack_days": 2
+   },
+   "K04 Cart solver": {
+    "lane": "MF",
+    "start": "2026-11-23",
+    "end": "2026-11-24",
+    "days": 2,
+    "deps": [
+     "K03 Constraint verifier"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K06 Household + rights": {
+    "lane": "PD",
+    "start": "2026-11-20",
+    "end": "2026-11-20",
+    "days": 1,
+    "deps": [],
+    "milestone": "HW",
+    "slack_days": 1
+   },
+   "K23 Event bus": {
+    "lane": "PD",
+    "start": "2026-11-21",
+    "end": "2026-11-21",
+    "days": 1,
+    "deps": [
+     "K26 Telemetry"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K10 Poll + policies": {
+    "lane": "PD",
+    "start": "2026-11-22",
+    "end": "2026-11-23",
+    "days": 2,
+    "deps": [
+     "K23 Event bus",
+     "K06 Household + rights"
+    ],
+    "milestone": "HW",
+    "slack_days": 1
+   },
+   "K11 Cards (templates)": {
+    "lane": "PD",
+    "start": "2026-11-24",
+    "end": "2026-11-24",
+    "days": 1,
+    "deps": [
+     "K03 Constraint verifier"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "Hello world live smoke (K20 tier 0->2)": {
+    "lane": "HP",
+    "start": "2026-11-25",
+    "end": "2026-11-25",
+    "days": 1,
+    "deps": [
+     "K05 slots (estimated mode)",
+     "K04 Cart solver",
+     "K02 Brief writer",
+     "K10 Poll + policies",
+     "K11 Cards (templates)",
+     "K12 Ledger (append + verify)",
+     "K27 Eval harness (pass^k)",
+     "K21 Need-list builder (taco, spaghetti)",
+     "Contract freeze v1"
+    ],
+    "milestone": "HW",
+    "slack_days": 0
+   },
+   "K09 trigger stub (manual + calendar, rules)": {
+    "lane": "MF",
+    "start": "2026-11-25",
+    "end": "2026-11-25",
+    "days": 1,
+    "deps": [],
+    "milestone": "should",
+    "slack_days": 4
+   },
+   "Decomposition stage in Fork C engine": {
+    "lane": "EL",
+    "start": "2026-11-23",
+    "end": "2026-11-24",
+    "days": 2,
+    "deps": [
+     "Contract freeze v1"
+    ],
+    "milestone": "ENG",
+    "slack_days": 0
+   },
+   "Engine run + lens flip (Fork C)": {
+    "lane": "EL",
+    "start": "2026-11-25",
+    "end": "2026-11-25",
+    "days": 1,
+    "deps": [
+     "Decomposition stage in Fork C engine"
+    ],
+    "milestone": "ENG",
+    "slack_days": 0
+   },
+   "K07 Care profile scope": {
+    "lane": "PD",
+    "start": "2026-11-25",
+    "end": "2026-11-27",
+    "days": 2,
+    "deps": [
+     "K06 Household + rights"
+    ],
+    "milestone": "CARE",
+    "slack_days": 0
+   },
+   "K08 Standing mandate + cap guard": {
+    "lane": "PD",
+    "start": "2026-11-28",
+    "end": "2026-11-29",
+    "days": 2,
+    "deps": [
+     "K07 Care profile scope",
+     "K12 Ledger (append + verify)"
+    ],
+    "milestone": "CARE",
+    "slack_days": 0
+   },
+   "K17 + K24 profile model, discover(usuals, profile_id)": {
+    "lane": "HP",
+    "start": "2026-11-27",
+    "end": "2026-11-28",
+    "days": 2,
+    "deps": [
+     "Hello world live smoke (K20 tier 0->2)"
+    ],
+    "milestone": "CARE",
+    "slack_days": 1
+   },
+   "K25 + K27 Care cases and B's six eval rows": {
+    "lane": "ED",
+    "start": "2026-11-27",
+    "end": "2026-11-28",
+    "days": 2,
+    "deps": [
+     "K27 Eval harness (pass^k)"
+    ],
+    "milestone": "CARE",
+    "slack_days": 1
+   },
+   "K11 over-cap card (Jen)": {
+    "lane": "MF",
+    "start": "2026-11-27",
+    "end": "2026-11-27",
+    "days": 1,
+    "deps": [
+     "K11 Cards (templates)"
+    ],
+    "milestone": "CARE",
+    "slack_days": 2
+   },
+   "Care Profiles integration": {
+    "lane": "PD",
+    "start": "2026-11-30",
+    "end": "2026-11-30",
+    "days": 1,
+    "deps": [
+     "K08 Standing mandate + cap guard",
+     "K17 + K24 profile model, discover(usuals, profile_id)",
+     "K25 + K27 Care cases and B's six eval rows",
+     "K11 over-cap card (Jen)"
+    ],
+    "milestone": "CARE",
+    "slack_days": 0
+   },
+   "K05 slots full + re-solve on STALE": {
+    "lane": "HP",
+    "start": "2026-11-29",
+    "end": "2026-11-30",
+    "days": 2,
+    "deps": [
+     "Hello world live smoke (K20 tier 0->2)"
+    ],
+    "milestone": "should",
+    "slack_days": 0
+   },
+   "K18 support view stub + K19 parity stub": {
+    "lane": "ED",
+    "start": "2026-11-29",
+    "end": "2026-11-30",
+    "days": 2,
+    "deps": [
+     "K12 Ledger (append + verify)"
+    ],
+    "milestone": "should",
+    "slack_days": 0
+   },
+   "Rehearsal on the library machine": {
+    "lane": "EL",
+    "start": "2026-11-30",
+    "end": "2026-11-30",
+    "days": 1,
+    "deps": [
+     "Hello world live smoke (K20 tier 0->2)"
+    ],
+    "milestone": "demo",
+    "slack_days": 1
+   },
+   "Code freeze": {
+    "lane": "EL",
+    "start": "2026-12-01",
+    "end": "2026-12-01",
+    "days": 0,
+    "deps": [
+     "Care Profiles integration",
+     "Rehearsal on the library machine"
+    ],
+    "milestone": "demo",
+    "slack_days": 0
+   }
+  },
+  "errors": [],
+  "critical": [
+   "Contracts drafted (components@2 types)",
+   "Contract freeze v1",
+   "K17 Gateway twin",
+   "K24 ShoppingPort H3",
+   "K05 slots (estimated mode)",
+   "K03 Constraint verifier",
+   "K27 Eval harness (pass^k)",
+   "K04 Cart solver",
+   "K23 Event bus",
+   "K11 Cards (templates)",
+   "Hello world live smoke (K20 tier 0->2)",
+   "K07 Care profile scope",
+   "K08 Standing mandate + cap guard",
+   "Care Profiles integration",
+   "Code freeze"
+  ],
+  "lane_load_days": {
+   "EL": 7,
+   "HP": 11,
+   "MF": 7,
+   "ED": 10,
+   "PD": 10
+  }
+ }
+}

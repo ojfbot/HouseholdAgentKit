@@ -1,0 +1,4137 @@
+registry_version: statements@1
+fork: E
+as_of: '2026-11-20'
+rules:
+- Public sources only; nothing behind a login; no scraping.
+- short_quote is at most one phrase under 15 words, and at most one per source (enforced at build); everything else is paraphrase.
+- Speaker and role as published. 'via X' means the words reached us through X, not from the speaker's own channel.
+- 'source_type: walmart_primary = Walmart''s own page, filing, posting or transcript; press quoting a Walmart executive stays ''press''.'
+- Inference is never stored here; it lives in the synthesis and is labeled there.
+- 'confidence: high = primary or multiple consistent reports; medium = single reputable secondary; low = vendor, aggregator or forum.'
+stats:
+  rows: 207
+  unique_sources: 139
+  by_source_type:
+    walmart_primary: 87
+    press: 71
+    analyst: 22
+    partner: 24
+    forum: 3
+  by_kind:
+    capability_claim: 62
+    problem: 17
+    goal: 21
+    constraint: 28
+    risk: 19
+    non_goal: 5
+    desire: 27
+    metric: 28
+  walmart_primary_sources: 33
+  with_short_quote: 50
+statements:
+- id: ST-001
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Walmart announced three linked pieces for outside AI agents: Agent Profiles, the Walmart Agent Gateway and terms for AI agents,
+    covering Walmart and Sam''s Club.'
+  kind: capability_claim
+  theme: agent_access
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-01
+  - CAP-02
+  - CON-02
+  confidence: high
+- id: ST-002
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Walmart says agents today shop its site through a browser following steps designed for people, which it calls slow and error-prone;
+    the Gateway is the fix.
+  kind: problem
+  theme: agent_access
+  business_functions:
+  - product
+  actor_types:
+  - agent_builder
+  - shopper
+  org_rows:
+  - CAP-01
+  confidence: high
+- id: ST-003
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Today an agent signs in with the customer's own account, so agent and customer purchases are mixed together; Agent Profiles exist
+    to separate them.
+  kind: problem
+  theme: agent_identity
+  business_functions:
+  - trust_safety
+  - product
+  - care_returns
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-02
+  confidence: high
+- id: ST-004
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Walmart says agent shopping won't be for everyone; its goal is to make its experience the most trusted for customers who choose
+    it.
+  short_quote: make our experience the most trusted
+  kind: goal
+  theme: trust
+  business_functions:
+  - marketing_crm
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-02
+  confidence: high
+- id: ST-005
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Agent Profiles launch within a month: each authorized agent gets its own profile; customers approve every purchase or set a spending
+    limit (examples $50, $100, $200); likened to an authorized user on a credit card; deletable any time.'
+  kind: capability_claim
+  theme: agent_identity
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - shopper
+  - caregiver
+  org_rows:
+  - CAP-02
+  confidence: high
+- id: ST-006
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: A profile is created automatically the first time a customer shops through the Gateway from the agent's app; the customer connects
+    by signing in to Walmart.
+  kind: capability_claim
+  theme: agent_identity
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-02
+  - CAP-01
+  confidence: high
+- id: ST-007
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Walmart will help agents find a customer''s usual items (its examples: sourdough bread, a particular milk brand) without sharing
+    the customer''s broader shopping history or personal information.'
+  kind: capability_claim
+  theme: usuals_privacy
+  business_functions:
+  - product
+  - trust_safety
+  - marketing_crm
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-31
+  confidence: high
+- id: ST-008
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Every Day Low Price is unchanged for agent shoppers: agents see the same prices a person sees on Walmart.com, with offers and fees
+    shown before purchase.'
+  kind: constraint
+  theme: pricing
+  business_functions:
+  - finance
+  - trust_safety
+  - marketing_crm
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-04
+  - CON-05
+  confidence: high
+- id: ST-009
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Customers must approve agent purchases by default, and Walmart may require extra approval even for purchases within an agent's spending
+    limit.
+  kind: constraint
+  theme: consent
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-03
+  - CON-15
+  confidence: high
+- id: ST-010
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Walmart's returns process applies to agent orders, including when an agent does not act as the customer intended.
+  kind: constraint
+  theme: returns
+  business_functions:
+  - care_returns
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-18
+  confidence: high
+- id: ST-011
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Agents may not act beyond the shopper's intent, never receive card data or change payment methods, see only information needed and
+    allowed; non-compliant agents are blocked.
+  kind: constraint
+  theme: enforcement
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-02
+  - CON-18
+  confidence: high
+- id: ST-012
+  source_url: https://corporate.walmart.com/news/2026/10/Making-It-Possible-for-Agents-to-Shop-on-Behalf-of-Customers
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: Walmart lists its existing agent-era channels as stores, clubs, online, pickup and delivery, Sparky, and integrations with Muse,
+    ChatGPT, Gemini and others.
+  kind: capability_claim
+  theme: ecosystem
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-013
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, Addendum 1
+  source_type: walmart_primary
+  paraphrase: Addendum 1 defines the Walmart Agent Gateway as an MCP or similar protocol for agent-to-agent shopping with Walmart's agent, Sparky.
+    This is the published basis for CAP-07.
+  short_quote: agent-to-agent shopping with Walmart's agent, Sparky
+  kind: capability_claim
+  theme: a2a_sparky
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-07
+  - CAP-01
+  confidence: high
+- id: ST-014
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Data obtained through agents may not be used to generate content, target advertising, create synthetic data, train models, or produce
+    commercial analytics; this extends to deployers' product improvement.
+  kind: constraint
+  theme: data_use
+  business_functions:
+  - trust_safety
+  - partnerships
+  - connect_ads
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-01
+  confidence: high
+- id: ST-015
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Outside the Gateway Walmart requires a Human Consent Gate before every checkout; agents may not check out autonomously unless they
+    meet Gateway requirements; deployer configuration cannot waive a gate.
+  kind: constraint
+  theme: consent
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - agent_builder
+  - shopper
+  org_rows:
+  - CON-15
+  - CAP-03
+  confidence: high
+- id: ST-016
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, Addendum 1 s.5
+  source_type: walmart_primary
+  paraphrase: Through the Gateway Walmart may allow autonomous checkout without a separate gate if the Agent Mandate stays within the User-Defined
+    Guardrail; it may still gate a transaction it judges misaligned with intent.
+  kind: capability_claim
+  theme: autonomy
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - agent_builder
+  - shopper
+  - caregiver
+  org_rows:
+  - CAP-29
+  - CAP-30
+  confidence: high
+- id: ST-017
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, Addendum 1 s.4
+  source_type: walmart_primary
+  paraphrase: Each Gateway session needs a separate Scoped Access Token bound to merchant, cart, amount and session, short-lived, consumed at
+    checkout; no reuse, replay or transfer.
+  kind: capability_claim
+  theme: tokens
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-03
+  confidence: high
+- id: ST-018
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, Addendum 1
+  source_type: walmart_primary
+  paraphrase: A User-Defined Guardrail is a standing customer limit set in Account Settings or with Walmart; it may include spend limits, transaction
+    frequency and category or department restrictions.
+  kind: capability_claim
+  theme: guardrails
+  business_functions:
+  - product
+  - trust_safety
+  - b2b
+  actor_types:
+  - shopper
+  - caregiver
+  - agent_builder
+  org_rows:
+  - CAP-29
+  - CAP-21
+  confidence: high
+- id: ST-019
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, Addendum 1 s.6
+  source_type: walmart_primary
+  paraphrase: Hashes, signed mandates and consent records must be sent to Walmart and become part of an immutable transaction record; the Agent
+    Mandate is a signed record of the customer's instructions and consent.
+  kind: capability_claim
+  theme: mandate_audit
+  business_functions:
+  - trust_safety
+  - care_returns
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-30
+  - CAP-25
+  confidence: high
+- id: ST-020
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Agents must identify themselves when asked (deployer, product, contact), must not mask origin, mimic human timing or evade human-detection
+    checks, and must answer honestly if asked whether they are automated.
+  kind: constraint
+  theme: identity
+  business_functions:
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-02
+  - CON-16
+  confidence: high
+- id: ST-021
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Agents must honor customer-set brand, price-ceiling and category constraints, label substitutes and recommendations, and not misstate
+    prices, fees or discounts or present stale data as current. The terms do not address sponsored-item labeling.
+  kind: constraint
+  theme: accuracy
+  business_functions:
+  - trust_safety
+  - merchandising
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-03
+  - CON-06
+  confidence: high
+- id: ST-022
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Agents must not misrepresent availability, delivery speed or fulfillment options; Walmart is not liable for an agent's delivery
+    choices; fulfillment data is Walmart Proprietary Data. No slots or delivery windows are named.
+  kind: constraint
+  theme: fulfillment
+  business_functions:
+  - supply_chain
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-10
+  - CON-19
+  confidence: high
+- id: ST-023
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Walmart may throttle, suspend or permanently block agents, may hold deployers directly responsible for unauthorized transactions
+    or ignored consent gates, and caps its own aggregate liability at $50.
+  kind: risk
+  theme: liability
+  business_functions:
+  - trust_safety
+  - partnerships
+  - finance
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-17
+  confidence: high
+- id: ST-024
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: Walmart may change the terms at any time and an agent must retrieve the current version before starting a session; Walmart may log
+    authorization events such as timestamp, device and consent version.
+  kind: constraint
+  theme: terms_versioning
+  business_functions:
+  - partnerships
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-18
+  confidence: medium
+- id: ST-025
+  source_url: https://www.walmart.com/agents
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agent Gateway beta page
+  source_type: walmart_primary
+  paraphrase: The beta page says the Gateway connects AI agents through Sparky for shopping, and promises agents data directly rather than by
+    scraping.
+  short_quote: connects AI agents through Sparky
+  kind: capability_claim
+  theme: a2a_sparky
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-07
+  - CAP-01
+  confidence: high
+- id: ST-026
+  source_url: https://www.walmart.com/agents
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agent Gateway beta page FAQ
+  source_type: walmart_primary
+  paraphrase: The FAQ lists finding and shopping usual items, searching and selecting products, managing purchases, checking availability and
+    stock, monitoring order status and bulk orders. It does not name slot selection or cart management.
+  kind: capability_claim
+  theme: gateway_scope
+  business_functions:
+  - product
+  - supply_chain
+  - b2b
+  actor_types:
+  - agent_builder
+  - small_business
+  org_rows:
+  - CAP-10
+  - CAP-31
+  - CAP-17
+  confidence: medium
+- id: ST-027
+  source_url: https://www.walmart.com/agents
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agent Gateway beta page
+  source_type: walmart_primary
+  paraphrase: 'Safeguards named: verified identities, controlled permissions and observable actions, plus category restrictions, rate limits and
+    compliance guardrails.'
+  kind: capability_claim
+  theme: safeguards
+  business_functions:
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-29
+  - CAP-02
+  confidence: medium
+- id: ST-028
+  source_url: https://www.walmart.com/agents
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agent Gateway beta page
+  source_type: walmart_primary
+  paraphrase: The Gateway is an early, invitation-only beta; access is limited and may be suspended at any time; features may change and may not
+    be available to all participants. No sandbox or public API reference is published.
+  kind: constraint
+  theme: beta_access
+  business_functions:
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-01
+  - CAP-26
+  confidence: high
+- id: ST-029
+  source_url: https://techcrunch.com/2026/10/21/while-amazon-blocks-ai-agents-walmart-rolls-out-the-welcome-mat/
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: TechCrunch (Sarah Perez)
+  role: press
+  source_type: press
+  paraphrase: TechCrunch reports CEO John Furner discussed the launch at Masters of Scale (Oct 21) as preparation for agents going mainstream,
+    and that agent support needs no Walmart+ membership; Amazon had begun blocking agents.
+  kind: capability_claim
+  theme: ecosystem
+  business_functions:
+  - partnerships
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-01
+  - CAP-02
+  confidence: high
+- id: ST-030
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: Danker rejects the idea that agentic commerce means fully automatic shopping; he would call that robotic commerce and says he does
+    not see that future at all.
+  kind: non_goal
+  theme: agentic_definition
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - COV-01
+  confidence: high
+- id: ST-031
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: He frames automation as for routine purchases he calls chores, and wants to make them stop feeling like chores, while adding more
+    personalized product discovery.
+  kind: desire
+  theme: chores
+  business_functions:
+  - product
+  - marketing_crm
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-06
+  confidence: high
+- id: ST-032
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: Danker says growth, not efficiency, is the more interesting vector for agentic commerce, while still serving the best prices possible.
+  kind: goal
+  theme: growth
+  business_functions:
+  - finance
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-033
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: He says the Sparky experience will travel into ChatGPT and Gemini, calls native in-chat checkout a temporary moment, and recasts
+    third-party LLMs as intermediation rather than disintermediation.
+  short_quote: I would argue it's intermediation
+  kind: desire
+  theme: intermediation
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-034
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: 'Why an LLM should pick Walmart: half a billion items across stores and marketplace, price, speed and trust.'
+  kind: capability_claim
+  theme: why_walmart
+  business_functions:
+  - merchandising
+  - supply_chain
+  - trust_safety
+  actor_types:
+  - ai_platform
+  - shopper
+  org_rows:
+  - CAP-04
+  - CAP-35
+  confidence: high
+- id: ST-035
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: 'On ads in agents: Walmart gets paid when it generates sales, advertisers pay for conversion, and Walmart keeps the same role in
+    ranking inside Sparky.'
+  kind: metric
+  theme: ads_model
+  business_functions:
+  - connect_ads
+  - finance
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: high
+- id: ST-036
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: Customers need to be taken on a journey to adopt new technology; he wants everything built to work well before scaling, and says
+    of robotic agents that Walmart needs to learn.
+  kind: risk
+  theme: adoption
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-037
+  source_url: https://corporate.walmart.com/content/dam/corporate/documents/newsroom/events/2026-morgan-stanley-technology-media-telecom-conference/Walmart_MorganStanley_TMT_Conference_2026_Transcript.pdf
+  published: '2026-03-04'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design
+  source_type: walmart_primary
+  paraphrase: The search box still drives the vast majority of cart adds; Sparky lives at the bottom of the app; top ChatGPT purchases were vitamin
+    and protein supplements.
+  kind: metric
+  theme: search_box
+  business_functions:
+  - product
+  - merchandising
+  actor_types:
+  - shopper
+  org_rows:
+  - COV-01
+  confidence: medium
+- id: ST-038
+  source_url: https://corporate.walmart.com/about/technology
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: technology page
+  source_type: walmart_primary
+  paraphrase: Walmart describes its goal as a customer-first multi-agent ecosystem where retailers keep control of their experiences, with AI
+    as a trusted layer connecting inspiration to fulfillment.
+  short_quote: customer-first, multi-agent ecosystem
+  kind: goal
+  theme: multi_agent_ecosystem
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-05
+  - CAP-37
+  confidence: medium
+- id: ST-039
+  source_url: https://corporate.walmart.com/about/technology
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: technology page
+  source_type: walmart_primary
+  paraphrase: An Agentic End-to-End Workflow decides where inventory lives and coordinates delivery; associate tools embed agents for routine
+    tasks; customer-support agents increasingly resolve tasks end to end.
+  kind: capability_claim
+  theme: supply_chain_agents
+  business_functions:
+  - supply_chain
+  - store_ops
+  actor_types:
+  - store_associate
+  org_rows:
+  - CAP-37
+  - CAP-09
+  confidence: medium
+- id: ST-040
+  source_url: https://www.nasdaq.com/articles/walmart-q2-earnings-call-highlights
+  published: '2026-08-20'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO (via MarketBeat)
+  source_type: press
+  paraphrase: On the Q2 FY27 call Furner said Sparky usage rose 70% year over year and customers who use it spend about 40% more per order.
+  kind: metric
+  theme: sparky_metrics
+  business_functions:
+  - product
+  - finance
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-041
+  source_url: https://www.nasdaq.com/articles/walmart-q2-earnings-call-highlights
+  published: '2026-08-20'
+  as_of: '2026-11-19'
+  speaker: John David Rainey / John Furner
+  role: CFO / CEO (via MarketBeat)
+  source_type: press
+  paraphrase: 'Q2 FY27: global e-commerce +23%, U.S. Marketplace +52%, global ads +38% (Walmart Connect +43%), membership income ~+17%; nearly
+    half of Marketplace volume via Walmart Fulfillment Services; sub-30-minute delivery in 38 U.S. markets; Walmart+ members spend ~4x non-members.'
+  kind: metric
+  theme: growth_engines
+  business_functions:
+  - finance
+  - marketplace
+  - connect_ads
+  - supply_chain
+  actor_types:
+  - marketplace_seller
+  - supplier_brand
+  org_rows:
+  - CAP-35
+  confidence: medium
+- id: ST-042
+  source_url: https://www.nasdaq.com/articles/walmart-q2-earnings-call-highlights
+  published: '2026-08-20'
+  as_of: '2026-11-19'
+  speaker: John David Rainey
+  role: EVP & CFO
+  source_type: press
+  paraphrase: Rainey said Walmart is investing tariff refunds into price for cumulative share gains on a multiyear view; rollbacks rose above
+    11,000; fuel over $4 pressured customers into more trade-offs.
+  short_quote: We are not managing our business for one quarter
+  kind: goal
+  theme: price_investment
+  business_functions:
+  - finance
+  - merchandising
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-04
+  confidence: medium
+- id: ST-043
+  source_url: https://admiralmarkets.com/analytics/traders-blog/walmart-earnings-preview-q3-fiscal-2027
+  published: '2026-11-18'
+  as_of: '2026-11-19'
+  speaker: Admiral Markets
+  role: analyst preview
+  source_type: analyst
+  paraphrase: Walmart reports Q3 FY27 on Thursday Nov 19 2026 before the open, call at 7am CST hosted by Furner and Rainey. Not yet reviewed in
+    this registry; flagged for the daily sweep.
+  kind: metric
+  theme: calendar
+  business_functions:
+  - finance
+  actor_types: []
+  org_rows: []
+  confidence: high
+- id: ST-044
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Risk Factors
+  source_type: walmart_primary
+  paraphrase: The 10-K says customers use emerging agentic platforms to shop with Walmart and competitors, and that AI-enabled platforms for search,
+    discovery, advertising and purchasing could reduce store traffic.
+  kind: risk
+  theme: agentic_competition
+  business_functions:
+  - finance
+  - product
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-01
+  - CAP-32
+  confidence: high
+- id: ST-045
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Risk Factors
+  source_type: walmart_primary
+  paraphrase: Risk factors name ineffective use or misuse of AI and search results that are inaccurate, biased or otherwise flawed, plus elevated
+    government scrutiny and a conflicting AI regulatory environment.
+  short_quote: inaccurate, biased or otherwise flawed
+  kind: risk
+  theme: ai_quality
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-09
+  confidence: high
+- id: ST-046
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Risk Factors
+  source_type: walmart_primary
+  paraphrase: Competitors' faster development of AI and agentic tools could raise competitive pressure; newer or smaller businesses may innovate
+    faster in e-commerce; scaling AI search and discovery is necessary to compete.
+  kind: risk
+  theme: competitor_speed
+  business_functions:
+  - product
+  - finance
+  actor_types: []
+  org_rows: []
+  confidence: high
+- id: ST-047
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Risk Factors
+  source_type: walmart_primary
+  paraphrase: 'AI has intensified cybersecurity risk: AI-driven attacks can run reconnaissance autonomously and craft convincing social-engineering
+    content; identity-fraud risk rises; AI or data incidents could quickly erode trust.'
+  kind: risk
+  theme: ai_security
+  business_functions:
+  - trust_safety
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CON-02
+  - CON-16
+  confidence: high
+- id: ST-048
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Business
+  source_type: walmart_primary
+  paraphrase: Walmart says it is developing a digitally skilled, AI-enabled workforce, reshaping roles toward human strengths and automating repetitive
+    tasks, with company-wide AI learning pathways and certifications.
+  kind: goal
+  theme: workforce
+  business_functions:
+  - store_ops
+  actor_types:
+  - store_associate
+  org_rows:
+  - CAP-09
+  confidence: high
+- id: ST-049
+  source_url: https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000091/0000104169-26-000091.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Form 10-K FY2026, Business
+  source_type: walmart_primary
+  paraphrase: Substantially all Walmart U.S. stores offer same-day pickup and delivery; Sam's Club offers curbside pickup and delivery; the U.S.
+    network has 192 distribution facilities. Says nothing about agent access to slots.
+  kind: capability_claim
+  theme: fulfillment_footprint
+  business_functions:
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-10
+  - CAP-35
+  confidence: high
+- id: ST-050
+  source_url: https://stock.walmart.com/_assets/_5bb4b0137bcb7c329b4b74e982c643dd/walmart/db/950/9988/annual_report/Walmart+2026+Annual+Report.pdf
+  published: '2026-03-31'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO, annual report letter
+  source_type: walmart_primary
+  paraphrase: Furner's letter calls this a pivotal moment as AI reshapes how customers shop and associates work; FY26 e-commerce sales $150.4B,
+    advertising +46%, membership fee revenue +15.5%.
+  short_quote: artificial intelligence fundamentally reshapes how customers shop
+  kind: goal
+  theme: ai_era
+  business_functions:
+  - finance
+  - product
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows: []
+  confidence: high
+- id: ST-051
+  source_url: https://www.investing.com/news/transcripts/earnings-call-transcript-walmart-q4-2026-beats-eps-forecast-stock-rises-93CH-4513893
+  published: '2026-02-19'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO (Q4 FY26 call)
+  source_type: press
+  paraphrase: On his first call as CEO Furner said agentic commerce is going to be great for customers; CFO Rainey cited double-digit incremental
+    e-commerce margins; ads $6.4B (+46%).
+  short_quote: Agentic Commerce is gonna be great for our customers.
+  kind: goal
+  theme: agentic_commerce
+  business_functions:
+  - product
+  - finance
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-052
+  source_url: https://www.enca.com/business/walmart-outlines-big-ai-ambitions-it-reports-mixed-results
+  published: '2026-02-19'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO (via AFP)
+  source_type: press
+  paraphrase: Furner said Walmart uses technology and AI to reduce friction, simplify decisions and pinpoint inventory while keeping the trust
+    it has earned.
+  short_quote: all while maintaining the trust we've earned
+  kind: goal
+  theme: trust
+  business_functions:
+  - product
+  - trust_safety
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-053
+  source_url: https://finance.yahoo.com/markets/stocks/articles/walmart-cfo-says-strategy-intact-000207190.html
+  published: '2026-04-08'
+  as_of: '2026-11-19'
+  speaker: John David Rainey
+  role: EVP & CFO (conference, via MarketBeat)
+  source_type: press
+  paraphrase: Rainey said Sparky engages about half of app users with roughly 35% larger baskets, ads are in the early-to-mid innings, and best-in-class
+    ad spend as a share of GMV is easily twice Walmart's level; Walmart is shaping agentic commerce rather than reacting.
+  kind: metric
+  theme: sparky_ads_runway
+  business_functions:
+  - finance
+  - connect_ads
+  - product
+  actor_types:
+  - shopper
+  - supplier_brand
+  org_rows:
+  - CAP-05
+  - CAP-34
+  confidence: medium
+- id: ST-054
+  source_url: https://www.businesswire.com/news/home/20250409678207/en
+  published: '2025-04-09'
+  as_of: '2026-11-19'
+  speaker: Doug McMillon
+  role: then President & CEO, Investment Community Meeting
+  source_type: walmart_primary
+  paraphrase: 'McMillon said customers want four things: everyday low prices, broad assortment, a convenient and enjoyable experience, and a company
+    they trust. Profits to grow faster than sales via membership, ads, data and fintech. Note: pre-dates the CEO change.'
+  kind: goal
+  theme: customer_wants
+  business_functions:
+  - marketing_crm
+  - merchandising
+  - finance
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-04
+  confidence: high
+- id: ST-055
+  source_url: https://secure.businesswire.com/news/home/20251014984151/en/Walmart-Partners-with-OpenAI-to-Create-AI-First-Shopping-Experiences
+  published: '2025-10-14'
+  as_of: '2026-11-19'
+  speaker: Doug McMillon
+  role: then President & CEO
+  source_type: walmart_primary
+  paraphrase: Announcing Instant Checkout in ChatGPT, McMillon said e-commerce has long been a search bar and a list of results and that is about
+    to change; Walmart framed agentic commerce as shifting from reactive to proactive.
+  short_quote: That is about to change
+  kind: goal
+  theme: search_bar
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-056
+  source_url: https://secure.businesswire.com/news/home/20251014984151/en/Walmart-Partners-with-OpenAI-to-Create-AI-First-Shopping-Experiences
+  published: '2025-10-14'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: press release
+  source_type: walmart_primary
+  paraphrase: Walmart cited AI cutting fashion production timelines by up to 18 weeks and customer-care resolution times by up to 40%.
+  kind: metric
+  theme: ai_ops_metrics
+  business_functions:
+  - care_returns
+  - merchandising
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-057
+  source_url: https://www.axios.com/2026/03/24/ai-shopping-walmart-gap-chatgpt-gemini-checkout
+  published: '2026-03-24'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (to WIRED, via Axios)
+  source_type: press
+  paraphrase: Danker said conversion for Walmart purchases completed inside ChatGPT was three times lower than for those redirected to Walmart's
+    site, after about 200,000 items were offered via Instant Checkout since November 2025.
+  kind: metric
+  theme: instant_checkout
+  business_functions:
+  - product
+  - partnerships
+  - finance
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-058
+  source_url: https://ppc.land/walmarts-chatgpt-checkout-flopped-heres-what-comes-next/
+  published: '2026-03-23'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (via PPC Land / WIRED)
+  source_type: press
+  paraphrase: 'Walmart replaced Instant Checkout with Sparky operating inside ChatGPT (week of Mar 25 2026) and Gemini (the month after): shoppers
+    log in once, baskets sync across ChatGPT, Walmart.com and the app, and checkout runs on Walmart''s systems.'
+  short_quote: make it feel like a natural part of other environments
+  kind: capability_claim
+  theme: sparky_everywhere
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - ai_platform
+  - shopper
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-059
+  source_url: https://www.searchengineland.com/walmart-chatgpt-checkout-converted-worse-472071
+  published: '2026-03-23'
+  as_of: '2026-11-19'
+  speaker: Search Engine Land
+  role: press
+  source_type: press
+  paraphrase: 'Press framing: in-chat checkout without Walmart''s account, membership and basket context underperformed; Walmart chose an integrated
+    experience inside the assistant over a thin checkout API.'
+  kind: problem
+  theme: instant_checkout
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+- id: ST-060
+  source_url: https://www.retaildive.com/news/walmart-ai-shopping-strategy-tinkering-transformation/809556/
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (ICR Conference)
+  source_type: press
+  paraphrase: At ICR Danker said Walmart had been tinkering with AI for a year or two and this is the year tinkering becomes transformation; Sparky
+    already fields service questions and nudges regular orders.
+  short_quote: This is the year where tinkering becomes transformation.
+  kind: goal
+  theme: pace
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: high
+- id: ST-061
+  source_url: https://www.constellationr.com/node/41226
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (ICR, via Constellation)
+  source_type: analyst
+  paraphrase: Danker said the customer problems Walmart needs to solve are very practical and the roadmap is built around them; shoppers will
+    do much less scrolling and experiences will feel more human and connected.
+  short_quote: We're going to be doing a lot less scrolling.
+  kind: desire
+  theme: practical
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-062
+  source_url: https://www.axios.com/2026/01/11/walmart-google-gemini-ai-shopping
+  published: '2026-01-11'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: then incoming CEO (NRF, via Axios)
+  source_type: press
+  paraphrase: At NRF 2026 Walmart and Google announced a Walmart-built shopping experience inside Gemini using Google's Universal Commerce Protocol;
+    Furner called agent-led commerce the next great evolution in retail.
+  short_quote: the next great evolution in retail
+  kind: goal
+  theme: agent_led_commerce
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-063
+  source_url: https://www.modernretail.co/technology/walmart-says-open-partnerships-are-central-to-its-ai-strategy-while-amazon-goes-it-alone/
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Modern Retail
+  role: press
+  source_type: press
+  paraphrase: Walmart describes open partnerships as central to its AI strategy; UCP launched with two dozen-plus partners including Shopify,
+    Target and Etsy, with Amazon absent.
+  kind: capability_claim
+  theme: open_partnerships
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+- id: ST-064
+  source_url: https://digiday.com/marketing/inside-walmart-connects-push-to-make-agentic-ai-the-next-battleground-in-retail-media/
+  published: '2026-01-09'
+  as_of: '2026-11-19'
+  speaker: Khurrum Malik
+  role: VP Business & Product Marketing, Walmart Connect
+  source_type: press
+  paraphrase: Walmart Connect said it will put ads in Sparky (including sponsored prompts), add gen-AI insights and creative, and run a Marty
+    advertising assistant in beta for Sponsored Search billing and bidding.
+  short_quote: delivering real advertiser value at every level
+  kind: goal
+  theme: agentic_ads
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  - marketplace_seller
+  org_rows:
+  - CAP-34
+  - CAP-08
+  confidence: high
+- id: ST-065
+  source_url: https://digiday.com/marketing/inside-walmart-connects-push-to-make-agentic-ai-the-next-battleground-in-retail-media/
+  published: '2026-01-09'
+  as_of: '2026-11-19'
+  speaker: Mike O'Donnell
+  role: SVP Innovation, Flywheel (agency)
+  source_type: partner
+  paraphrase: 'Agency view: missing new AI ad formats is costly, but limited visibility and immature agentic tools make advertisers hesitant to
+    commit; brands are reluctant to hand agents control of creative.'
+  kind: problem
+  theme: ad_visibility
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-066
+  source_url: https://digiday.com/marketing/inside-walmart-connects-push-to-make-agentic-ai-the-next-battleground-in-retail-media/
+  published: '2026-01-09'
+  as_of: '2026-11-19'
+  speaker: Mike Feldman
+  role: SVP Commerce, Flywheel (agency)
+  source_type: partner
+  paraphrase: Agency credits Walmart's advantage to its scale of first-party retail data and closed-loop measurement.
+  kind: capability_claim
+  theme: closed_loop
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-067
+  source_url: https://consumergoods.com/walmart-builds-infrastructure-agentic-commerce-implications-brands
+  published: '2026-10-22'
+  as_of: '2026-11-19'
+  speaker: Ryan Mayward
+  role: SVP & GM, Walmart Connect U.S. (LinkedIn, via Consumer Goods Technology)
+  source_type: press
+  paraphrase: Mayward wrote that keywords say what someone searches for while a conversation says what they are trying to accomplish; brands will
+    earn attention by being relevant to the goal.
+  short_quote: what they're trying to accomplish
+  kind: desire
+  theme: intent_relevance
+  business_functions:
+  - connect_ads
+  - marketing_crm
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: high
+- id: ST-068
+  source_url: https://consumergoods.com/walmart-builds-infrastructure-agentic-commerce-implications-brands
+  published: '2026-10-22'
+  as_of: '2026-11-19'
+  speaker: Rich Lehrfeld
+  role: SVP, Walmart Connect International & Sam's Club Connect (paraphrased)
+  source_type: press
+  paraphrase: Lehrfeld described an agent recommending a traditional Mexican cooking tool from a smaller seller to a shopper who loves cooking,
+    arguing agents can connect advertisers with shoppers who never heard of their brands.
+  kind: desire
+  theme: long_tail_discovery
+  business_functions:
+  - connect_ads
+  - marketplace
+  actor_types:
+  - marketplace_seller
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  - CAP-20
+  confidence: medium
+- id: ST-069
+  source_url: https://consumergoods.com/walmart-builds-infrastructure-agentic-commerce-implications-brands
+  published: '2026-11-03'
+  as_of: '2026-11-19'
+  speaker: Consumer Goods Technology
+  role: press analysis
+  source_type: press
+  paraphrase: 'Open questions for brands: how products surface in agent experiences, how sponsored recommendations work, and how ad influence
+    on agent-initiated purchases is measured; Walmart has not said how the Gateway affects ads or attribution.'
+  kind: risk
+  theme: ad_measurement
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  - CON-01
+  confidence: medium
+- id: ST-070
+  source_url: https://www.digitalcommerce360.com/2026/01/09/walmart-marty-agent-ai-retail-media-network-advertisers/
+  published: '2026-01-09'
+  as_of: '2026-11-19'
+  speaker: Khurrum Malik
+  role: VP, Walmart Connect (via Digital Commerce 360)
+  source_type: press
+  paraphrase: The Marty advertising assistant was to reach all Sponsored Search advertisers later in H1 2026; Marty is the partner super agent
+    for advertisers, sellers and suppliers.
+  kind: capability_claim
+  theme: marty_ads
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  - marketplace_seller
+  org_rows:
+  - CAP-08
+  confidence: medium
+- id: ST-071
+  source_url: https://theshelbyreport.com/2026/09/24/walmart-evolves-scintilla-into-commerce-intelligence-platform/
+  published: '2026-09-24'
+  as_of: '2026-11-19'
+  speaker: Walmart Data Ventures
+  role: Inspire 2026 (via The Shelby Report)
+  source_type: press
+  paraphrase: 'Walmart Data Ventures is turning Scintilla (renamed from Luminate in 2024) into a commerce intelligence platform; 2,000+ suppliers
+    and merchants attended Inspire 2026; Marty for Scintilla helps suppliers understand metrics. Correction to brief: ''Luminate'' is now Scintilla.'
+  kind: capability_claim
+  theme: scintilla
+  business_functions:
+  - merchandising
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-38
+  confidence: high
+- id: ST-072
+  source_url: https://careers.walmart.com/us/en/jobs/R-2573755
+  published: '2026-07-17'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Sr Distinguished PM, Agentic Commerce'
+  source_type: walmart_primary
+  paraphrase: Walmart is hiring to define the core capabilities of an agent-to-agent architecture for discovery, basket building, product questions,
+    cart changes and checkout handoff, with requirements for fulfillment context and post-purchase support.
+  short_quote: core capabilities required for an agent-to-agent architecture
+  kind: desire
+  theme: a2a_platform
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  - ai_platform
+  org_rows:
+  - CAP-07
+  - CAP-10
+  - CAP-26
+  confidence: high
+- id: ST-073
+  source_url: https://careers.walmart.com/us/en/jobs/R-2573755
+  published: '2026-07-17'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Sr Distinguished PM, Agentic Commerce'
+  source_type: walmart_primary
+  paraphrase: 'Metrics named for external agent experiences: adoption, conversion, failure rates, latency, satisfaction and partner performance;
+    plus reusable playbooks so partner integrations launch faster and more safely.'
+  kind: metric
+  theme: partner_metrics
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  - ai_platform
+  org_rows:
+  - CAP-26
+  confidence: high
+- id: ST-074
+  source_url: https://careers.walmart.com/us/en/jobs/R-2573755
+  published: '2026-07-17'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Sr Distinguished PM, Agentic Commerce'
+  source_type: walmart_primary
+  paraphrase: The role builds guardrails for what assistants may do for customers (cart edits, payment, order management, consent), plus account
+    linking and membership recognition, working with payments, fraud, identity, legal, privacy and security.
+  kind: constraint
+  theme: guardrails
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-29
+  - CAP-03
+  confidence: high
+- id: ST-075
+  source_url: https://careers.walmart.com/us/en/jobs/R-2532510
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Principal PM, Supplier One AI'
+  source_type: walmart_primary
+  paraphrase: Walmart is hiring to scale supplier AI and agentic experiences across Supplier One, including agent-to-agent workflows and partner
+    applications, beyond traditional UIs and APIs.
+  short_quote: agent-to-agent workflows
+  kind: desire
+  theme: supplier_a2a
+  business_functions:
+  - merchandising
+  - partnerships
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-08
+  - CAP-39
+  confidence: medium
+- id: ST-076
+  source_url: https://careers.walmart.com/us/jobs/WD2250702-director-data-science-quality-llm-judging-systems-for-conversational-commerce
+  published: '2025-07-22'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Director DS, Quality & LLM Judging'
+  source_type: walmart_primary
+  paraphrase: Walmart hires for evaluation strategy and success metrics for its conversational shopping agent and its tool outputs, combining
+    human-labeled benchmarks, LLM-as-a-judge and automated pipelines.
+  kind: desire
+  theme: evals
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-077
+  source_url: https://jobs.anitab.org/companies/walmart/jobs/99556141-staff-data-scientist-ai-agent-platform
+  published: '2026-11-11'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Staff DS, AI Agent Platform'
+  source_type: walmart_primary
+  paraphrase: Posting describes Sparky as an orchestrator over specialized application agents spanning intent-driven discovery, context-aware
+    recommendations, checkout, smart substitutions and end-to-end order tracking.
+  kind: capability_claim
+  theme: sparky_orchestrator
+  business_functions:
+  - product
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  - CAP-07
+  confidence: medium
+- id: ST-078
+  source_url: https://careers.walmart.com/us/en/jobs/R-2350824
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: 'job posting: Distinguished PM, Payments Platform'
+  source_type: walmart_primary
+  paraphrase: Walmart's payments platform role covers payment acceptance and intelligence for agentic commerce, with goals of approval rates,
+    routing efficiency and cost-to-serve.
+  kind: desire
+  theme: agentic_payments
+  business_functions:
+  - finance
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-02
+  - CAP-03
+  confidence: medium
+- id: ST-079
+  source_url: https://dallas-fort-worth.aitinkerers.org/p/ai-tinkerers-x-walmart-dallas-fort-worth-december-demo-night
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: AI Tinkerers DFW
+  role: event page (Walmart marquee sponsor)
+  source_type: partner
+  paraphrase: 'The Dec 2 event page (Walmart keynote, speaker unnamed) suggests builders try: a constrained multi-item cart with budget and substitution
+    policies; logging tool calls and receipts as supervision; a planning agent plus store availability data plus a reviewer workflow.'
+  kind: desire
+  theme: event_prompts
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-01
+  - CAP-29
+  - CAP-10
+  confidence: high
+- id: ST-080
+  source_url: https://dallas-fort-worth.aitinkerers.org/p/ai-tinkerers-x-walmart-dallas-fort-worth-december-demo-night
+  published: '2026-11-19'
+  as_of: '2026-11-19'
+  speaker: AI Tinkerers DFW
+  role: event page
+  source_type: partner
+  paraphrase: 'One confirmed demo so far: a fault-injection proxy that catches a payment agent double-charging and fixes it with idempotency (AWS
+    engineer). Signals the room values reliability and backend-state evals.'
+  kind: capability_claim
+  theme: event_competition
+  business_functions:
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows: []
+  confidence: medium
+- id: ST-081
+  source_url: https://developers.googleblog.com/under-the-hood-universal-commerce-protocol-ucp/
+  published: '2026-01-11'
+  as_of: '2026-11-19'
+  speaker: Amit Handa / Ashish Gupta
+  role: Google Commerce engineering
+  source_type: partner
+  paraphrase: Google describes UCP as an open-source standard for agentic commerce that works with existing retail infrastructure and is compatible
+    with AP2 for agent payments; businesses integrate via APIs, A2A or MCP, with an embedded option to keep a custom checkout.
+  kind: capability_claim
+  theme: ucp
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - ai_platform
+  - agent_builder
+  org_rows:
+  - CAP-32
+  - CAP-40
+  confidence: high
+- id: ST-082
+  source_url: https://www.computerweekly.com/blog/Open-Source-Insider/Google-banks-on-Universal-Commerce-Protocol-UCP-for-agentic-commerce
+  published: '2026-01-12'
+  as_of: '2026-11-19'
+  speaker: Vidhya Srinivasan
+  role: VP & GM Ads & Commerce, Google (via Computer Weekly)
+  source_type: press
+  paraphrase: UCP was co-developed with Shopify, Etsy, Wayfair, Target and Walmart and is designed to work alongside A2A, AP2 and MCP.
+  kind: capability_claim
+  theme: ucp_codev
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-40
+  confidence: medium
+- id: ST-083
+  source_url: https://agentpedia.codes/blog/ucp-universal-commerce-protocol-guide
+  published: '2026-05-01'
+  as_of: '2026-11-19'
+  speaker: agentpedia (developer guide)
+  role: press
+  source_type: press
+  paraphrase: 'Developer guide: UCP negotiates capabilities such as Checkout, Cart, Catalog, Order Management and Identity Linking over REST,
+    MCP, A2A or embedded; payments are delegated to AP2. No fulfillment-slot capability is listed. Secondary source; verify against the spec.'
+  kind: capability_claim
+  theme: ucp_scope
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-40
+  - CAP-10
+  confidence: low
+- id: ST-084
+  source_url: https://ap2-protocol.org/
+  published: '2025-09-16'
+  as_of: '2026-11-19'
+  speaker: AP2 project (Google + 60 partners)
+  role: protocol site
+  source_type: partner
+  paraphrase: AP2 defines an Intent Mandate (conditions under which an agent may buy when the human is not present) and a Cart Mandate (the user's
+    explicit sign-off on exact items and price when present); a Payment Mandate signals agent involvement to networks.
+  kind: capability_claim
+  theme: mandates
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - agent_builder
+  - ai_platform
+  org_rows:
+  - CAP-30
+  - CAP-29
+  confidence: high
+- id: ST-085
+  source_url: https://martech.zone/acronym/ap2/
+  published: '2026-04-30'
+  as_of: '2026-11-19'
+  speaker: MarTech Zone
+  role: press
+  source_type: press
+  paraphrase: AP2 v0.2 (April 2026) added autonomous human-not-present payments, and Google donated the protocol to the FIDO Alliance.
+  kind: capability_claim
+  theme: mandates
+  business_functions:
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-30
+  confidence: medium
+- id: ST-086
+  source_url: https://forkast.news/openai-built-in-chat-checkout-for-ai-commerce-five-months-later-it-walked-away/
+  published: '2026-03-10'
+  as_of: '2026-11-19'
+  speaker: Forkast
+  role: press analysis
+  source_type: press
+  paraphrase: OpenAI launched Instant Checkout with the Stripe-built Agentic Commerce Protocol on Sep 29 2025 and withdrew it by early March 2026,
+    moving checkout into retailer apps inside ChatGPT; ACP survives as discovery-to-merchant plumbing.
+  kind: problem
+  theme: in_chat_checkout
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+- id: ST-087
+  source_url: https://ecommercenews.com.au/story/chatgpt-s-checkout-retreat-an-opportunity-for-aussie-retailers
+  published: '2026-03-12'
+  as_of: '2026-11-19'
+  speaker: OpenAI spokesperson (via eCommerceNews)
+  role: partner statement
+  source_type: partner
+  paraphrase: OpenAI said it is prioritizing making ChatGPT search and product discovery great, with ACP as infrastructure connecting users to
+    merchants.
+  kind: desire
+  theme: discovery_first
+  business_functions:
+  - partnerships
+  - marketing_crm
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+- id: ST-088
+  source_url: https://seekingalpha.com/pr/20264002-visa-introduces-trusted-agent-protocol-an-ecosystem-led-framework-for-ai-commerce
+  published: '2025-10-14'
+  as_of: '2026-11-19'
+  speaker: Visa
+  role: press release
+  source_type: partner
+  paraphrase: 'Visa launched Trusted Agent Protocol citing merchant problems: bot detection wrongly blocking legitimate agents, supporting agent
+    guest and logged-in checkout, and keeping visibility into the consumer behind the agent; it cited a 4,700% surge in AI-driven retail traffic.'
+  kind: problem
+  theme: agent_identity
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-16
+  - CAP-02
+  confidence: high
+- id: ST-089
+  source_url: https://corporate.visa.com/en/sites/visa-perspectives/press-releases/visa-intelligent-commerce-connect-ai-shopping-for-businesses.html
+  published: '2026-04-20'
+  as_of: '2026-11-19'
+  speaker: Visa
+  role: press release
+  source_type: partner
+  paraphrase: Visa Intelligent Commerce Connect is pitched as a network-, protocol- and token-vault-agnostic on-ramp that accepts agent payments
+    via TAP, MPP, ACP and UCP.
+  kind: capability_claim
+  theme: protocol_agnostic
+  business_functions:
+  - partnerships
+  - finance
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-40
+  confidence: high
+- id: ST-090
+  source_url: https://www.pymnts.com/visa/2026/visa-ceo-says-ai-shopping-has-arrived-but-agentic-payments-havent
+  published: '2026-09-08'
+  as_of: '2026-11-19'
+  speaker: Ryan McInerney
+  role: CEO, Visa (Goldman Sachs conference)
+  source_type: partner
+  paraphrase: McInerney said consumers use AI to shop but still go to sellers' sites to pay; the barrier to autonomous payment, in one word, is
+    trust.
+  short_quote: adoption for shopping, but not yet for autonomous payments
+  kind: problem
+  theme: trust_barrier
+  business_functions:
+  - trust_safety
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-02
+  - CAP-29
+  confidence: high
+- id: ST-091
+  source_url: https://www.mastercard.com/au/en/news-and-trends/stories/2025/agentic-commerce-framework.html
+  published: '2025-05-01'
+  as_of: '2026-11-19'
+  speaker: Mastercard
+  role: Agent Pay Acceptance Framework
+  source_type: partner
+  paraphrase: Mastercard registers each agent and lets it transact with agentic tokens, dynamic credentials making every transaction traceable
+    and authenticated, usable in existing checkout forms.
+  kind: capability_claim
+  theme: agentic_tokens
+  business_functions:
+  - trust_safety
+  - finance
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-02
+  - CAP-03
+  confidence: high
+- id: ST-092
+  source_url: https://diginomica.com/agentic-commerce-and-legacy-payments-providers-ceos-visa-mastercard-and-amex-why-theres-life-old
+  published: '2026-05-05'
+  as_of: '2026-11-19'
+  speaker: Michael Miebach
+  role: CEO, Mastercard (via diginomica)
+  source_type: partner
+  paraphrase: Miebach expects agent-assisted commerce first and autonomy later, and frames Agent Pay as a trust layer for the extra party in the
+    payment chain, the agent.
+  kind: desire
+  theme: assisted_first
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-093
+  source_url: https://www.benzinga.com/markets/tech/26/09/61963074
+  published: '2026-09-17'
+  as_of: '2026-11-19'
+  speaker: Mark Zuckerberg
+  role: CEO, Meta (Connect 2026, via Benzinga)
+  source_type: partner
+  paraphrase: Zuckerberg said Muse stays free for most use and Meta expects to profit by taking a small fee from transactions Muse completes,
+    such as purchases; Walmart, Best Buy and others signed on as shopping partners.
+  kind: desire
+  theme: muse_model
+  business_functions:
+  - partnerships
+  - finance
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-01
+  confidence: medium
+- id: ST-094
+  source_url: https://www.ctvnews.ca/sci-tech/article/walmart-welcomes-ai-agents-as-anthropic-launches-its-own/
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: AFP (via CTV)
+  role: press
+  source_type: press
+  paraphrase: The same day as Walmart's launch, Anthropic previewed Claude Duet, a background agent across connected apps that can buy with approval;
+    OpenAI launched always-on agents called Dots a month earlier. Outside agents are becoming background, triggered actors.
+  kind: capability_claim
+  theme: agent_wave
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  - agent_builder
+  org_rows: []
+  confidence: medium
+- id: ST-095
+  source_url: https://eva.guru/answers/what-walmart-agent-gateway-means-for-sellers/
+  published: '2026-10-22'
+  as_of: '2026-11-19'
+  speaker: Eva (seller agency)
+  role: partner guidance
+  source_type: partner
+  paraphrase: 'Seller-agency reading: there is no seller enrollment step for the Gateway; the listing, price and availability are what an agent
+    reads, so listing quality and in-stock rates matter more; same price for agents means no agent price to manage.'
+  kind: desire
+  theme: seller_readiness
+  business_functions:
+  - marketplace
+  actor_types:
+  - marketplace_seller
+  org_rows:
+  - CAP-20
+  confidence: medium
+- id: ST-096
+  source_url: https://marketplacepulse.com/articles/walmart-marketplace-growth-reaches-fastest-pace-in-years
+  published: '2026-06-04'
+  as_of: '2026-11-19'
+  speaker: Marketplace Pulse
+  role: analyst
+  source_type: analyst
+  paraphrase: Marketplace Pulse estimates about 200,000 active sellers; U.S. third-party sales grew nearly 50% in Q1 FY27, with a cross-border
+    marketplace into Canada and Mexico.
+  kind: metric
+  theme: marketplace_scale
+  business_functions:
+  - marketplace
+  - finance
+  actor_types:
+  - marketplace_seller
+  org_rows: []
+  confidence: medium
+- id: ST-097
+  source_url: https://marketplacelearn.walmart.com/releasenotes
+  published: '2026-11-12'
+  as_of: '2026-11-19'
+  speaker: Walmart Marketplace
+  role: Seller Center release notes
+  source_type: walmart_primary
+  paraphrase: 'Recent seller release notes: from Oct 19 seller-fulfilled offers with return-policy exemptions lose the Walmart+ badge; reminders
+    on fulfillment lag time; Ship with Walmart labels in ShipStation (Nov 12).'
+  kind: constraint
+  theme: seller_standards
+  business_functions:
+  - marketplace
+  - care_returns
+  actor_types:
+  - marketplace_seller
+  org_rows:
+  - CAP-18
+  confidence: medium
+- id: ST-098
+  source_url: https://marketplacelearn.walmart.com/guides/Policies%20&%20standards/Performance/Seller-performance-standards
+  published: '2026-06-05'
+  as_of: '2026-11-19'
+  speaker: Walmart Marketplace
+  role: Seller performance standards
+  source_type: walmart_primary
+  paraphrase: Sellers must pick lag time, shipping method, carrier and service level to meet the Expected Delivery Date; late handover, late shipment
+    and missing carrier scans count against them; suppression, suspension, termination escalate.
+  kind: constraint
+  theme: edd
+  business_functions:
+  - marketplace
+  - supply_chain
+  actor_types:
+  - marketplace_seller
+  org_rows:
+  - CAP-10
+  confidence: medium
+- id: ST-099
+  source_url: https://www.pulse.bot/ecommerce/news/walmart-marketplace-suspends-hundreds-of-sellers-in-alleged-priceparity-crackdown-0f9e279a-eed3-4a3a-a796-1c77cfb09a6f/
+  published: '2026-06-07'
+  as_of: '2026-11-19'
+  speaker: Pulse (aggregator, uncited)
+  role: press
+  source_type: forum
+  paraphrase: 'Weak signal: an uncited aggregator reported suspensions of sellers pricing higher on Walmart than Amazon and agencies complaining
+    of suspensions without clear explanation. Treat as unverified.'
+  kind: problem
+  theme: price_parity
+  business_functions:
+  - marketplace
+  - trust_safety
+  actor_types:
+  - marketplace_seller
+  org_rows:
+  - CAP-04
+  confidence: low
+- id: ST-100
+  source_url: https://stellagent.ai/insights/walmart-sparky-brand-visibility-azoma
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Azoma (via Stellagent)
+  role: vendor analysis
+  source_type: analyst
+  paraphrase: A visibility-tool vendor claims most of what Sparky cites sits outside the retailer listing (earned media, brand sites); vendor-sourced
+    and unaudited, but it signals sellers' anxiety about how agents choose.
+  kind: problem
+  theme: sparky_citations
+  business_functions:
+  - marketplace
+  - connect_ads
+  - merchandising
+  actor_types:
+  - marketplace_seller
+  - supplier_brand
+  org_rows:
+  - CAP-20
+  - CAP-34
+  confidence: low
+  date_precision: approximate
+- id: ST-101
+  source_url: https://www.foodnavigator.com/Article/2026/09/21/walmarts-ai-and-fulfillment-push-boosts-cpg-brand-discovery/
+  published: '2026-09-14'
+  as_of: '2026-11-19'
+  speaker: David Guggina
+  role: President & CEO, Walmart U.S. (Goldman Sachs conf., via FoodNavigator)
+  source_type: press
+  paraphrase: Guggina said Walmart is embracing agentic engine optimization to stay discoverable in AI shopping; customers arriving from ChatGPT
+    and Gemini convert at very high rates, many new or returning, with high organic repeat.
+  short_quote: converting at very high rates
+  kind: goal
+  theme: aeo
+  business_functions:
+  - merchandising
+  - marketplace
+  - product
+  actor_types:
+  - supplier_brand
+  - marketplace_seller
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: high
+- id: ST-102
+  source_url: https://www.foodnavigator.com/Article/2026/09/21/walmarts-ai-and-fulfillment-push-boosts-cpg-brand-discovery/
+  published: '2026-09-14'
+  as_of: '2026-11-19'
+  speaker: David Guggina
+  role: President & CEO, Walmart U.S. (via FoodNavigator)
+  source_type: press
+  paraphrase: 'Guggina: about 70% of online orders delivered same day or faster; visual shopping lifts conversion 57% over text; Sparky usage
+    +60% QoQ; fewer units per SKU to carry more SKUs.'
+  kind: metric
+  theme: speed_assortment
+  business_functions:
+  - supply_chain
+  - merchandising
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-35
+  confidence: medium
+- id: ST-103
+  source_url: https://w3c.github.io/ecommerce-for-humans-and-AI-Agents-workshop/position_statement/PG_Position_Statement_W3C_GS1_Agentic_Commerce.pdf
+  published: '2026-09-01'
+  as_of: '2026-11-19'
+  speaker: Procter & Gamble
+  role: W3C/GS1 workshop position statement
+  source_type: partner
+  paraphrase: P&G says product content can fall short of what agents need to recommend confidently, data is rebuilt per retailer and agent, and
+    brands need a way to correct inaccurate health, safety and regulatory claims.
+  short_quote: one trusted source of truth
+  kind: problem
+  theme: product_data
+  business_functions:
+  - merchandising
+  - marketplace
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-22
+  - CAP-20
+  confidence: high
+- id: ST-104
+  source_url: https://w3c.github.io/ecommerce-for-humans-and-AI-Agents-workshop/position_statement/PG_Position_Statement_W3C_GS1_Agentic_Commerce.pdf
+  published: '2026-09-01'
+  as_of: '2026-11-19'
+  speaker: Procter & Gamble
+  role: W3C/GS1 workshop position statement
+  source_type: partner
+  paraphrase: P&G wants GTIN/GS1-based retailer-agnostic product data, open and auditable checkout, retained visibility into the shopper, clear
+    disclosure when agents recommend, and consumers keeping meaningful choice.
+  kind: desire
+  theme: consumer_choice
+  business_functions:
+  - trust_safety
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  - shopper
+  org_rows:
+  - CON-03
+  confidence: high
+- id: ST-105
+  source_url: https://www.bain.com/insights/rewiring-demand-generation-in-age-of-AI-agents/
+  published: '2026-05-08'
+  as_of: '2026-11-19'
+  speaker: Bain & Company
+  role: analyst brief
+  source_type: analyst
+  paraphrase: 'Bain: if an agent does not select a product it effectively does not exist; agents favor concrete, review-backed attributes; fully
+    agentic U.S. commerce could reach $300-500B by 2030; CPG firms will need to train retailers'' own agents.'
+  kind: risk
+  theme: invisible_shelf
+  business_functions:
+  - merchandising
+  - connect_ads
+  - finance
+  actor_types:
+  - supplier_brand
+  org_rows: []
+  confidence: medium
+- id: ST-106
+  source_url: https://clarkstonconsulting.com/?p=66278
+  published: '2026-10-28'
+  as_of: '2026-11-19'
+  speaker: Clarkston Consulting
+  role: analyst note
+  source_type: analyst
+  paraphrase: 'CPG view: agent-assisted shopping adds a layer between brand communication and product choice, and manufacturers may struggle to
+    tell agent purchases from shopper purchases.'
+  kind: problem
+  theme: agent_attribution
+  business_functions:
+  - connect_ads
+  - merchandising
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-02
+  - CON-01
+  confidence: low
+- id: ST-107
+  source_url: https://talkbusiness.net/2026/07/the-supply-side-walmarts-sparky-shopping-agent-drives-more-sales/
+  published: '2026-06-09'
+  as_of: '2026-11-19'
+  speaker: David Guggina
+  role: President & CEO, Walmart U.S. (Oppenheimer conf., via Talk Business)
+  source_type: press
+  paraphrase: 'Guggina: Sparky weekly active users up 110%+ QoQ, Sparky-attributed sales +150% in Q1, baskets 35% larger, units via Sparky up
+    4x YoY driven by food and consumables; still very early.'
+  kind: metric
+  theme: sparky_metrics
+  business_functions:
+  - product
+  - finance
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-108
+  source_url: https://talkbusiness.net/2026/07/the-supply-side-walmarts-sparky-shopping-agent-drives-more-sales/
+  published: '2026-07-01'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (via Talk Business)
+  source_type: press
+  paraphrase: Danker said customers have shifted from asking for search help to describing a problem and letting the agent provide solutions;
+    85% of shopping is still in stores, a blind spot; Sparky will eventually restock pantry and fridge automatically.
+  short_quote: describing a problem and having the agent provide solutions
+  kind: desire
+  theme: problem_to_solution
+  business_functions:
+  - product
+  - store_ops
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  - CAP-06
+  confidence: medium
+- id: ST-109
+  source_url: https://corporate.walmart.com/news/2025/06/24/walmart-unveils-new-ai-powered-tools-to-empower-1-5-million-associates/
+  published: '2025-06-24'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Associate app tools: AI task management (shift planning cut from 90 to 30 minutes), real-time translation in 44 languages, a gen-AI
+    upgrade of the associate assistant (900k+ weekly users, 3M+ queries a day), RFID plus AR (VizPick).'
+  kind: capability_claim
+  theme: associate_tools
+  business_functions:
+  - store_ops
+  actor_types:
+  - store_associate
+  org_rows:
+  - CAP-09
+  confidence: high
+- id: ST-110
+  source_url: https://fortune.com/2025/09/30/billion-dollar-retail-giant-walmart-ceo-doug-mcmillon-cant-think-of-a-single-job-that-wont-be-changed-by-ai-artifical-intelligence-how-employees-can-prepare/
+  published: '2025-09-30'
+  as_of: '2026-11-19'
+  speaker: Doug McMillon
+  role: then President & CEO (via WSJ/Fortune)
+  source_type: press
+  paraphrase: McMillon said AI will change literally every job; Walmart expects headcount to stay roughly flat at 2.1M for three years as the
+    mix changes, and created agent-builder roles.
+  short_quote: AI is going to change literally every job
+  kind: goal
+  theme: workforce
+  business_functions:
+  - store_ops
+  - finance
+  actor_types:
+  - store_associate
+  org_rows:
+  - CAP-09
+  confidence: high
+- id: ST-111
+  source_url: https://www.retailbrew.com/stories/key-takeaways-from-walmart-associates-week
+  published: '2026-06-10'
+  as_of: '2026-11-19'
+  speaker: John Furner / Daniel Danker
+  role: CEO / EVP (Associates Week, via Retail Brew)
+  source_type: press
+  paraphrase: About 1.3M U.S. associates carry fresh touring agents surfacing the next best action and store layouts; Danker said Sparky serves
+    customers in stores as well as online.
+  kind: capability_claim
+  theme: sparky_in_store
+  business_functions:
+  - store_ops
+  - product
+  actor_types:
+  - store_associate
+  - shopper
+  org_rows:
+  - CAP-09
+  - CAP-05
+  confidence: medium
+- id: ST-112
+  source_url: https://www.ftc.gov/news-events/news/press-releases/2026/02/walmart-agrees-100-million-judgment-settle-ftc-states-charges-over-deceptive-earnings-claims-related/walmart-spark-driver-faqs
+  published: '2026-02-26'
+  as_of: '2026-11-19'
+  speaker: FTC
+  role: regulator
+  source_type: press
+  paraphrase: Walmart agreed to a $100M judgment with the FTC and 11 states over alleged inflated base-pay and tip displays to Spark drivers and
+    claims that 100% of tips reached drivers; it must not misrepresent offer earnings. Texas separately settled for $13M+.
+  kind: risk
+  theme: driver_pay_honesty
+  business_functions:
+  - trust_safety
+  - supply_chain
+  actor_types:
+  - spark_driver
+  org_rows:
+  - CAP-19
+  - CON-11
+  confidence: high
+- id: ST-113
+  source_url: https://mwm.ai/articles/app-updates/spark-driver-v4-48-1-sparks-backlash-over-new-rewards-tiers-and-pay-changes-in-september-2026
+  published: 2026-10
+  as_of: '2026-11-19'
+  speaker: app-review analysis
+  role: forum signal
+  source_type: forum
+  paraphrase: 'Weak signal: after Spark Driver v4.48.1 (Sep 30 2026) introduced reward tiers, app-store ratings for the version fell (about 3.5
+    to 2.5) amid complaints of penalties and pay instability.'
+  kind: problem
+  theme: driver_experience
+  business_functions:
+  - supply_chain
+  actor_types:
+  - spark_driver
+  org_rows:
+  - CAP-19
+  confidence: low
+  date_precision: approximate
+- id: ST-114
+  source_url: https://news.yahoo.com/gig-drivers-walmart-forced-compete-175300785.html
+  published: '2025'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate (statement to press)
+  role: statement
+  source_type: press
+  paraphrase: Drivers reported competing against bots for offers; Walmart said bot use breaks Spark Driver terms and it deactivates drivers who
+    misuse the platform. Automation is unwelcome on the driver side.
+  kind: constraint
+  theme: driver_bots
+  business_functions:
+  - trust_safety
+  - supply_chain
+  actor_types:
+  - spark_driver
+  org_rows:
+  - CON-16
+  confidence: medium
+  date_precision: approximate
+- id: ST-115
+  source_url: https://www.thestar.com.my/tech/tech-news/2026/09/22/amazon-blocks-metas-muse-ai-agent-from-its-retail-site
+  published: '2026-09-22'
+  as_of: '2026-11-19'
+  speaker: Amazon (statement, via Bloomberg)
+  role: competitor
+  source_type: press
+  paraphrase: Amazon blocked Meta's Muse and asked Meta to remove Amazon, saying third-party agents must operate openly; Amazon sued Perplexity
+    over Comet and builds its own agents (Alexa for Shopping, Buy for Me).
+  kind: non_goal
+  theme: closed_garden
+  business_functions:
+  - partnerships
+  - finance
+  actor_types:
+  - ai_platform
+  org_rows: []
+  confidence: high
+- id: ST-116
+  source_url: https://www.modernretail.co/technology/marketplace-briefing-why-amazon-discontinued-its-ai-powered-rufus-chatbot-for-alexa-shopping-agent/
+  published: '2026-05-14'
+  as_of: '2026-11-19'
+  speaker: Modern Retail
+  role: press
+  source_type: press
+  paraphrase: Amazon replaced Rufus with Alexa for Shopping (May 2026), bringing Alexa+ into search; it can track prices and auto-buy at shopper-set
+    thresholds; Buy for Me buys from outside brand sites.
+  kind: capability_claim
+  theme: alexa_for_shopping
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-117
+  source_url: https://corporate.target.com/press/fact-sheets/2026/06/conversational-ai
+  published: '2026-06-16'
+  as_of: '2026-11-19'
+  speaker: Target
+  role: fact sheet
+  source_type: press
+  paraphrase: Target says shoppers can buy directly in Google AI Mode and Gemini via UCP, in a Target app in ChatGPT (with Circle benefits at
+    checkout) and in Microsoft Copilot; it named a first chief AI officer in Aug 2026.
+  kind: capability_claim
+  theme: target_agentic
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-40
+  confidence: high
+- id: ST-118
+  source_url: https://www.pymnts.com/commerce/ecommerce/2026/walmart-and-home-depot-set-the-rules-for-ai-shoppers/
+  published: '2026-10-30'
+  as_of: '2026-11-19'
+  speaker: PYMNTS
+  role: press
+  source_type: press
+  paraphrase: PYMNTS groups Walmart with Home Depot as retailers publishing rules for AI shoppers; publishing terms is becoming the norm for open
+    retailers.
+  kind: constraint
+  theme: rules_trend
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-15
+  confidence: medium
+- id: ST-119
+  source_url: https://www.axios.com/2026/10/21/walmart-amazon-agents-muse
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Neil Saunders
+  role: Managing Director, GlobalData Retail (via Axios)
+  source_type: analyst
+  paraphrase: Saunders says Amazon keeps a closed ecosystem likely fearing agentic shopping undermines its ad business, and that the calculation
+    could change if third-party agents take a bigger share of discovery.
+  short_quote: its closed ecosystem
+  kind: risk
+  theme: ads_conflict
+  business_functions:
+  - connect_ads
+  - finance
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-120
+  source_url: https://ppc.land/walmarts-ai-agent-sparky-turns-photos-of-handwritten-lists-into-carts/
+  published: '2026-10-30'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate (newsroom, via PPC Land)
+  role: newsroom
+  source_type: walmart_primary
+  paraphrase: 'Six new Sparky features (Oct 30 2026): photo of a problem to products; photo of a handwritten or Notes list to a cart matched to
+    past purchases at the usual store; Shop to Light shelf labels; recipe generation with ingredients to cart; healthier swaps; Spanish and French.
+    Voice chainwide by year end.'
+  kind: capability_claim
+  theme: sparky_holiday
+  business_functions:
+  - product
+  - store_ops
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  - CAP-41
+  confidence: high
+- id: ST-121
+  source_url: https://retaildive.com/news/walmart-sparky-features-AI-holidays/873718
+  published: '2026-11-02'
+  as_of: '2026-11-19'
+  speaker: Retail Dive
+  role: press
+  source_type: press
+  paraphrase: Retail Dive places the update alongside Target's Ask Target beta, Amazon's Alexa for Shopping and Best Buy's Ask Blue; no accuracy
+    figures were given for image or list features.
+  kind: capability_claim
+  theme: holiday_competition
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-122
+  source_url: https://www.retaildive.com/news/walmart-launches-generative-ai-assistant-sparky/750300
+  published: '2025-06-06'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate (via Retail Dive)
+  role: launch
+  source_type: press
+  paraphrase: At launch Walmart said early tests showed agents work best on highly specific tasks, and Sparky stitches together results from those
+    tasks to solve complex queries; reordering and service booking were promised.
+  kind: capability_claim
+  theme: sparky_design
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  - CAP-07
+  confidence: medium
+- id: ST-123
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/using-llms-to-manage-product-catalogs.html
+  published: '2024'
+  as_of: '2026-11-19'
+  speaker: Walmart Global Tech
+  role: engineering blog
+  source_type: walmart_primary
+  paraphrase: Walmart engineers call inaccurate, inconsistent product data a major issue; they use a multi-agent LLM pipeline (extraction then
+    a separate quality-check LLM trained on human-validated data) across billions of data points.
+  kind: problem
+  theme: catalog_quality
+  business_functions:
+  - merchandising
+  - marketplace
+  actor_types:
+  - marketplace_seller
+  - supplier_brand
+  org_rows:
+  - CAP-20
+  - CAP-22
+  confidence: medium
+  date_precision: approximate
+- id: ST-124
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/the-ai-behind-cross-lingual-search-at-walmart.html
+  published: '2025-12-16'
+  as_of: '2026-11-19'
+  speaker: Walmart Global Tech
+  role: engineering blog
+  source_type: walmart_primary
+  paraphrase: Cross-lingual search combines catalog knowledge, language detection and models to answer within 50ms; an LLM translation cache covers
+    up to 95% of query traffic in some markets.
+  kind: capability_claim
+  theme: cross_lingual
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-125
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/driving-faster-experimentation-through-interleaving-in-walmart-search.html
+  published: '2025-12-30'
+  as_of: '2026-11-19'
+  speaker: Garima Choudhary
+  role: Senior Data Scientist, Walmart Global Tech
+  source_type: walmart_primary
+  paraphrase: Walmart search uses interleaving to compare ranking algorithms within one session, learning from real interactions faster than separate
+    A/B cycles.
+  kind: metric
+  theme: experimentation
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-126
+  source_url: https://public.walmart.com/content/walmart-global-tech/en_us/blog/post/wibey-announcement.html
+  published: '2025'
+  as_of: '2026-11-19'
+  speaker: Sravana Karnati
+  role: EVP, Global Technology Platforms
+  source_type: walmart_primary
+  paraphrase: 'Karnati describes the platform for agents: stateful memory, agent-aware pipelines, tool calling, standardized communication protocols
+    between agents, API orchestration and governance balancing agency and control.'
+  kind: capability_claim
+  theme: agent_platform
+  business_functions:
+  - product
+  actor_types:
+  - walmart_team
+  org_rows:
+  - CAP-07
+  - CAP-26
+  confidence: medium
+  date_precision: approximate
+- id: ST-127
+  source_url: https://www.itbrew.com/stories/2025/12/04/inside-walmart-s-ai-strategy
+  published: '2025-12-04'
+  as_of: '2026-11-19'
+  speaker: Sravana Karnati
+  role: EVP, Global Technology Platforms (via IT Brew)
+  source_type: press
+  paraphrase: Karnati said there needs to be a way to verify an agent is doing what it is doing and nothing more, and that an evaluation framework
+    is part of that. This is the conformance-suite need in Walmart's words.
+  short_quote: the agent is actually doing what it's doing, and nothing more
+  kind: desire
+  theme: agent_evals
+  business_functions:
+  - trust_safety
+  - product
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-26
+  confidence: high
+- id: ST-128
+  source_url: https://www.eweek.com/news/walmart-ai-super-agents/
+  published: '2025-07-25'
+  as_of: '2026-11-19'
+  speaker: Suresh Kumar
+  role: Global CTO & CDO (to WSJ, via eWeek)
+  source_type: press
+  paraphrase: Kumar said early agents predated widespread MCP and Walmart is retrofitting older agents to the standard; multiple separate agents
+    had become confusing, hence four super agents.
+  short_quote: making sure older agents conform with the standard
+  kind: problem
+  theme: agent_sprawl
+  business_functions:
+  - product
+  actor_types:
+  - walmart_team
+  org_rows:
+  - CAP-07
+  confidence: medium
+- id: ST-129
+  source_url: https://corporate.walmart.com/about/everyday-affordability/letter-from-our-ceo
+  published: '2026-09-25'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO, letter to customers
+  source_type: walmart_primary
+  paraphrase: 'Commitment 1: prices will not depend on who the customer is or the time of day; income, shopping history, urgency or perceived
+    willingness to pay will not change the price.'
+  short_quote: We price the product, not the person.
+  kind: constraint
+  theme: pricing_pledge
+  business_functions:
+  - finance
+  - trust_safety
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-05
+  - CAP-04
+  confidence: high
+- id: ST-130
+  source_url: https://corporate.walmart.com/about/everyday-affordability/letter-from-our-ceo
+  published: '2026-09-25'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO, letter to customers
+  source_type: walmart_primary
+  paraphrase: 'Commitment 2: shopping tools including Sparky will not use what customers share to raise prices or hide lower-priced options that
+    meet their needs. This bears directly on sponsored placement and on what an agent-facing Sparky may rank.'
+  kind: constraint
+  theme: ranking_honesty
+  business_functions:
+  - trust_safety
+  - connect_ads
+  - product
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CON-21
+  - CON-05
+  confidence: high
+- id: ST-131
+  source_url: https://corporate.walmart.com/about/everyday-affordability/letter-from-our-ceo
+  published: '2026-09-25'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO, letter to customers
+  source_type: walmart_primary
+  paraphrase: 'Commitment 3: customers decide whether to share more for more personalized help; Walmart will be clear how it uses and protects
+    that information and focus it on serving the customer.'
+  kind: constraint
+  theme: data_choice
+  business_functions:
+  - trust_safety
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-07
+  - CAP-31
+  confidence: high
+- id: ST-132
+  source_url: https://www.techspot.com/news/111752-walmart-secures-two-ai-pricing-patents-raising-dynamic.html
+  published: '2026-03-20'
+  as_of: '2026-11-19'
+  speaker: Walmart spokesperson (via FT / TechSpot)
+  role: statement
+  source_type: press
+  paraphrase: After two ML pricing patents (automated e-commerce markdowns; demand forecasting and price recommendation, US-12572954-B2) drew
+    criticism, Walmart said the markdown patent is unrelated to dynamic pricing and the other supports merchant decisions.
+  short_quote: We don't participate in surge pricing
+  kind: non_goal
+  theme: surge_pricing
+  business_functions:
+  - finance
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-05
+  confidence: medium
+- id: ST-133
+  source_url: https://www.ufcw.org/press-releases/ufcw-slams-walmarts-decision-to-roll-out-electronic-shelf-labels-chainwide-urges-lawmakers-to-act-quickly/
+  published: '2026-03-06'
+  as_of: '2026-11-19'
+  speaker: UFCW
+  role: union statement
+  source_type: partner
+  paraphrase: UFCW (which does not represent Walmart workers) argues electronic shelf labels enable predatory pricing such as raising prices before
+    a snowstorm and urges lawmakers to ban them; several states have bills and New Jersey imposed a moratorium.
+  kind: risk
+  theme: surveillance_pricing
+  business_functions:
+  - trust_safety
+  - store_ops
+  actor_types:
+  - store_associate
+  - shopper
+  org_rows:
+  - CON-05
+  confidence: medium
+- id: ST-134
+  source_url: https://corporate.walmart.com/news/2026/01/11/walmart-and-google-turn-ai-discovery-into-effortless-shopping-experiences
+  published: '2026-01-11'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: press release
+  source_type: walmart_primary
+  paraphrase: The Walmart-built Gemini experience uses UCP; linked accounts get complementary recommendations from past online and in-store purchases,
+    merge with the existing cart, and carry membership benefits; local items arrive in under three hours, some in 30 minutes, to the customer's
+    chosen location and time.
+  kind: capability_claim
+  theme: gemini_experience
+  business_functions:
+  - partnerships
+  - supply_chain
+  - marketing_crm
+  actor_types:
+  - ai_platform
+  - shopper
+  org_rows:
+  - CAP-32
+  - CAP-35
+  - CAP-10
+  confidence: high
+- id: ST-135
+  source_url: https://corporate.walmart.com/news/2026/01/11/walmart-and-google-turn-ai-discovery-into-effortless-shopping-experiences
+  published: '2026-01-11'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: then CEO Walmart U.S.
+  source_type: walmart_primary
+  paraphrase: Furner framed the Google work around helping customers get what they need and want, calling agent-led commerce the next great evolution
+    in retail.
+  short_quote: We want to help customers get what they need and want
+  kind: goal
+  theme: customer_need
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-136
+  source_url: https://www.constellationr.com/blog-news/insights/walmarts-agentic-commerce-vision-practical-personalized-immersive-and-less
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (ICR)
+  source_type: analyst
+  paraphrase: Asked about disintermediation, Danker pointed to assortment, price and speed, and to having partners' agents work together with
+    Walmart's agent to build a Walmart-powered experience, so Walmart is not invisible on the customer's journey.
+  short_quote: having their agents work together with our agent
+  kind: desire
+  theme: a2a_with_sparky
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - ai_platform
+  - agent_builder
+  org_rows:
+  - CAP-07
+  confidence: high
+- id: ST-137
+  source_url: https://www.constellationr.com/blog-news/insights/walmarts-agentic-commerce-vision-practical-personalized-immersive-and-less
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP AI Acceleration, Product & Design (ICR)
+  source_type: analyst
+  paraphrase: Danker said Walmart has barely scratched the surface on personalization; future systems would understand households, behaviors,
+    dietary and health needs and local communities, e.g. reordering detergent before it runs out.
+  kind: desire
+  theme: household_personalization
+  business_functions:
+  - marketing_crm
+  - product
+  actor_types:
+  - shopper
+  - caregiver
+  org_rows:
+  - CAP-06
+  - CAP-21
+  confidence: medium
+- id: ST-138
+  source_url: https://www.wing.vc/content/inside-walmarts-ai-playbook-stores-sparky-and-the-rise-of-agentic-commerce
+  published: '2026-01-08'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP (CES 2026 session, as reported by Wing VC)
+  source_type: analyst
+  paraphrase: 'Reported from CES: Walmart will not share user data with OpenAI, particularly without consent; Danker described hybrid journeys
+    where one party discovers and another transacts, and said search and agentic will merge into one journey.'
+  kind: constraint
+  theme: data_sharing
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CON-01
+  - CAP-31
+  confidence: medium
+- id: ST-139
+  source_url: https://www.wing.vc/content/inside-walmarts-ai-playbook-stores-sparky-and-the-rise-of-agentic-commerce
+  published: '2026-01-08'
+  as_of: '2026-11-19'
+  speaker: Daniel Danker
+  role: EVP (CES 2026, as reported by Wing VC)
+  source_type: analyst
+  paraphrase: Associate agents autonomously guide associates to out-of-stocks and floor spills in real time; Walmart spends more time on AI growth
+    than on cost opportunities.
+  kind: capability_claim
+  theme: associate_agents
+  business_functions:
+  - store_ops
+  actor_types:
+  - store_associate
+  org_rows:
+  - CAP-09
+  confidence: medium
+- id: ST-140
+  source_url: https://patentsgazette.uspto.gov/week12/OG/html/1532-4/US12260443-20250325.html
+  published: '2025-03-25'
+  as_of: '2026-11-19'
+  speaker: Walmart Apollo, LLC
+  role: US patent 12,260,443
+  source_type: walmart_primary
+  paraphrase: 'Granted patent: models the likelihood that a customer will reject a substitution, using add-to-cart, user, transaction and substitution
+    data for a recently added anchor item. Signal that substitution regret is a measured problem.'
+  kind: capability_claim
+  theme: substitution_rejection
+  business_functions:
+  - supply_chain
+  - merchandising
+  - care_returns
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CAP-42
+  confidence: medium
+- id: ST-141
+  source_url: https://insights.ipauthor.com/18757090.html
+  published: 2024-06-27 (filed)
+  as_of: '2026-11-19'
+  speaker: Walmart Apollo, LLC
+  role: US application 18/757,090 (non-final OA)
+  source_type: walmart_primary
+  paraphrase: 'Application on interactive list building: NLP turns voice, text or camera input into requests that modify a shopping list. Consistent
+    with the shipped lists-to-cart feature; status pending.'
+  kind: capability_claim
+  theme: list_building
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-41
+  confidence: low
+  date_precision: approximate
+- id: ST-142
+  source_url: https://trademarkdir.com/trademark/trademark-99230516
+  published: '2025-06-12'
+  as_of: '2026-11-19'
+  speaker: Walmart Apollo, LLC
+  role: USPTO trademark serial 99230516
+  source_type: walmart_primary
+  paraphrase: Trademark filing (first use June 3 2025) covers conversational-interface software that retrieves context-sensitive, user-specific
+    information and converts voice and text into machine-executable commands.
+  kind: capability_claim
+  theme: sparky_mark
+  business_functions:
+  - product
+  actor_types: []
+  org_rows:
+  - CAP-05
+  confidence: low
+- id: ST-143
+  source_url: https://www.retailtouchpoints.com/news/walmart-to-expand-drone-delivery-to-150-more-stores-in-2026-will-fly-coast-to-coast-from-270-sites-by-2027/156369/
+  published: '2026-01-11'
+  as_of: '2026-11-19'
+  speaker: Walmart / Wing
+  role: announcement (via Retail TouchPoints)
+  source_type: press
+  paraphrase: Drone delivery with Wing expands to 150 more stores in 2026 toward 270 sites by 2027 (about 40M people); Wing's top quartile in
+    DFW and Atlanta order three times a week.
+  kind: capability_claim
+  theme: drone
+  business_functions:
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-36
+  confidence: high
+- id: ST-144
+  source_url: https://www.retaildive.com/news/walmart-expands-inhome-delivery-grocery-ecommerce/717781/
+  published: 2024-06
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate (via Retail Dive)
+  role: announcement
+  source_type: press
+  paraphrase: 'InHome reaches 45M households across 50+ markets; vetted associates enter homes with wearable cameras and smart entry; InHome added
+    Replenishment. Note: 2024 figure; not re-verified for 2026.'
+  kind: capability_claim
+  theme: inhome
+  business_functions:
+  - supply_chain
+  - store_ops
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CAP-13
+  confidence: medium
+  date_precision: approximate
+- id: ST-145
+  source_url: https://investor.visa.com/news/news-details/2026/Visa-Releases-First-of-Its-Kind-Industry-Benchmark-for-AI-Shopping-Almost-Half-of-Test-Runs-Fail/default.aspx
+  published: '2026-11-05'
+  as_of: '2026-11-19'
+  speaker: Visa
+  role: press release (Agentic Commerce Benchmark)
+  source_type: partner
+  paraphrase: 'Visa''s benchmark ran 22 models from 12 labs through 15 shopping scenarios: 42.8% of runs failed, and in about 54% of failed runs
+    the agent still bought something; models often failed scenarios they had passed before.'
+  short_quote: models failed 42.8% of test runs
+  kind: metric
+  theme: agent_reliability
+  business_functions:
+  - trust_safety
+  - partnerships
+  - product
+  actor_types:
+  - agent_builder
+  - ai_platform
+  org_rows:
+  - CAP-26
+  confidence: high
+- id: ST-146
+  source_url: https://rallies.ai/news/walmarts-sparky-delivers-transaction-ready-precision-but-lacks-assortment-breadth
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Bernstein (via Rallies)
+  role: analyst test
+  source_type: analyst
+  paraphrase: 'Reported Bernstein test of ChatGPT, Gemini, Claude, Alexa and Sparky: none completed unsupervised purchases; retail-native Sparky
+    gave precise, current SKUs and prices within its assortment while general models lacked live catalog and pricing. Secondary report.'
+  kind: metric
+  theme: native_vs_general
+  business_functions:
+  - product
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-05
+  - CAP-07
+  confidence: low
+  date_precision: approximate
+- id: ST-147
+  source_url: https://morganstanley.com/insights/articles/agentic-commerce-market-impact-outlook
+  published: '2025-12-08'
+  as_of: '2026-11-19'
+  speaker: Morgan Stanley Research
+  role: analyst
+  source_type: analyst
+  paraphrase: Morgan Stanley sizes agentic shoppers at $190B (base) to $385B (bull) of U.S. e-commerce by 2030, 10-20% share; about 23% of Americans
+    bought something using AI in the prior month.
+  kind: metric
+  theme: market_size
+  business_functions:
+  - finance
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-148
+  source_url: https://finance.yahoo.com/news/morgan-stanley-sees-multi-path-093502239.html
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Morgan Stanley (via Yahoo Finance)
+  role: analyst
+  source_type: analyst
+  paraphrase: Retailer-specific assistants (Rufus, Sparky, Target) drew 4-11% monthly usage in Morgan Stanley's survey, far below general assistants;
+    replenishment categories are the fastest-growing agentic opportunities.
+  kind: metric
+  theme: assistant_usage
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+  date_precision: approximate
+- id: ST-149
+  source_url: https://finance.yahoo.com/news/morgan-stanley-maps-retail-winners-083002967.html
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Morgan Stanley (via Investing.com)
+  role: analyst
+  source_type: analyst
+  paraphrase: Morgan Stanley says Amazon, Walmart and eBay screen favorably for agentic commerce but Amazon, Walmart, Target and eBay face higher
+    margin risk from third-party agentic partnerships.
+  kind: risk
+  theme: margin_risk
+  business_functions:
+  - finance
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+  date_precision: approximate
+- id: ST-150
+  source_url: https://chiefmarketer.com/walmart-launches-generative-ai-shopping-chatbot
+  published: '2025-06-06'
+  as_of: '2026-11-19'
+  speaker: Sucharita Kodali
+  role: VP & Principal Analyst, Forrester (via Chief Marketer)
+  source_type: analyst
+  paraphrase: Kodali said Sparky was not earth-shattering in its first form but Walmart, as Amazon's only real competitor, must keep releasing
+    comparable features.
+  short_quote: I'm not sure it will be earth-shattering
+  kind: risk
+  theme: parity_race
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: medium
+- id: ST-151
+  source_url: https://www.usecarly.com/blog/best-ai-family-assistants/
+  published: 2026-11
+  as_of: '2026-11-19'
+  speaker: Carly (comparison blog)
+  role: agent-builder roundup
+  source_type: partner
+  paraphrase: 'Family-assistant roundup: Ollie (SMS) does meal plans with grocery orders through Amazon, Instacart or Walmart; Fambot (Sep 2026)
+    pitches itself as a family chief of staff; Ohai integrates Instacart. Builders already route household grocery work to retailers.'
+  kind: capability_claim
+  theme: family_assistants
+  business_functions:
+  - partnerships
+  actor_types:
+  - agent_builder
+  - shopper
+  org_rows:
+  - CAP-01
+  confidence: low
+  date_precision: approximate
+- id: ST-152
+  source_url: https://www.ohai.ai/blog/ohai-integrates-instacart-ordering
+  published: '2025'
+  as_of: '2026-11-19'
+  speaker: Ohai.ai
+  role: agent builder blog
+  source_type: partner
+  paraphrase: 'Ohai integrated grocery ordering via Instacart''s Developer Platform so its SMS assistant can plan meals and push lists to carts:
+    builders go where a documented developer platform exists.'
+  kind: desire
+  theme: developer_platform
+  business_functions:
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-26
+  confidence: medium
+  date_precision: approximate
+- id: ST-153
+  source_url: https://fortune.com/press-releases/domus-next-supernori-family-ai-agent-2026-06-30/
+  published: '2026-06-30'
+  as_of: '2026-11-19'
+  speaker: Domus Next
+  role: agent builder press release
+  source_type: partner
+  paraphrase: 'SuperNori pitches a proactive family agent that notices needs (appointments, groceries, meals) and acts after permission: the trigger-plus-consent
+    pattern the Gateway''s guardrails anticipate.'
+  kind: desire
+  theme: proactive_family
+  business_functions:
+  - partnerships
+  actor_types:
+  - agent_builder
+  - caregiver
+  org_rows:
+  - CAP-29
+  confidence: low
+- id: ST-154
+  source_url: https://company.instacart.com/blog/instacarts-ai-assistant-powered-by-14-years-of-grocery-expertise
+  published: '2026-06-18'
+  as_of: '2026-11-19'
+  speaker: Instacart
+  role: company blog
+  source_type: press
+  paraphrase: Instacart's assistant builds carts from conversation, prompts or a photo of a list using live inventory from about 100,000 stores;
+    orders through it are larger than the $113 average; Clementine (Sep 2026) adds 'my usuals' and connects to ChatGPT, Claude and Gemini.
+  kind: capability_claim
+  theme: competitor_grocery_agent
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-155
+  source_url: https://www.paz.ai/blog/instacarts-chatgpt-launch-how-acp-powers-the-first-embedded-grocery-checkout
+  published: '2025-12-10'
+  as_of: '2026-11-19'
+  speaker: Nick Turley
+  role: VP & Head of ChatGPT, OpenAI (via paz.ai)
+  source_type: partner
+  paraphrase: 'OpenAI''s Turley described Instacart in ChatGPT as going from meal planning to checkout in one conversation: platform partners
+    want completion, not just discovery.'
+  short_quote: from meal planning to checkout in a single, seamless conversation
+  kind: desire
+  theme: meal_to_checkout
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows: []
+  confidence: medium
+- id: ST-156
+  source_url: https://letsdatascience.com/news/amazon-blocks-meta-muse-as-shopify-enables-checkout-85276e25
+  published: '2026-09-22'
+  as_of: '2026-11-19'
+  speaker: Let's Data Science (news)
+  role: press
+  source_type: press
+  paraphrase: Coverage of Amazon's Muse block notes that a consumer's instruction to an agent does not settle whether a retailer permits automated
+    browsing or checkout; identity, authorization and credential isolation are operating constraints for builders.
+  kind: constraint
+  theme: permission_matters
+  business_functions:
+  - partnerships
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-04
+  - CON-16
+  confidence: medium
+- id: ST-157
+  source_url: https://p2pi.com/sams-club-doubles-down-omnichannel-experience-attract-younger-shoppers
+  published: 2025-04
+  as_of: '2026-11-19'
+  speaker: Chris Nicholas
+  role: President & CEO, Sam's Club
+  source_type: press
+  paraphrase: Nicholas said AI removed 100 million tasks from clubs in a year; Scan & Go members are twice as likely to shop online and digitally
+    engaged members spend three times more; Just Go exit arches are used by most members.
+  short_quote: We've taken 100 million tasks out of the club
+  kind: metric
+  theme: sams_frictionless
+  business_functions:
+  - b2b
+  - store_ops
+  actor_types:
+  - shopper
+  - small_business
+  org_rows:
+  - CAP-17
+  confidence: medium
+  date_precision: approximate
+- id: ST-158
+  source_url: https://www.digitalcommerce360.com/2026/10/23/walmart-unveils-ai-agent-shopping-controls-spending-limits/
+  published: '2026-10-23'
+  as_of: '2026-11-19'
+  speaker: Manish Joneja
+  role: SVP, Walmart Marketplace (via Digital Commerce 360)
+  source_type: press
+  paraphrase: Joneja said agentic commerce could create more chances for sellers to put the right products in front of the right customers, including
+    brands without broad awareness.
+  short_quote: brands and products that may not have broad awareness
+  kind: desire
+  theme: seller_opportunity
+  business_functions:
+  - marketplace
+  actor_types:
+  - marketplace_seller
+  org_rows:
+  - CAP-20
+  confidence: high
+- id: ST-159
+  source_url: https://www.retailbrew.com/stories/2025/12/01/can-john-furner-lead-walmart-through-its-ai-era
+  published: '2025-12-01'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: then incoming CEO (Q3 FY26 call, via Retail Brew)
+  source_type: press
+  paraphrase: Furner said having a digital agent working for you is going to be really powerful; agentic AI also maintains catalog accuracy and
+    finds assortment gaps.
+  short_quote: Having a digital agent that is there working for you
+  kind: desire
+  theme: digital_agent
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-01
+  confidence: medium
+- id: ST-160
+  source_url: https://www.digitalcommerce360.com/2025/11/21/walmart-online-sales-q3-fy26/
+  published: '2025-11-20'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: then CEO Walmart U.S. (Q3 FY26 call)
+  source_type: press
+  paraphrase: Furner said agentic AI helps customers keep track of products they may want to reorder and keep on hand, and helps keep the catalog
+    accurate and find gaps in assortment.
+  kind: goal
+  theme: reorder_nudges
+  business_functions:
+  - marketing_crm
+  - merchandising
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-06
+  confidence: medium
+- id: ST-161
+  source_url: https://www.shopifreaks.com/walmart-makes-a-second-attempt-at-shopping-with-openai-with-the-launch-of-a-chatgpt-app/
+  published: '2026-03-23'
+  as_of: '2026-11-19'
+  speaker: Shopifreaks
+  role: press
+  source_type: press
+  paraphrase: In the ChatGPT app users log into Sparky the first time; carts sync across ChatGPT, Walmart.com and the app. Account linking, not
+    anonymous API calls, is Walmart's chosen pattern for third-party surfaces.
+  kind: capability_claim
+  theme: sparky_login
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - ai_platform
+  - shopper
+  org_rows:
+  - CAP-32
+  - CAP-02
+  confidence: medium
+- id: ST-162
+  source_url: https://www.eesel.ai/es/blog/walmart-agent-gateway-que-es-y-como-funciona
+  published: 2026-10
+  as_of: '2026-11-19'
+  speaker: eesel.ai
+  role: explainer (secondary)
+  source_type: press
+  paraphrase: 'Secondary explainer says Walmart separately runs a Marketplace MCP server at developer.walmart.com/mcp (from Oct 14 2026) that
+    gives coding assistants seller API docs; not to be confused with the Gateway. Unverified: the page did not load for us.'
+  kind: capability_claim
+  theme: marketplace_mcp
+  business_functions:
+  - marketplace
+  - partnerships
+  actor_types:
+  - marketplace_seller
+  - agent_builder
+  org_rows:
+  - CAP-33
+  confidence: low
+  date_precision: approximate
+- id: ST-163
+  source_url: https://marketrealist.com/how-is-walmart-enhancing-shopper-experience-with-ai-ads
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Khurrum Malik
+  role: VP, Walmart Connect (via Market Realist)
+  source_type: press
+  paraphrase: On ads in Sparky, Malik said Walmart wants to be there and experiment in the new surface even though it is early days.
+  short_quote: we want to be there and experiment in that new surface
+  kind: desire
+  theme: sparky_ads_test
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: medium
+  date_precision: approximate
+- id: ST-164
+  source_url: https://www.pymnts.com/walmart/2026/walmart-rolls-out-agentic-advertiser-assistant/
+  published: '2026-01-09'
+  as_of: '2026-11-19'
+  speaker: Walmart Connect (via PYMNTS)
+  role: announcement
+  source_type: press
+  paraphrase: Walmart Connect said it will keep testing ad formats inside Sparky, citing the potential for AI-first shopping to change how customers
+    search and discover.
+  kind: capability_claim
+  theme: sparky_ad_formats
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-165
+  source_url: https://www.supermarketnews.com/grocery-technology/walmart-enlists-artificial-intelligence-for-online-grocery-substitutions
+  published: '2021'
+  as_of: '2026-11-19'
+  speaker: Srini Venkatesan
+  role: then EVP, Walmart U.S. Omni Tech (via Supermarket News)
+  source_type: press
+  paraphrase: Walmart said substitution decisions are complex and highly personal; a wrong choice hurts satisfaction and raises cost, which is
+    why it built AI substitution logic for personal shoppers. Older source; problem still current per the 2025 patent.
+  short_quote: complex and highly personal to each customer
+  kind: problem
+  theme: substitutions
+  business_functions:
+  - supply_chain
+  - care_returns
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CAP-42
+  confidence: medium
+  date_precision: approximate
+- id: ST-166
+  source_url: https://corporate.walmart.com/news/2023/10/17/our-responsible-ai-pledge-setting-the-bar-for-ethical-ai
+  published: '2023-10-17'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Responsible AI Pledge
+  source_type: walmart_primary
+  paraphrase: 'Walmart''s Responsible AI Pledge has six commitments: transparency, security, privacy, fairness, accountability, customer-centricity.
+    Fairness: evaluate AI tools for bias and repeat the checks.'
+  kind: constraint
+  theme: rai_pledge
+  business_functions:
+  - trust_safety
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CON-09
+  - CON-22
+  confidence: high
+- id: ST-167
+  source_url: https://corporate.walmart.com/news/2023/10/17/our-responsible-ai-pledge-setting-the-bar-for-ethical-ai
+  published: '2023-10-17'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Responsible AI Pledge
+  source_type: walmart_primary
+  paraphrase: 'Accountability: AI stays managed by people and Walmart takes responsibility for its effects. Customer-centricity: measure satisfaction
+    with AI interactions and check tools stay accurate and useful.'
+  short_quote: We will use AI managed by people
+  kind: constraint
+  theme: human_accountability
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-22
+  - CAP-03
+  confidence: high
+- id: ST-168
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/the-importance-of-digital-citizenship-at-walmart.html
+  published: '2023'
+  as_of: '2026-11-19'
+  speaker: Walmart Global Tech
+  role: Digital Citizenship post
+  source_type: walmart_primary
+  paraphrase: Walmart's four Digital Trust Commitments restate its values for data and technology, e.g. service (technology in service of people)
+    and respect (treat people fairly, with dignity and respect); a Digital Citizenship team under the Chief Legal Officer oversees them.
+  kind: constraint
+  theme: digital_trust
+  business_functions:
+  - trust_safety
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CON-08
+  - CON-22
+  confidence: medium
+  date_precision: approximate
+- id: ST-169
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/a-conversation-with-john-furner-and-suresh-kumar.html
+  published: '2026-04-24'
+  as_of: '2026-11-19'
+  speaker: John Furner / Suresh Kumar
+  role: CEO / Global CTO & CDO (fireside)
+  source_type: walmart_primary
+  paraphrase: The fireside frames the goal as moving from a customer's intent to a delivered solution in under 40 minutes, and says speed depends
+    on the teams behind the technology and on trust.
+  short_quote: the secret ingredient isn't in the code, it's in the culture
+  kind: goal
+  theme: intent_to_solution
+  business_functions:
+  - product
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-35
+  confidence: medium
+- id: ST-170
+  source_url: https://tech.walmart.com/content/walmart-global-tech/en_us/blog/post/inside-the-ai-network-orchestrating-walmarts-fastest-holiday-deliveries-yet.html
+  published: '2025-12-08'
+  as_of: '2026-11-19'
+  speaker: Walmart Global Tech
+  role: engineering blog
+  source_type: walmart_primary
+  paraphrase: Walmart describes a connected system of predictive, agentic and real-time models that decides which products are needed and where
+    to position them before a customer buys, orchestrating fulfillment, logistics and delivery in real time.
+  kind: capability_claim
+  theme: fulfillment_orchestration
+  business_functions:
+  - supply_chain
+  actor_types:
+  - shopper
+  - store_associate
+  org_rows:
+  - CAP-37
+  - CAP-10
+  confidence: medium
+- id: ST-171
+  source_url: https://www.8thandwalton.com/?p=74341
+  published: '2025-12-05'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate (via MassMarketRetailers / 8th & Walton)
+  role: holiday recap
+  source_type: press
+  paraphrase: Walmart said its same-day network fulfilled 57% more orders than the prior holiday, nearly half in under three hours and the fastest
+    in 10 minutes.
+  kind: metric
+  theme: same_day_peak
+  business_functions:
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-35
+  confidence: low
+- id: ST-172
+  source_url: https://www.retailbrew.com/stories/2026/02/10/amazon-ceo-says-shoppers-will-choose-retailers-over-third-party-ai-platforms
+  published: '2026-02-05'
+  as_of: '2026-11-19'
+  speaker: Andy Jassy
+  role: CEO, Amazon (Q4 2025 call, via Retail Brew)
+  source_type: press
+  paraphrase: Jassy argued many customers will choose a retailer's own shopping agent over horizontal agents, which lack shopping history and
+    get product details and pricing wrong; shoppers want selection, low prices, fast delivery and a trusted retailer.
+  short_quote: These horizontal agents don't have any of your shopping history.
+  kind: non_goal
+  theme: horizontal_agents
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  org_rows: []
+  confidence: high
+- id: ST-173
+  source_url: https://ppc.land/us-alexa-for-shopping-users-spend-50-more-per-order-amazon-says/
+  published: '2026-10-29'
+  as_of: '2026-11-19'
+  speaker: Andy Jassy
+  role: CEO, Amazon (Q3 2026 call, via PPC Land)
+  source_type: press
+  paraphrase: Jassy said U.S. Alexa for Shopping users spend 50% more per order, 400M+ customers used it in 12 months, and Amazon expects it to
+    be the primary agent customers use to shop Amazon while it anticipates working with horizontal agents.
+  short_quote: the primary shopping agent customers use to shop Amazon
+  kind: metric
+  theme: alexa_for_shopping
+  business_functions:
+  - product
+  - finance
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-174
+  source_url: https://techcrunch.com/2026/01/13/a-consumer-watchdog-issued-a-warning-about-googles-ai-agent-shopping-protocol-google-says-shes-wrong/
+  published: '2026-01-13'
+  as_of: '2026-11-19'
+  speaker: Lindsay Owens / Google
+  role: Exec. Director, Groundwork Collaborative / Google comms
+  source_type: press
+  paraphrase: Groundwork's Owens warned UCP's roadmap item on personalized upsells could enable surveillance pricing; Google called the claims
+    inaccurate and said merchants may not show prices on Google higher than on their own site.
+  kind: risk
+  theme: personalized_upsell
+  business_functions:
+  - trust_safety
+  - connect_ads
+  - finance
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-05
+  - CON-21
+  confidence: high
+- id: ST-175
+  source_url: https://www.searchenginejournal.com/google-ai-mode-checkout-cant-raise-prices/565016/
+  published: '2026-01-14'
+  as_of: '2026-11-19'
+  speaker: Search Engine Journal
+  role: press
+  source_type: press
+  paraphrase: 'The UCP public roadmap lists native cross-sell and upsell modules for personalized recommendations based on user context: the feature
+    critics point to.'
+  kind: risk
+  theme: upsell_roadmap
+  business_functions:
+  - connect_ads
+  - trust_safety
+  actor_types:
+  - shopper
+  - ai_platform
+  org_rows:
+  - CON-21
+  confidence: medium
+- id: ST-176
+  source_url: https://stellagent.ai/insights/google-ai-checkout-warren-privacy
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Sen. Elizabeth Warren (via Stellagent / eWeek)
+  role: regulator letter
+  source_type: press
+  paraphrase: 'Senator Warren pressed Google''s CEO for clarity on Gemini checkout privacy as UCP expanded across retailers: congressional attention
+    to agent checkout data flows. Secondary report.'
+  kind: risk
+  theme: checkout_privacy
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - shopper
+  - ai_platform
+  org_rows:
+  - CON-01
+  - CON-07
+  confidence: low
+  date_precision: approximate
+- id: ST-177
+  source_url: https://www.retailtouchpoints.com/?p=621887
+  published: '2026-10-29'
+  as_of: '2026-11-19'
+  speaker: Adobe Digital Insights (via Retail TouchPoints)
+  role: analyst data
+  source_type: analyst
+  paraphrase: 'Adobe: AI-referred traffic to U.S. retail sites grew 71% YoY in Sep 2026 (1,772% since Oct 2024), converted 90% better and earned
+    83% more revenue per visit than non-AI traffic.'
+  kind: metric
+  theme: ai_referrals
+  business_functions:
+  - marketing_crm
+  - finance
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: high
+- id: ST-178
+  source_url: https://business.adobe.com/resources/sdk/.q3-ai-traffic-trends-report/q3-2026-ai-sourced-traffic-insights.pdf
+  published: 2026-07
+  as_of: '2026-11-19'
+  speaker: Adobe Digital Insights
+  role: report
+  source_type: analyst
+  paraphrase: 'Adobe''s mid-2026 report: AI-referred visitors converted 54% better in May 2026, reversing the prior year''s gap; it flags meaningful
+    content gaps in retailers'' AI readability.'
+  kind: metric
+  theme: ai_referrals_trust
+  business_functions:
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+  date_precision: approximate
+- id: ST-179
+  source_url: https://www.pymnts.com/?p=4214915
+  published: '2026-06-15'
+  as_of: '2026-11-19'
+  speaker: PYMNTS Intelligence with Visa Acceptance Solutions
+  role: survey
+  source_type: analyst
+  paraphrase: 'Survey: only 15% of merchants overall have structured product data ready for agent access; small merchants could move faster.'
+  kind: problem
+  theme: merchant_readiness
+  business_functions:
+  - marketplace
+  - partnerships
+  actor_types:
+  - marketplace_seller
+  - small_business
+  org_rows:
+  - CAP-20
+  confidence: medium
+- id: ST-180
+  source_url: https://www.pymnts.com/?p=4329007
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: PYMNTS Intelligence
+  role: survey
+  source_type: analyst
+  paraphrase: 'PYMNTS report on the 2026 season: merchants expect agentic commerce to become a paid sales channel but many feel unprepared to
+    connect with agents.'
+  kind: problem
+  theme: merchant_unprepared
+  business_functions:
+  - marketplace
+  actor_types:
+  - marketplace_seller
+  - supplier_brand
+  org_rows: []
+  confidence: medium
+- id: ST-181
+  source_url: https://www.bain.com/insights/rewiring-demand-generation-in-age-of-AI-agents/
+  published: '2026-05-08'
+  as_of: '2026-11-19'
+  speaker: Bain & Company
+  role: consumer survey
+  source_type: analyst
+  paraphrase: 'Bain surveys: 30-45% of U.S. consumers use AI for shopping support and 64% have used or are open to using AI to complete a purchase;
+    44% of online buyers mostly start in an LLM or split time with search.'
+  kind: metric
+  theme: consumer_openness
+  business_functions:
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+- id: ST-182
+  source_url: https://www.eweek.com/news/instacart-ai-cart-assistant/
+  published: '2025'
+  as_of: '2026-11-19'
+  speaker: Yael Cosset
+  role: EVP & Chief Digital Officer, Kroger (via eWeek)
+  source_type: press
+  paraphrase: Kroger's Cosset said interacting with an AI agent makes shopping and meal planning as simple as a conversation, building baskets
+    and understanding what matters to customers; Kroger adopts Instacart's Cart Assistant.
+  kind: desire
+  theme: kroger_agentic
+  business_functions:
+  - product
+  actor_types:
+  - shopper
+  org_rows: []
+  confidence: medium
+  date_precision: approximate
+- id: ST-183
+  source_url: https://aimmediahouse.com/retail/ai-shopping-agents-fail-43-of-the-time-most-failures-still-end-in-a-purchase
+  published: '2026-11-12'
+  as_of: '2026-11-19'
+  speaker: AIM Media House
+  role: press
+  source_type: press
+  paraphrase: Days after Visa's benchmark, United Airlines said (Nov 11) it will restrict third-party AI agents on its platforms and via OTAs;
+    openness to agents is not the default outside retail.
+  kind: non_goal
+  theme: cross_industry_blocks
+  business_functions:
+  - partnerships
+  - trust_safety
+  actor_types:
+  - ai_platform
+  org_rows: []
+  confidence: medium
+- id: ST-184
+  source_url: https://thenewstack.io/?p=22837835
+  published: '2026-09-23'
+  as_of: '2026-11-19'
+  speaker: The New Stack
+  role: press
+  source_type: press
+  paraphrase: 'After Amazon blocked Muse for not identifying itself and appearing to hold passwords, Shopify wired Muse into its merchants with
+    Shop Pay checkout: platforms that offer a sanctioned path win the agent traffic.'
+  kind: capability_claim
+  theme: shopify_muse
+  business_functions:
+  - partnerships
+  actor_types:
+  - ai_platform
+  - marketplace_seller
+  org_rows: []
+  confidence: medium
+- id: ST-185
+  source_url: https://www.pulse.bot/cio-pulse/news/target-forces-shoppers-to-own-aimade-purchases-in-new-gemini-terms-2998f952-44ee-4b49-90c6-e759ad3bed85
+  published: '2026-04-01'
+  as_of: '2026-11-19'
+  speaker: Pulse (aggregator)
+  role: press
+  source_type: forum
+  paraphrase: 'Aggregator report: Target''s Gemini terms make shoppers responsible for AI-made purchases. Comparable to Walmart''s terms keeping
+    the customer responsible for payment, returns and disputes. Unverified.'
+  kind: constraint
+  theme: liability_shift
+  business_functions:
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-17
+  confidence: low
+- id: ST-186
+  source_url: https://talkbusiness.net/2026/07/the-supply-side-walmarts-sparky-shopping-agent-drives-more-sales/
+  published: 2026-04
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO (via Talk Business)
+  source_type: press
+  paraphrase: 'Furner described Sparky as Walmart''s evolution into intent-driven commerce: when the AI builds a basket, Walmart fulfills it through
+    fast delivery or pickup, turning AI engagement into immediate physical outcomes.'
+  kind: goal
+  theme: intent_driven
+  business_functions:
+  - product
+  - supply_chain
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  - CAP-35
+  confidence: medium
+  date_precision: approximate
+- id: ST-187
+  source_url: https://talkbusiness.net/2026/05/the-supply-side-ai-changing-relationships-between-retailers-suppliers/
+  published: 2026-05
+  as_of: '2026-11-19'
+  speaker: Talk Business & Politics (supplier community)
+  role: press
+  source_type: press
+  paraphrase: Supplier-side commentators in Northwest Arkansas say suppliers that do not adopt agentic systems risk being left behind as Walmart's
+    buying and replenishment tools become agentic.
+  kind: risk
+  theme: supplier_adoption
+  business_functions:
+  - merchandising
+  actor_types:
+  - supplier_brand
+  org_rows:
+  - CAP-39
+  confidence: low
+  date_precision: approximate
+- id: ST-188
+  source_url: https://benefitsusa.org/en/blog/does-walmart-accept-ebt
+  published: '2026'
+  as_of: '2026-11-19'
+  speaker: Benefits USA (explainer)
+  role: secondary
+  source_type: press
+  paraphrase: 'Secondary explainer: Walmart accepts SNAP EBT online for pickup, delivery and shipping in all 50 states; only items marked SNAP
+    EBT eligible and sold by Walmart.com qualify, not Marketplace items. Not re-verified against walmart.com.'
+  kind: capability_claim
+  theme: snap_online
+  business_functions:
+  - finance
+  - trust_safety
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-12
+  - CON-10
+  confidence: low
+  date_precision: approximate
+- id: ST-189
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms, definitions
+  source_type: walmart_primary
+  paraphrase: The terms define an Agent broadly (AI assistants, browser automation, API-connected services) but exclude assistive technologies
+    that let people with disabilities use the sites.
+  kind: constraint
+  theme: accessibility_carveout
+  business_functions:
+  - trust_safety
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CON-23
+  confidence: high
+- id: ST-190
+  source_url: https://www.walmart.com/help/article/walmart-agentic-access-terms/d048fc229d7549738d7c05a4317e24d7
+  published: '2026-10-21'
+  as_of: '2026-11-19'
+  speaker: Walmart, corporate
+  role: Agentic Access Terms
+  source_type: walmart_primary
+  paraphrase: The agent's own privacy policy governs what it receives; Walmart handles what the agent provides under Walmart's Privacy Notice.
+    Data is licensed, not sold, and may not be sublicensed, resold or redistributed; retention only as long as the permitted purpose needs.
+  kind: constraint
+  theme: privacy_split
+  business_functions:
+  - trust_safety
+  - partnerships
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CON-24
+  - CON-01
+  confidence: high
+- id: ST-191
+  source_url: https://www.axios.com/2025/10/14/walmart-chatgpt-openai-shopping
+  published: '2025-10-14'
+  as_of: '2026-11-19'
+  speaker: Walmart (via Axios)
+  role: announcement coverage
+  source_type: press
+  paraphrase: 'Walmart''s example prompts for shopping in ChatGPT included planning a weeknight taco dinner and reordering staples, with curated
+    picks and one-step checkout: taco night is Walmart''s own illustration.'
+  short_quote: plan a weeknight taco dinner
+  kind: desire
+  theme: taco_example
+  business_functions:
+  - product
+  - marketing_crm
+  actor_types:
+  - shopper
+  - ai_platform
+  org_rows:
+  - CAP-32
+  confidence: medium
+- id: ST-192
+  source_url: https://www.constellationr.com/insights/news/walmart-retailers-tout-ai-digital-transformation-efforts-argue-theyre-more-their
+  published: '2026-08-20'
+  as_of: '2026-11-19'
+  speaker: John David Rainey
+  role: EVP & CFO (Q2 FY27 call, via Constellation)
+  source_type: analyst
+  paraphrase: 'Rainey tied delivery speed to network economics: improving density and utilization lets speed and profitability reinforce one another.
+    Relevant to shifting agent orders off peaks.'
+  short_quote: speed and profitability reinforce one another
+  kind: goal
+  theme: density
+  business_functions:
+  - supply_chain
+  - finance
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-35
+  - CAP-10
+  confidence: medium
+- id: ST-193
+  source_url: https://finance.yahoo.com/technology/ai/articles/walmart-ceo-launching-ai-agent-194059829.html
+  published: '2026-11-16'
+  as_of: '2026-11-19'
+  speaker: John Furner
+  role: President & CEO (Masters of Scale Rapid Response, Nov 12; via TIKR on Yahoo Finance)
+  source_type: press
+  paraphrase: On a Nov 12 podcast Furner said Walmart is launching Agent Profiles over the next few weeks, later than the Oct 21 'within a month';
+    the article says Walmart has not said which integrations support profiles at launch. Not confirmed live as of Nov 19. The podcast page itself
+    did not load for us.
+  short_quote: over the next few weeks
+  kind: capability_claim
+  theme: agent_profiles_timing
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - shopper
+  - agent_builder
+  - caregiver
+  org_rows:
+  - CAP-02
+  confidence: medium
+- id: ST-194
+  source_url: https://usa.visa.com/about-visa/newsroom/press-releases.releaseId.22986.html
+  published: '2026-11-17'
+  as_of: '2026-11-19'
+  speaker: Rubail Birwadker
+  role: SVP, Growth Products & Partnerships, Visa (press release)
+  source_type: partner
+  paraphrase: 'Visa extended its Agentic Ready programme (part of Visa Intelligent Commerce) to the acceptance side: 140+ PSPs, acquirers and
+    enablers (e.g. Adyen, Stripe, PayPal, Checkout.com, Fiserv, Worldline) testing agent-initiated transactions, on top of 175+ issuers in 45
+    markets; Airwallex embeds Trusted Agent Protocol. No retailer is named; UCP and AP2 are not mentioned.'
+  short_quote: Agentic Ready brings the ecosystem together to test real-world transactions
+  kind: capability_claim
+  theme: agentic_acceptance
+  business_functions:
+  - partnerships
+  - finance
+  - trust_safety
+  actor_types:
+  - agent_builder
+  org_rows:
+  - CAP-40
+  confidence: high
+- id: ST-195
+  source_url: https://digiday.com/media-buying/amazons-shopping-agent-now-takes-orders-by-text-with-sponsored-product-ads-in-the-replies/
+  published: '2026-11-06'
+  as_of: '2026-11-19'
+  speaker: Digiday (Krystal Scanlon); Rajiv Mehta, VP Conversational Shopping, Amazon
+  role: press
+  source_type: press
+  paraphrase: Amazon's Alexa for Shopping now takes orders by text (invite-only, wider rollout over coming weeks), with opt-in auto-buy at a price
+    target. Sponsored Products ads appear in the options it texts back at discovery, free to advertisers for now; purchases the agent completes
+    on its own stay ad-free. No label wording is described. A competitor answer to how sponsored items show up in an agent channel.
+  kind: capability_claim
+  theme: sponsored_in_agent
+  business_functions:
+  - connect_ads
+  - product
+  actor_types:
+  - shopper
+  - supplier_brand
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-196
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner
+  role: President & CEO (Q3 FY27 call, Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: On the Q3 FY27 call Furner said U.S. Sparky usage grew 129% year over year and Sparky baskets are 40% larger; Sparky added voice
+    and image shopping plus Spanish and French, and recently launched in Mexico, Canada and at Sam's Club U.S. Same figures in three third-party
+    transcripts, PPC Land and CX Dive. Supersedes the Q2 figure (+70%, ST-040) for stage use.
+  short_quote: Agents are beginning to play a bigger role in more shopping journeys
+  kind: metric
+  theme: sparky_metrics
+  business_functions:
+  - product
+  - finance
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-05
+  confidence: high
+- id: ST-197
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner
+  role: President & CEO (Q3 FY27 call, Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: 'On the Nov 19 call Furner restated the October package in the future tense: by assigning profiles to agents, customers will be
+    able to set permissions and spending limits, see agent purchases separately and turn access off; the Agent Gateway gives approved agents a
+    better way to interact while protecting customer information; agentic terms set what agents can and cannot do. No launch date; the name Agent
+    Profiles is not used. CAP-02 stays announced.'
+  kind: capability_claim
+  theme: agent_profiles_timing
+  business_functions:
+  - product
+  - trust_safety
+  actor_types:
+  - shopper
+  - agent_builder
+  - caregiver
+  org_rows:
+  - CAP-02
+  - CAP-01
+  confidence: high
+- id: ST-198
+  source_url: https://ppc.land/walmarts-global-ad-growth-drops-to-25-as-flipkarts-sale-slips-a-quarter/
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John David Rainey / Seth Dallaire
+  role: CFO / EVP & Chief Growth Officer (Q3 FY27 call, via PPC Land)
+  source_type: press
+  paraphrase: 'Q3 FY27: global advertising grew 25% (38% in Q2), slowed by Flipkart''s sale timing; U.S. advertising including VIZIO and Vibe
+    grew 37%, Walmart Connect 36% (43% in Q2). Walmart did not say whether Sparky carries paid placements today or how sponsored items are marked.
+    Asked about a competitor barring third-party agents, Dallaire did not name it and gave no figures.'
+  kind: metric
+  theme: ads_growth
+  business_functions:
+  - connect_ads
+  - finance
+  actor_types:
+  - supplier_brand
+  - marketplace_seller
+  org_rows:
+  - CAP-34
+  confidence: high
+- id: ST-199
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John David Rainey / David Guggina
+  role: CFO / President & CEO, Walmart U.S. (Q3 FY27 call, Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: 'Q3 FY27: global e-commerce +17%, U.S. e-commerce +23% (11th straight quarter above 20%), Sam''s Club e-commerce +30%; U.S. marketplace
+    and WFS net sales +49%, nearly half of marketplace GMV through Walmart Fulfillment Services; U.S. e-commerce incremental margin over 12% and
+    close to break-even excluding ads. Guggina: Walmart can reach 96% of U.S. households in three hours or less and 60% in 30 minutes or less
+    (assuming a 15-minute pick); 30-minute deliveries nearly tripled. No pickup or delivery slot product was discussed.'
+  kind: metric
+  theme: growth_engines
+  business_functions:
+  - finance
+  - marketplace
+  - supply_chain
+  actor_types:
+  - shopper
+  - marketplace_seller
+  org_rows:
+  - CAP-35
+  confidence: high
+- id: ST-200
+  source_url: https://developers.google.com/merchant/ucp/latest-updates
+  published: 2026-11
+  as_of: '2026-11-20'
+  speaker: Google (UCP for Merchant Center)
+  role: UCP developer docs, latest updates (page last updated Nov 17)
+  source_type: partner
+  paraphrase: Google's UCP change log for November 2026 adds an MCP transport guide (beta) for native checkout and cart over JSON-RPC tools/call,
+    checkout latency work, and order-lifecycle webhook acknowledgments and retries; October added a loyalty extension and grocery ordering for
+    connected apps (location search, catalog search and cart tools). No entry covers pickup or delivery slots, sponsored-item disclosure or AP2.
+  kind: capability_claim
+  theme: ucp
+  business_functions:
+  - partnerships
+  - product
+  actor_types:
+  - agent_builder
+  - ai_platform
+  org_rows:
+  - CAP-40
+  - CAP-10
+  confidence: high
+  date_precision: approximate
+- id: ST-201
+  source_url: https://www.investing.com/news/transcripts/earnings-call-transcript-walmart-beats-q3-2026-estimates-but-shares-fall-premarket-93CH-5039191
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner
+  role: President & CEO (Q3 FY27 call, via Investing.com transcript)
+  source_type: press
+  paraphrase: 'Furner said Walmart''s business is built on trust: whether customers shop directly with Walmart or through an agent, they should
+    be able to count on accurate pricing, reliable availability and clear delivery options. Same wording in Walmart''s own transcript and two
+    other third-party transcripts.'
+  short_quote: count on accurate pricing, reliable availability, and clear delivery options
+  kind: constraint
+  theme: trust_through_agents
+  business_functions:
+  - trust_safety
+  - product
+  - supply_chain
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CON-03
+  - CON-19
+  - CAP-10
+  confidence: high
+- id: ST-202
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner
+  role: President & CEO (Q3 FY27 call, Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: Furner listed agentic experiences with stores, clubs and e-commerce as the strengths behind Walmart's value proposition, said the
+    next steps in agentic commerce build on the omnichannel foundation, and said Walmart is creating an environment where agents can help a customer
+    discover new items and decide what to buy. ChatGPT, Gemini, OpenAI, Google and Meta were not named anywhere on the call.
+  kind: goal
+  theme: agentic_pillar
+  business_functions:
+  - product
+  - partnerships
+  - supply_chain
+  actor_types:
+  - shopper
+  - agent_builder
+  org_rows:
+  - CAP-01
+  - CAP-07
+  - CAP-35
+  confidence: high
+- id: ST-203
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: Seth Dallaire
+  role: EVP & Chief Growth Officer (Q3 FY27 Q&A, answering Scot Ciccarelli, Truist; Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: Ciccarelli cited concerns in the investment community about the value of advertising in an agentic-dominated world, with one of
+    Walmart's largest competitors barring third-party agents. Dallaire said Walmart engages with agentic commerce to learn, wants to be where
+    customers are if they shop through agents, is still learning how conversational queries and prompts differ, and that the desire to discover
+    new products and brands has not changed; brand advertising is the important part. He did not name the competitor or address sponsored items,
+    labeling or measurement. It was the only analyst question about agents and ads.
+  kind: risk
+  theme: ads_in_agents
+  business_functions:
+  - connect_ads
+  - finance
+  actor_types:
+  - supplier_brand
+  - agent_builder
+  org_rows:
+  - CAP-34
+  confidence: high
+- id: ST-204
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: Seth Dallaire
+  role: EVP & Chief Growth Officer (Q3 FY27 Q&A, answering Peter Benedict, Baird; Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: 'Dallaire described two agentic uses on the ad side: search and discovery of content for VIZIO TV owners, and agentic capability
+    inside Vibe that powers ad buying for smaller advertisers; VIZIO sets now support sales attribution for advertisers.'
+  kind: capability_claim
+  theme: agentic_ad_tools
+  business_functions:
+  - connect_ads
+  actor_types:
+  - supplier_brand
+  - small_business
+  org_rows:
+  - CAP-34
+  confidence: medium
+- id: ST-205
+  source_url: https://www.sec.gov/Archives/edgar/data/0000104169/000010416926000168/earningsreleasefy27q3.htm
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: Walmart, corporate / John Furner
+  role: Q3 FY27 earnings release (8-K exhibit)
+  source_type: walmart_primary
+  paraphrase: The release's forward-looking statements list consumer acceptance of Walmart's stores, clubs, e-commerce, digital and agentic platforms,
+    and pressures from AI development and deployment, among factors that could change results; Furner's release quote names agentic shopping,
+    with membership, as a source of growth.
+  short_quote: From membership and agentic shopping to new ways of using our stores
+  kind: risk
+  theme: agentic_disclosure
+  business_functions:
+  - finance
+  - product
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-01
+  confidence: high
+- id: ST-206
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner / John David Rainey
+  role: CEO / CFO (Q3 FY27 Q&A; Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: Furner called the customer stable and resilient; about 7,700 rollbacks were running against a typical 5,000 to 5,500; food inflation
+    is 1% to 2%; management priced a Thanksgiving meal at just over $3.50 a person. Rainey said elevated diesel and transport added over $2B of
+    incremental cost this year.
+  kind: metric
+  theme: consumer_health
+  business_functions:
+  - finance
+  - merchandising
+  - marketing_crm
+  actor_types:
+  - shopper
+  org_rows:
+  - CAP-04
+  confidence: high
+- id: ST-207
+  source_url: https://stock.walmart.com/_assets/_6eff40d47b6de9e4a6d86158aa985c07/walmart/db/938/10001/transcript_management_call/Earnings_Transcript_%28FY27_Q3%29.pdf
+  published: '2026-11-19'
+  as_of: '2026-11-20'
+  speaker: John Furner / Seth Dallaire / David Guggina
+  role: CEO / Chief Growth Officer / President, Walmart U.S. (Q3 FY27 Q&A; Walmart transcript)
+  source_type: walmart_primary
+  paraphrase: The Walmart+ and Sam's Club Plus bundle launched Oct 20 at $120 a year ($10 a month) and added a couple million new Sam's Club members;
+    early bundle customers spend more than 80% more online; members spend about four times what non-members do; global membership fee revenue
+    grew 17%.
+  kind: metric
+  theme: membership_bundle
+  business_functions:
+  - marketing_crm
+  - finance
+  - b2b
+  actor_types:
+  - shopper
+  - small_business
+  org_rows: []
+  confidence: high

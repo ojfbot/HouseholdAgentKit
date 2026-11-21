@@ -1,0 +1,40 @@
+@import url("cards.css");
+/* Phones: the same dark theme, one ballot per screen, the whole tile is the thing you pick. */
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body.phone { margin: 0; min-height: 100vh; background: var(--char); color: var(--crema); font-family: var(--text); -webkit-font-smoothing: antialiased;
+  padding: max(.9rem, env(safe-area-inset-top)) 1rem max(2rem, env(safe-area-inset-bottom)); }
+body.phone[data-conn="reconnecting"]::before { content: "Reconnecting…"; position: fixed; top: 0; left: 0; right: 0; z-index: 10; background: var(--corn);
+  color: var(--on-bright); text-align: center; padding: .35rem; font-size: .85rem; font-weight: 650; }
+.who { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; }
+.who .mark { display: grid; }
+.role-badge { background: var(--comal-2); color: var(--crema); border-radius: 999px; padding: .45em 1em; font-weight: 700; font-size: .9rem; }
+.fine { color: var(--masa); font-size: .85rem; margin: .8rem 0 0; }
+.big { font: 800 2rem/1.05 var(--display); letter-spacing: -0.025em; margin: 1rem 0 0; }
+.wait { margin-top: 12vh; }
+.wait .tile-art { width: 9rem; aspect-ratio: 3 / 2; border-radius: 24px; background: var(--comal); }
+.wait .tile-art svg { width: 78%; }
+
+/* timer: a pill whose bar drains on the sim clock (clock.js sets --left) */
+.timer-wrap { position: relative; display: flex; align-items: center; justify-content: space-between; background: var(--comal); border-radius: 16px;
+  padding: .7rem 1rem; overflow: hidden; margin-bottom: 1.1rem; }
+.timer-label { position: relative; z-index: 1; color: var(--masa); font-size: .85rem; font-weight: 600; }
+.timer { position: relative; z-index: 1; font: 800 1.6rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.timer-bar { position: absolute; left: 0; bottom: 0; height: 4px; width: calc(var(--left, 1) * 100%); background: var(--salsa); transition: width .25s linear; }
+.timer-wrap.is-ending .timer { color: var(--salsa); }
+
+.q { font: 800 1.75rem/1.05 var(--display); letter-spacing: -0.025em; margin: 0 0 1rem; }
+.card.on-phone { background: transparent; box-shadow: none; padding: 0; }
+.card.on-phone .card-sections { gap: .9rem; }
+.card.on-phone .card-section:not(.tile) { background: var(--comal); border: 0; border-radius: 18px; padding: 1rem; }
+.card.on-phone .tile-art { aspect-ratio: 16 / 5; }
+.card.on-phone .tile-art svg { width: 34%; }
+.card.on-phone .btn-vote { margin-top: .6rem; }
+.ballot.is-kid .tile-art { aspect-ratio: 16 / 7; }
+.ballot.is-kid .tile-art svg { width: 44%; }
+.ballot.is-kid .tile-body h3 { font-size: 1.45rem; }
+.card.card-over_cap.on-phone { box-shadow: none; }
+.card.card-over_cap.on-phone .card-section:first-child { box-shadow: inset 0 3px 0 var(--salsa); }
+.card.on-phone .card-actions { margin-top: 1rem; }
+.toast { position: fixed; bottom: 1.2rem; left: 1rem; right: 1rem; background: var(--salsa); color: var(--on-bright); font-weight: 650; padding: .8rem 1rem; border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

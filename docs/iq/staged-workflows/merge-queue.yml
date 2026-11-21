@@ -1,0 +1,45 @@
+# R1.1 default A: agents' PRs merge themselves after green CI, the nightly gate and the other agent's review.
+# Contract, ADR, irreversible, cross-repo and gate/CI changes are owner-gated: listed for the owner, never merged here.
+# Runs after the nightly gate. Merges serially, oldest first; each merge pins the head SHA it was gated on.
+name: merge-queue
+on:
+  workflow_run:
+    workflows: [nightly-gate]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  merge:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16"}
+      - run: uv sync --frozen
+      - name: fetch tonight's gate records
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          run_id=${{ github.event.workflow_run.id || '' }}
+          [ -z "$run_id" ] && run_id=$(gh run list -w nightly-gate -L 1 --json databaseId -q '.[0].databaseId')
+          gh run download "$run_id" -n nightly-gate -D gate
+      - name: plan
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          gh pr list --state open --json number,title,createdAt,isDraft,body,headRefOid,labels,files,statusCheckRollup,reviews,comments -L 100 > prs.json
+          uv run kit merge-queue plan --prs prs.json --gates gate/gates.json --out plan.json
+          jq -r '.[] | "#\(.number) \(.action): \(.reasons | join("; "))"' plan.json
+      - name: merge (rebase, linear history, delete branch)
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          for n in $(jq -r '.[] | select(.action=="merge") | .number' plan.json); do
+            sha=$(jq -r --argjson n "$n" '.[] | select(.number==$n) | .headRefOid' prs.json)
+            gh pr merge "$n" --rebase --delete-branch --match-head-commit "$sha" || echo "::warning::#$n did not merge (moved or conflicted); next night"
+          done
+      - uses: actions/upload-artifact@v4
+        with: {name: merge-plan, path: plan.json}
+# Note: merges made with GITHUB_TOKEN do not trigger `on: push` workflows; the next nightly gate covers main.

@@ -1,0 +1,59 @@
+{
+  "_fixture": "Hand-extracted from fork-c/run-0-problem-bank.json (run-0, controls@1, rubric@2, seed 20261118) and fork-f/run-0-decomposition-v2.json: the families in any profile's top 10, plus the anchors and two tier-0/1 examples. Fields are copied, never recomputed. Fork G's Readout@0 replaces this.",
+  "run_id": "run-0",
+  "bank_id": "bank:run-0@fork-c",
+  "control_model_version": "controls@1",
+  "lens_in_run": "in_house",
+  "synthetic_label": "All situations synthetic; value at stake is order-of-magnitude and synthetic unless every input is sourced",
+  "hello_world": {"placement_pass": true, "live_agent_smoke_test": "pending (A's agent stack v0, Nov 21)"},
+  "profiles": {
+    "default": {"function": "Balanced (no function)", "owner": null},
+    "marketing_crm": {"function": "Marketing / CRM", "owner": "mkt", "question": "Which households and segments should we court, and where do agents serve them worst?"},
+    "supply_chain": {"function": "Supply chain / fulfillment", "owner": "sc", "question": "Where will agent demand cluster into slot peaks and locked-line substitution risk?"}
+  },
+  "floor_clamps": {
+    "marketing_crm": [["PF-28","intent",0.6],["PF-31","intent",0.6],["PF-37","segment",0.5],["PF-30","intent",0.6],["PF-33","segment",0.5],["PF-35","segment",0.5],["PF-41","segment",0.7],["PF-41","intent",0.6],["PF-50","segment",0.5],["PF-36","segment",0.5],["PF-36","intent",0.6]],
+    "supply_chain": [["PF-23","intent",0.6]]
+  },
+  "families": [
+    {"id": "PF-39", "title": "Buy only what the donations didn't cover", "tier": 2, "vas": 23400000, "segment_src": "S:pantries", "evidence": "E2", "s_vas": 2.37, "s_ev": 2, "top10": {"default": 1, "marketing_crm": 7, "supply_chain": 9}, "owners": ["b2b","fin","prod"], "actor_type": "community_org", "protected": [], "anchor": false},
+    {"id": "PF-44", "title": "Restock between guests", "tier": 2, "vas": 84960000, "segment_src": "S:str", "evidence": "E0", "s_vas": 2.93, "s_ev": 0, "top10": {"default": 2, "marketing_crm": 8, "supply_chain": 8}, "owners": ["b2b","sc","partner"], "actor_type": "small_business", "protected": [], "anchor": false},
+    {"id": "PF-48", "title": "Support for orders an agent placed", "tier": 2, "vas": 123552000, "segment_src": "A:households", "evidence": "E2", "s_vas": 3.09, "s_ev": 2, "top10": {"default": 3, "marketing_crm": null, "supply_chain": 3}, "owners": ["care","prod"], "actor_type": "walmart_team", "protected": [], "anchor": false},
+    {"id": "PF-20", "title": "Win the order the agent is shopping around", "tier": 2, "vas": 936000000, "segment_src": "A", "evidence": "E2", "s_vas": 3.97, "s_ev": 2, "top10": {"default": 4, "marketing_crm": 1, "supply_chain": null}, "owners": ["mkt","prod","partner"], "actor_type": "never_shopper", "protected": [], "anchor": false},
+    {"id": "PF-03", "title": "Storm kit before the shelves empty", "tier": 2, "vas": 75000000, "segment_src": "A", "evidence": "E2", "s_vas": 2.88, "s_ev": 2, "top10": {"default": 5, "marketing_crm": null, "supply_chain": null}, "owners": ["sc","mkt","prod"], "actor_type": "shopper", "protected": [], "anchor": false},
+    {"id": "PF-01", "title": "Restock on the money rhythm", "tier": 2, "vas": 1175200000, "segment_src": "S:snap_hh", "evidence": "E1", "s_vas": 4.07, "s_ev": 1, "top10": {"default": 6, "marketing_crm": 3, "supply_chain": null}, "owners": ["mkt","fin","sc"], "actor_type": "shopper", "protected": ["benefits"], "anchor": false},
+    {"id": "PF-46", "title": "A sandbox and conformance suite for partners", "tier": 2, "vas": 109824000, "segment_src": "A:households", "evidence": "E2", "s_vas": 3.04, "s_ev": 2, "top10": {"default": 7, "marketing_crm": null, "supply_chain": null}, "owners": ["partner","prod","tns"], "actor_type": "agent_builder", "protected": [], "anchor": false},
+    {"id": "PF-15", "title": "A recall hits the pantry", "tier": 2, "vas": 41580000, "segment_src": "A:households", "evidence": "E1", "s_vas": 2.62, "s_ev": 1, "top10": {"default": 8, "marketing_crm": null, "supply_chain": null}, "owners": ["care","tns","merch"], "actor_type": "shopper", "protected": ["older"], "anchor": false},
+    {"id": "PF-22", "title": "Buy for work under the expense policy", "tier": 2, "vas": 120000000, "segment_src": "A", "evidence": "E2", "s_vas": 3.08, "s_ev": 2, "top10": {"default": 9, "marketing_crm": null, "supply_chain": null}, "owners": ["b2b","fin"], "actor_type": "small_business", "protected": [], "anchor": false},
+    {"id": "PF-33", "title": "Brands warn agents before a change", "tier": 2, "vas": 10400000, "segment_src": "A", "evidence": "E1", "s_vas": 2.02, "s_ev": 1, "top10": {"default": 10, "marketing_crm": 9, "supply_chain": null}, "owners": ["merch","mp","sc"], "actor_type": "supplier_brand", "protected": ["food_sensitive"], "anchor": false},
+    {"id": "PF-23", "title": "A grandparent's gift, the parent's rules", "tier": 2, "vas": 72000000, "segment_src": "A", "evidence": "E0", "s_vas": 2.86, "s_ev": 0, "top10": {"default": null, "marketing_crm": 2, "supply_chain": null}, "owners": ["mkt","merch"], "actor_type": "shopper", "protected": ["older"], "anchor": false},
+    {"id": "PF-10", "title": "Friendsgiving across six households", "tier": 2, "vas": 135000000, "segment_src": "A", "evidence": "E0", "s_vas": 3.13, "s_ev": 0, "top10": {"default": null, "marketing_crm": 4, "supply_chain": null}, "owners": ["mkt","merch"], "actor_type": "shopper", "protected": [], "anchor": false},
+    {"id": "PF-31", "title": "One shopper, three households", "tier": 2, "vas": 702000000, "segment_src": "S:aarp2", "evidence": "E1", "s_vas": 3.85, "s_ev": 1, "top10": {"default": null, "marketing_crm": 5, "supply_chain": null}, "owners": ["prod","mkt"], "actor_type": "caregiver", "protected": ["older"], "anchor": false},
+    {"id": "PF-37", "title": "A put-away plan for an empty house", "tier": 2, "vas": 15600000, "segment_src": "A", "evidence": "E2", "s_vas": 2.19, "s_ev": 2, "top10": {"default": null, "marketing_crm": 6, "supply_chain": 2}, "owners": ["ops","sc"], "actor_type": "store_associate", "protected": ["food_sensitive"], "anchor": false},
+    {"id": "PF-47", "title": "Turn 'by 6' into a deadline Sparky can keep", "tier": 2, "vas": 549120000, "segment_src": "A:households", "evidence": "E3", "s_vas": 3.74, "s_ev": 3, "top10": {"default": null, "marketing_crm": 10, "supply_chain": null}, "owners": ["prod"], "actor_type": "walmart_team", "protected": [], "anchor": false},
+    {"id": "PF-35", "title": "The lock reaches the picker", "tier": 2, "vas": 20280000, "segment_src": "A", "evidence": "E0", "s_vas": 2.31, "s_ev": 0, "top10": {"default": null, "marketing_crm": null, "supply_chain": 1}, "owners": ["ops","sc"], "actor_type": "store_associate", "protected": ["food_sensitive"], "anchor": false},
+    {"id": "PF-43", "title": "A shelter opens; headcount climbs hourly", "tier": 2, "vas": 4000000, "segment_src": "A", "evidence": "E2", "s_vas": 1.6, "s_ev": 2, "top10": {"default": null, "marketing_crm": null, "supply_chain": 4}, "owners": ["b2b","sc"], "actor_type": "community_org", "protected": [], "anchor": false},
+    {"id": "PF-11", "title": "Do we already have salsa?", "tier": 2, "vas": 1029600000, "segment_src": "A:households", "evidence": "E0", "s_vas": 4.01, "s_ev": 0, "top10": {"default": null, "marketing_crm": null, "supply_chain": 5}, "owners": ["merch","sc"], "actor_type": "shopper", "protected": [], "anchor": false},
+    {"id": "PF-16", "title": "Never miss a return window", "tier": 2, "vas": 120000000, "segment_src": "A", "evidence": "E0", "s_vas": 3.08, "s_ev": 0, "top10": {"default": null, "marketing_crm": null, "supply_chain": 6}, "owners": ["care","sc"], "actor_type": "shopper", "protected": [], "anchor": false},
+    {"id": "PF-50", "title": "Move agent orders off the peak", "tier": 2, "vas": 102960000, "segment_src": "A:households", "evidence": "E1", "s_vas": 3.01, "s_ev": 1, "top10": {"default": null, "marketing_crm": null, "supply_chain": 7}, "owners": ["sc","fin"], "actor_type": "walmart_team", "protected": ["benefits"], "anchor": false},
+    {"id": "PF-29", "title": "Scam-aware consent with a trusted contact", "tier": 2, "vas": 150000000, "segment_src": "A", "evidence": "E1", "s_vas": 3.18, "s_ev": 1, "top10": {"default": null, "marketing_crm": null, "supply_chain": 10}, "owners": ["tns","care","prod"], "actor_type": "caregiver", "protected": ["older"], "anchor": false},
+    {"id": "PF-51", "title": "Taco night by 6, under $25 (Demo A)", "tier": 2, "vas": 585000000, "segment_src": "A", "evidence": "E3", "s_vas": 3.77, "s_ev": 3, "top10": {"default": null, "marketing_crm": null, "supply_chain": null}, "owners": ["mkt","prod","sc"], "actor_type": "shopper", "protected": [], "anchor": true, "demo_beat": 1},
+    {"id": "PF-28", "title": "Care Profiles (Demo B)", "tier": 2, "vas": 4914000000, "segment_src": "S:caregivers", "evidence": "E1", "s_vas": 4.69, "s_ev": 1, "top10": {"default": null, "marketing_crm": null, "supply_chain": null}, "owners": ["prod","care","mkt"], "actor_type": "caregiver", "protected": ["older","disability"], "anchor": true, "demo_beat": 3},
+    {"id": "G-01", "title": "Taco ideas for under $25 (hello world, tier 0)", "tier": 0, "vas": 58500000, "segment_src": "A", "evidence": "E3", "s_vas": 2.77, "s_ev": 3, "top10": {"default": null, "marketing_crm": null, "supply_chain": null}, "owners": ["prod"], "actor_type": "shopper", "protected": [], "anchor": true},
+    {"id": "G-06", "title": "Shop in Spanish, start to checkout", "tier": 0, "vas": 135200000, "segment_src": "A", "evidence": "E0", "s_vas": 3.13, "s_ev": 0, "top10": {"default": null, "marketing_crm": null, "supply_chain": null}, "owners": ["mkt","tns"], "actor_type": "shopper", "protected": ["language"], "anchor": false},
+    {"id": "G-03", "title": "Reorder my usuals, net of what's on hand", "tier": 1, "vas": 624000000, "segment_src": "A", "evidence": "E0", "s_vas": 3.8, "s_ev": 0, "top10": {"default": null, "marketing_crm": null, "supply_chain": null}, "owners": ["mkt","merch"], "actor_type": "shopper", "protected": [], "anchor": false}
+  ],
+  "components": {
+    "_source": "fork-f/run-0-decomposition-v2.json (decomposition@2, components@2); other families show 'from Fork G's readout' until the live readout carries them",
+    "PF-28": {"components": ["K01","K02","K03","K04","K05","K06","K07","K08","K09","K10","K11","K12","K24"], "enhance": ["K22"], "adapters": ["CAP-07","CAP-10","CAP-21","CAP-24","CAP-28"]},
+    "PF-51": {"components": ["K01","K02","K03","K04","K05","K06","K09","K10","K11","K12","K21","K24"], "enhance": ["K22"], "adapters": ["CAP-07","CAP-10"]},
+    "PF-39": {"components": ["K01","K02","K03","K04","K05","K06","K07","K08","K09","K10","K11","K12","K13","K21","K24"], "enhance": [], "adapters": ["CAP-07","CAP-10","CAP-21","CAP-24","CAP-28"]},
+    "PF-44": {"components": ["K01","K02","K03","K04","K05","K06","K07","K08","K09","K10","K11","K12","K13","K21","K24"], "enhance": [], "adapters": ["CAP-07","CAP-10","CAP-21","CAP-24","CAP-28"]},
+    "PF-43": {"components": ["K01","K02","K03","K04","K05","K06","K07","K09","K10","K11","K12","K21","K24"], "enhance": ["K22"], "adapters": ["CAP-07","CAP-10","CAP-21","CAP-28"]}
+  },
+  "component_names": {
+    "K01": "Intent parser", "K02": "Sparky brief writer", "K03": "Constraint verifier", "K04": "Cart solver", "K05": "Deadline-to-slot",
+    "K06": "Household rules and rights", "K07": "Profile scopes", "K08": "Standing mandate guard", "K09": "Trigger gateway", "K10": "Poll and decision",
+    "K11": "Role-scoped cards", "K12": "Ledger", "K13": "On-hand state", "K21": "Need-list builder", "K22": "Feedback interpreter", "K24": "ShoppingPort adapters"
+  }
+}

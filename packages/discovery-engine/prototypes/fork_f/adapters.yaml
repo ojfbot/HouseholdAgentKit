@@ -1,0 +1,113 @@
+# Adapter matrix for components that depend on unconfirmed Walmart capabilities (Fork F, proposed 2026-11-19).
+# Status comes from org@1 (fork-c/org-model/walmart/capabilities.yaml); Fork E re-tests CAP-07 and CAP-10 by Nov 21 (org@2).
+# Rule: the capability mode is a config value (capability_mode) read at startup and stamped on every trace (K26).
+# Rule: each contract test is tagged with its CAP id, so `pytest -m cap07` reruns exactly the tests that matter when access arrives.
+version: adapters@1
+modes:
+  H1: conversational. Talk to Sparky agent-to-agent in natural language; parse prose with the Sparky extractor (A lane 11).
+  H2: UCP-shaped. Structured tools (discover, propose_cart, request_consent, checkout, slots) with typed briefs.
+  H3: hybrid (default for Dec 2). Send the brief as text where only conversation exists; get price, stock and cart through structured discover(); our own solver (K04) decides over returned items.
+capabilities:
+  CAP-07:
+    name: Agent-to-agent with Sparky
+    status_org1: inferred
+    status_org2: "published, exposure beta (Fork E, Nov 19: Addendum 1 defines the Gateway as agent-to-agent with Sparky); request FORMAT unknown"
+    components: [K02, K24, K17]
+    families_affected: 56
+    note_org2: "The open question is now H1 (conversational) vs H2 (structured), not whether Sparky is reachable. The if_absent branch is kept as a fallback only."
+    default_mode: H3
+    if_published_structured: "H2. K02 sends Brief@1 as JSON; the H1 extractor is unused; tier-1 uplift is measured against real Sparky."
+    if_published_conversational_only: "H1 for the brief and answer; K24's extractor parses prose into Offer lists; K03 verifies every number; follow-ups <= 2."
+    if_absent: "No Sparky in the loop. K02's brief becomes a query plan executed on discover(); K04 answers it. Tier 1 is then 'our solver answers the specific brief', and the talk says so."
+    contract_tests:
+      CT-07a: brief round-trip, every hard constraint in Brief@1 appears on the wire (H1 text or H2 JSON)
+      CT-07b: extraction F1 >= 0.95 on 200 synthetic Sparky replies (H1)
+      CT-07c: prompt-injection replies rejected 100% (instructions inside Sparky text never change the mandate)
+      CT-07d: at most 2 follow-ups, keyed (mandate_id, round)
+      CT-07e: an answer that violates a hard constraint falls back to K04 over the returned items
+      CT-07f: minimum disclosure, no member identities or reasons behind locks on the wire
+  CAP-10:
+    name: Pickup and delivery slots
+    status_org1: "published, exposure unknown"
+    status_org2: "consumer slots published; exposure to agents inferred (Fork E)"
+    components: [K05, K24, K10]
+    families_affected: 41
+    default_mode: "estimated slots on the twin; confirmed only via a slots tool"
+    if_exposed_with_holds: "K05 queries and holds a slot until the poll closes; SlotPlan.status = confirmed."
+    if_exposed_read_only: "K05 queries; no hold. Poll closes at slot cutoff minus a 10-minute buffer; re-check at close; STALE -> next cart."
+    if_not_exposed: "K05 heuristic (store hours + published lead time) -> status = estimated. Cards say 'pickup time confirmed at checkout'. The 'by 6' claim moves to checkout, where the consent gate shows the real slot."
+    contract_tests:
+      CT-10a: slots(store, window) response shape and time zone
+      CT-10b: cutoff semantics (ready_by vs window start) for pickup and delivery
+      CT-10c: a slot gone at checkout returns STALE and triggers re-solve, never a silent later slot
+      CT-10d: no card or brief states a confirmed time when SlotPlan.status != confirmed
+  CAP-43:
+    name: Hold a pickup or delivery slot for an agent (split out of CAP-10 by Fork E)
+    status_org2: proposed
+    components: [K05, K10]
+    families_affected: 41
+    if_absent: "No hold. The poll closes at slot cutoff minus a 10-minute buffer; re-check at close; STALE -> next cart (CAP-10 read-only branch)."
+    contract_tests:
+      CT-43a: a held slot is released when the poll lapses; no hold is ever shown to members as a promise
+  CAP-02:
+    name: "Agent Profiles (cap, approve-each, separate history, revoke)"
+    status_org1: "published (rollout ~late Nov)"
+    components: [K07, K08, K12, K24]
+    default_mode: twin from the Oct 21 announcement
+    if_shape_differs: "Map Walmart's fields onto Profile@1 in K24; K07 and K08 keep their own guards on our side, so a looser Walmart cap never loosens ours."
+    contract_tests:
+      CT-02a: cap enforced on both sides (ours first)
+      CT-02b: revoke stops the next action within one call
+      CT-02c: agent history separate from the shopper's own (G-05 parity)
+  CAP-21:
+    name: Care profile per person cared for
+    status_org1: proposed
+    components: [K07, K17, K24]
+    default_mode: "labeled proposal in the twin; announced behaviour (one profile per agent, account-level usuals) is the default config"
+    if_absent: "Fallback adapter: one agent instance (and one Agent Profile) per person cared for; pinned ship-to and scoped usuals enforced on our side by K07."
+    contract_tests:
+      CT-21a: profile_leakage = 0 between Ruth's and Jen's usuals
+      CT-21b: address_integrity, any non-pinned ship-to refused
+      CT-21c: requested_by survives every hop to the ledger
+  CAP-28:
+    name: "Org principal: multi-approver, tax-exempt agent profile"
+    status_org1: proposed
+    components: [K07, K10]
+    if_absent: "Walmart Business account (CAP-14, exposure unknown) or a consumer account, with our own two-approver K10 policy before the consent gate."
+    contract_tests:
+      CT-28a: two approvers required, no quorum -> hold, never owner default
+  CAP-22:
+    name: Packaging and recipe change notice to agents
+    status_org1: proposed
+    components: [K14, K16]
+    if_absent: "Diff packaging_version in the catalog on every discover(); notice lead time is then zero, and the card says so."
+    contract_tests:
+      CT-22a: injected packaging change caught before the next order
+  CAP-23:
+    name: Put-away plan carried to InHome associates
+    status_org1: proposed
+    components: [K15]
+    if_absent: "Fit the plan into the delivery-notes field (CAP-19 notes exist; exposure to agents unknown); priority lines first."
+    contract_tests:
+      CT-23a: truncation keeps every lock line
+  CAP-25:
+    name: Support view of agent orders
+    status_org1: proposed
+    components: [K18]
+    if_absent: "Our own read-only view over K12; it is what we would hand Walmart care as a reference."
+    contract_tests:
+      CT-25a: "'who approved?' in < 10 s from an order id"
+  CAP-12:
+    name: SNAP/EBT online
+    status_org1: "published, exposure unknown"
+    components: [K16]
+    if_not_exposed: "Label eligibility only; never touch payment."
+    contract_tests:
+      CT-12a: eligibility label matches catalog flag; no payment field ever set
+  CAP-24:
+    name: Flexible-window mandate (slack for a discount)
+    status_org1: proposed
+    components: [K08, K05]
+    if_absent: "Mandate.deadline.slack is honoured on our side: book the earliest slot in the window."
+    contract_tests:
+      CT-24a: no SNAP-segment household gets a worse slot (K19 parity cell)

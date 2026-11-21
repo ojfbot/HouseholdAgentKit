@@ -1,0 +1,30 @@
+# Example bundle: the whole stack at tier `none` (ADR-006): every lane uses its named deterministic
+# fallback. This is the baseline row of every leaderboard and the demo's last-resort mode.
+# Values marked <pin> are filled by `kit bundle build` from the repo at founding; ids are computed.
+schema: bundle-manifest/0
+name: tier-none-baseline
+kind: release
+model:
+  serving: {runtime: none, version: "0", helper_pin: "kit-serve@sha256:<pin>"}
+  lanes:
+    K01: {provider: none, fallback: "grammar slot-filler"}
+    K02: {provider: none, fallback: "deterministic Mandate->Brief projection (H3)"}
+    K11: {provider: none, fallback: "template cards per (kind, role)"}
+    K21: {provider: none, fallback: "template lookup by occasion"}
+    K22: {provider: none, fallback: "curated pick lists"}
+    K24: {provider: none, fallback: "H3 hybrid adapter"}
+harness:
+  repo_commit: "<pin>"
+  graph: {agent: "taco-night@0", engine: "discovery-engine@0"}
+  tool_contracts: {shopping_port: v1, mandate: v1, sparky_brief: v1, poll: v0, case: v1-loose}
+  guards: {K03: "<pin>", K08: "<pin>", privacy: "<pin>"}
+  solver: {version: "reference-greedy@0", sha: "<pin>"}
+  prompts_sha: "<pin>"
+context:
+  profiles: "profiles@0"
+  catalog: "catalog@0-twin.1"
+  case_set: {dev: "<pin>", test: "<pin>", holdout_commitment: "<sha256 of sealed seed, held outside the repo>"}
+  org_model: org@2
+  lattice: lattice@1
+  components: components@2
+  controls: controls@1

@@ -1,0 +1,1380 @@
+# components@2 — the component catalog for the agent-mediated Walmart shopping stack.
+# Owner: Fork F. Supersedes components@1 (fork-c/components-v1.yaml). Proposed 2026-11-19; contract freeze 2026-11-22.
+# Every number is synthetic. Every Walmart-side behaviour runs against the twin (K17) until access arrives.
+#
+# How to read a component:
+#   layer       product (problem families decompose into these) | platform (shared runtime) | eval (proves the others)
+#   slot        where it sits in the harness: node (LangGraph node) | tool | guard | solver | adapter | store | bus | eval | fixture
+#   in/out      typed schemas from `types` below; `reads`/`writes` are versioned shared contracts
+#   timing      sync | async | event:<topic>
+#   model       default tier, allowed tiers, the seam (one interface), and the deterministic fallback
+#   caps        org-model rows it depends on (fork-c/org-model/walmart/capabilities.yaml); unconfirmed ones go through an adapter (adapters below)
+#   oracle      the test that defines "good" (unit/property for deterministic; labeled eval set for model lanes)
+#   mock        what it is tested against, so it can be built in parallel
+#   deps        runtime dependencies (component IDs). Build-time it only needs the contract + mock of each dep.
+#   owner/impl/review  FDE role (the planning project) and builder lane; the reviewer is always the other agent
+#   effort      S = 1 lane-day, M = 2, L = 3
+#   mvp         HW (hello world live) | CARE (Care Profiles) | ENG (engine run) | stub (thin fallback only) | cut (after Dec 2)
+#   needs       the needs@1 key that maps a problem card onto this component (decomposition stage)
+
+version: components@2
+supersedes: components@1
+as_of: 2026-11-19
+effort_days: {S: 1, M: 2, L: 3}
+
+roles:
+  EL: Engagement lead (the owner)
+  HP: Harness & platform engineer
+  MF: Models & fine-tuning engineer
+  ED: Evals & data engineer
+  PD: Product & delivery engineer
+  EN: Engine engineer (added 2026-11-19, the owner approved the eight-role roster)
+  DX: Demo & experience engineer (added 2026-11-19)
+  IQ: Integration & quality lead (added 2026-11-19)
+
+# ---------------------------------------------------------------------------------------------
+# Shared result envelope (proposed contract Result@0). Every component returns one of these.
+# ---------------------------------------------------------------------------------------------
+result:
+  ok: {value: T, trace: TraceRef, fallback_used: bool, adapter_id: "str?"}
+  refusal: {code: RefusalCode, reason: str, retryable: bool, owner_action: "str?", evidence: [Ref]}
+  error: {code: str, retryable: bool}
+refusal_codes:
+  LOCK_VIOLATION: a cart, swap or edit would break a lock or hard rule (never negotiable)
+  OVER_CAP: total exceeds a per-order or per-month cap; route to approver
+  OUT_OF_MANDATE: an unattended action falls outside the standing mandate
+  RIGHTS_DENIED: the actor's role has no right to this action
+  PROFILE_SCOPE: data or address crosses a profile boundary
+  ADDRESS_MISMATCH: ship-to differs from the pinned address
+  INFEASIBLE: no cart meets the hard constraints; carries the numbers
+  UNVERIFIED_CLAIM: a number on a card or brief could not be verified
+  CAPABILITY_UNAVAILABLE: the Walmart capability is absent or not exposed; adapter fell back
+  STALE: price, stock or slot changed since the cart was built
+  AMBIGUOUS: the request is missing a slot; carries at most one clarifying question
+
+# ---------------------------------------------------------------------------------------------
+# Types (proposed contract versions in brackets). Field lists, not full JSON Schema; the schema
+# files land in packages/contracts/ at freeze.
+# ---------------------------------------------------------------------------------------------
+types:
+  Request: {text: str, actor: MemberRef, channel: "chat|voice|trigger", locale: str, received_at: datetime}
+  MemberRef: {member_hash: str, role: "owner|partner|teen|kid|guest|requester|approver_payer|key_holder|treasurer|fulfiller"}
+  Mandate:   # [Mandate@1]  v0 + B's requested_by/profile_id + standing block + slack
+    mandate_id: str
+    principal: MemberRef
+    requested_by: MemberRef
+    profile_id: "str?"
+    occasion: "str?"
+    headcount: {adults: int, kids: [int]}
+    deadline: {type: "pickup_ready_by|deliver_by|deliver_window", time: datetime, store: "str?", window_end: "datetime?", slack: "duration?"}
+    budget: {max: money, includes: ["tax","fees"], hard: bool}
+    constraints: [{id: str, kind: "lock|exclude|require|cap|category_block|ship_to", value: any, hardness: "hard|soft", slack: "any?"}]
+    locks: [{item_ref: str, level: 0..4, exact_upc: bool}]
+    exclude: [str]
+    on_hand: [str]
+    weights: {savings: float, fresh: float, repeat: float, variety: float}
+    standing: {schedule: str, cap_per_order: money, cap_per_month: money, autonomy: "approve_each|within_cap", expires: date, optional: true}
+  Brief:     # [Brief@1]  = Sparky brief schema v0 + mandate_id + profile_id; rules travel, reasons don't
+    {mandate_id, occasion, headcount, deadline, budget, locks, exclude, on_hand, ask: {options: int, vectors: [str], format: str}, disclosure: {mark_sponsored: bool}, profile_id: "str (optional)"}
+  NeedList:  {mandate_id, roles: [{role: str, qty: float, unit: str, required: bool, lockable: bool}], source: "template|rag|explicit|checklist"}
+  Offer:     {sku, title, price, unit, stock: "in|low|out|unknown", attrs: AttributeSet, sponsored: bool, source: "discover|sparky"}
+  Cart:      {cart_id, mandate_id, lines: [{sku, qty, price, role, lock_ok: bool, sponsored: bool}], subtotal, tax_est, total, slot: SlotPlan, label: str, lines_hash: str}
+  VerifyReport: {subject_ref, checks: [{constraint_id, status: "pass|fail|unknown", observed: any, evidence: Ref}], all_hard_pass: bool, unverified_numbers: int}
+  SlotPlan:  {store, ready_by: datetime, slot_id: "str?", status: "confirmed|estimated|infeasible", source: "slots_api|heuristic", cutoff: datetime}
+  AuthzDecision: {decision: "allow|deny|ask", reason_code: "RefusalCode?", ask_member: "MemberRef?"}
+  Poll:      # [Poll@0] unchanged: poll.opened / poll.response / decision, FIFO by poll_id
+    {poll_id, mandate_id, carts: [CartSummary], closes_at, policy, rights}
+  Card:      # [Card@0] new
+    {card_id, audience: MemberRef, kind: "ballot|approval|over_cap|digest|fulfiller|support", sections: [{title, lines: [{text, claim_ref: "str?"}]}], claims: [{id, value, verified_by: Ref}], locale, a11y: {contrast: "AA", reading_level: int}}
+  LedgerEntry: # [Ledger@0] new: the audit chain is the ledger, append-only, hash-chained
+    {entry_id, episode_id, kind: "mandate|brief|cart|vote|decision|consent|token|order|refund|receipt", refs: [Ref], actor: MemberRef, requested_by: MemberRef, profile_id: "str?", amount: "money?", at: datetime, prev_hash: str, hash: str}
+  TriggerEvent: # [Trigger@0] new
+    {event_id, source: str, kind: str, occurred_at: datetime, household_hash: str, payload_ref: Ref, dedupe_key: str, confidence: float}
+  Notice:    {notice_id, kind: "recall|packaging_change|recipe_change", upc: [str], lots: "[str] (optional)", effective: date, source: str}
+  PantryState: {household_hash, items: [{item_ref, qty_est, last_seen: date, source: "receipt|inventory|manual", confidence: float}]}
+  AttributeSet: {allergens: [str], contains: [str], packaging_version: "str?", snap_eligible: "bool?", size: "str?", unknown: [str]}
+  FulfillerNote: {party: "picker|driver|inhome", order_ref, lines: [{sku, rule: "exact_only|hold_if_oos|sealed|zone"}], text: str, max_len: int}
+  Edit:      {kind: "add|remove|swap|constraint|none|out_of_scope", target: "str?", value: "any?", from_member: MemberRef}
+  Case:      # [Case@1] v0 + interview mode + B's request types and world events
+    {case_id, persona, goal, world_events: [str], adversary: "str?", accept_if: [EndState], mode: "episode|interview", synthetic: true}
+
+# ---------------------------------------------------------------------------------------------
+# needs@1 — the controlled vocabulary a problem card carries (new card field `needs[]`).
+# Each key maps to exactly one component. The decomposition stage fills it by rule; the judge may add.
+# ---------------------------------------------------------------------------------------------
+needs:
+  parse_intent: K01
+  specific_brief: K02
+  verify: K03
+  solve_cart: K04
+  slot_deadline: K05
+  household_rules: K06
+  scoped_principal: K07
+  standing_mandate: K08
+  outside_trigger: K09
+  group_decision: K10
+  role_card: K11
+  ledger: K12
+  on_hand: K13
+  change_notice: K14
+  fulfiller_note: K15
+  item_attributes: K16
+  support_view: K18
+  fairness_floor: K19
+  conformance: K20
+  need_list: K21
+  feedback_edits: K22   # strength: enhance (improves a family, never gates its unlock)
+  walmart_io: K24
+
+components:
+  # ============================ PRODUCT LAYER =============================================
+  K01:
+    name: Intent parser
+    layer: product
+    v1: K01
+    from: [A lane 1]
+    slot: node
+    timing: sync
+    in: [Request, Household]
+    out: Mandate
+    reads: [Household@1, Profile@1]
+    writes: [Mandate@1]
+    errors: [AMBIGUOUS, RIGHTS_DENIED]
+    idempotency: pure at temperature 0 for a pinned bundle
+    model: {default: small_tuned, tiers: [none, small_tuned, frontier], seam: "ModelPort.structured(schema=Mandate@1)", fallback: "grammar slot-filler (deadline, headcount, budget, locks via rules + date parser); missing hard slot -> one clarifying question"}
+    caps: []
+    oracle: "slot F1 >= 0.95 on deadline, headcount, budget, locks (labeled set from K25, held-out personas); property: no lock in Household is ever dropped from the Mandate"
+    mock: MandateFixture (gold mandates from the case engine)
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    mvp: HW
+    deps: []
+    needs: parse_intent
+  K02:
+    name: Sparky brief writer (lane 13)
+    layer: product
+    v1: K02
+    from: [A lane 13, CAP-27 ask]
+    slot: node
+    timing: sync
+    in: [Mandate]
+    out: Brief
+    reads: [Mandate@1, Brief@1, org@]
+    writes: [Brief@1]
+    errors: [UNVERIFIED_CLAIM, CAPABILITY_UNAVAILABLE]
+    idempotency: pure; follow-ups keyed (mandate_id, round), max 2 rounds
+    model: {default: none, tiers: [none, small_tuned, frontier], seam: "BriefRenderer.render(brief, mode=H1|H2)", fallback: "deterministic projection Mandate -> Brief (H2/H3); template text rendering for H1. The model only phrases H1 text and targeted follow-ups"}
+    caps: [CAP-07, CAP-27]
+    oracle: "100% of hard constraints present on the wire (H1 text or H2 JSON); disclosure = minimum set (no reasons, no member identities); <= 2 follow-ups; specificity uplift vs generic request on the fixed set"
+    mock: mock Sparky in K17 (incentive-driven LLM, plus a scripted replay mode)
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    mvp: HW
+    deps: [K01, K24]
+    needs: specific_brief
+  K03:
+    name: Constraint verifier
+    layer: product
+    v1: K03
+    from: [A lane 13 'check every constraint', A lane 7 (locks/budget half)]
+    slot: guard
+    timing: sync
+    in: [Cart|Brief|Card, Mandate]
+    out: VerifyReport
+    reads: [Mandate@1, Card@0]
+    writes: []
+    errors: [UNVERIFIED_CLAIM, LOCK_VIOLATION, OVER_CAP]
+    idempotency: pure
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-04]
+    oracle: "property tests: every hard constraint checked; 0 unverified numbers on any card; mutation suite (seeded wrong prices, swapped locked items, over-cap) caught 100%"
+    mock: Offer/Cart fixtures with seeded violations
+    owner: IQ   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    mvp: HW
+    deps: []
+    needs: verify
+  K04:
+    name: Cart solver (menu builder)
+    layer: product
+    v1: K04
+    from: [A lane 3, platform solver]
+    slot: solver
+    timing: sync (p95 < 2 s on 500 offers)
+    in: [NeedList, Mandate, Offer list]
+    out: "Cart x N (distinct trade-off vectors) | INFEASIBLE with numbers"
+    reads: [Mandate@1, Catalog@0]
+    writes: []
+    errors: [INFEASIBLE, LOCK_VIOLATION]
+    idempotency: deterministic for (inputs, seed)
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-04]
+    oracle: "feasibility 100% (K03 passes every returned cart); hit@3 vs oracle carts; regret <= bar; diversity rule holds; locks never traded for weight; CON-21 the cheapest qualifying cart is always on the menu or the card says why"
+    mock: synthetic catalog slice + oracle carts (K25)
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW
+    deps: [K03, K24]
+    needs: solve_cart
+  K05:
+    name: Deadline-to-slot feasibility
+    layer: product
+    v1: K05
+    from: [A 'delivery slot valid until the poll closes', A poll deadline timer]
+    slot: tool
+    timing: sync; re-checked at poll close and at checkout
+    in: [Mandate.deadline, store]
+    out: SlotPlan
+    reads: [Mandate@1, ShoppingPort@1.slots]
+    writes: []
+    errors: [INFEASIBLE, STALE, CAPABILITY_UNAVAILABLE]
+    idempotency: pure for (deadline, store, clock); slot holds, if any, keyed by mandate_id
+    model: {default: none, tiers: [none], fallback: "heuristic: store hours + published lead time -> status=estimated; never shown as confirmed"}
+    caps: [CAP-10]
+    oracle: "0 false promises (no SlotPlan status=confirmed unless the slot API confirmed it); 'by 6' resolved to pickup_ready_by with cutoff; re-solve on STALE at close"
+    mock: twin slot calendar with capacity and cutoff jitter
+    owner: HP   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW (estimated mode is enough on the twin)
+    deps: [K24]
+    needs: slot_deadline
+  K06:
+    name: Household and org model + rights (PDP)
+    layer: product
+    v1: K06
+    from: [A roles table, A lane 7 (rights half), B served_by, platform household]
+    slot: store + guard (authorize)
+    timing: sync
+    in: [MemberRef, action, resource]
+    out: AuthzDecision
+    reads: [Household@1]
+    writes: [Household@1, "event: rule.changed, address.changed"]
+    errors: [RIGHTS_DENIED, LOCK_VIOLATION]
+    idempotency: pure reads; writes versioned (household_rev)
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: []
+    oracle: "property tests over role x action matrix: only the owner changes locks and budget; no member request can put a lock-breaking cart on a ballot; served_by links honoured"
+    mock: household fixtures C01-C31 (rules only, never diagnoses)
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW
+    deps: []
+    needs: household_rules
+  K07:
+    name: Profile scopes (care, multi-address, org principal)
+    layer: product
+    v1: K07
+    from: [B cycle-2 asks 1-4, CAP-21, CAP-28]
+    slot: guard + store
+    timing: sync
+    in: [profile_id, action, Cart|Request]
+    out: AuthzDecision
+    reads: [Profile@1, Household@1, Mandate@1]
+    writes: [Profile@1]
+    errors: [PROFILE_SCOPE, ADDRESS_MISMATCH, OVER_CAP]
+    idempotency: pure reads
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-02, CAP-21, CAP-28, CAP-14]
+    oracle: "profile_leakage = 0 (usuals, history across profiles); address_integrity = 100% (orders to any non-pinned ship-to refused); blocked_category_reach = 0"
+    mock: twin Agent Profile model (announced default + labeled care-profile proposal)
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: CARE (care profile only; multi-address and org principal stubbed)
+    deps: [K06]
+    needs: scoped_principal
+  K08:
+    name: Standing mandate + guard
+    layer: product
+    v1: K08
+    from: [A M3, B cap per_order/per_month, CAP-24 slack]
+    slot: guard
+    timing: sync (before every unattended action)
+    in: [Mandate.standing, proposed action, spend to date]
+    out: AuthzDecision
+    reads: [Mandate@1, Ledger@0]
+    writes: []
+    errors: [OUT_OF_MANDATE, OVER_CAP]
+    idempotency: pure given ledger snapshot
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-02, CAP-24]
+    oracle: "0 over-cap orders; 0 unattended actions outside the mandate; over-cap -> ask the approver (never auto-approve on timeout); CON-15 autonomous checkout only through the Gateway inside the User-Defined Guardrail"
+    org2_note: "Build on the published User-Defined Guardrail (spend limits, frequency, category restrictions) and the Agent Mandate record; do not define a parallel vocabulary (Fork E, H2 warning)"
+    mock: ledger fixture with month-to-date spend
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: CARE
+    deps: [K06, K12]
+    needs: standing_mandate
+  K09:
+    name: Trigger gateway (source adapters + classifier)
+    layer: product
+    v1: "K09 (split: core envelope + per-source adapters)"
+    from: [Fork C triggers lattice]
+    slot: adapter + node
+    timing: "event: trigger.received -> episode.started"
+    in: [source payload]
+    out: TriggerEvent
+    reads: [Trigger@0, Household@1]
+    writes: [Trigger@0]
+    errors: [CAPABILITY_UNAVAILABLE]
+    idempotency: dedupe_key per (source, household, occurrence)
+    model: {default: none, tiers: [none, small_tuned], seam: "TriggerClassifier.classify(event) -> {is_trigger, kind, confidence}", fallback: "explicit rules per source; only explicit triggers start episodes"}
+    caps: []
+    oracle: "trigger precision >= 0.95; trigger-to-episode p95 within SLO; duplicate occurrences start one episode"
+    mock: recorded synthetic event streams per source
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: "M core + S per source"
+    mvp: stub (manual + calendar sources, rules only)
+    deps: [K23]
+    needs: outside_trigger
+  K10:
+    name: Poll state machine + decision policies
+    layer: product
+    v1: "K10 (split: transport moved to K23)"
+    from: [A lane 8, A poll states, B 'room is Jen']
+    slot: node + timer
+    timing: "event: poll.opened / poll.response / decision (FIFO by poll_id)"
+    in: [Cart x N, policy, rights, closes_at]
+    out: Decision
+    reads: [Poll@0, Household@1]
+    writes: [Poll@0, Ledger@0]
+    errors: [STALE, RIGHTS_DENIED]
+    idempotency: "response idempotency_key; last vote wins; one decision per poll_id"
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: []
+    oracle: "property tests: ties, no quorum, late and duplicate votes, timeout -> owner default, stale winner -> next cart; decision before deadline 100%"
+    mock: in-process bus (K23) + scripted voters (K25)
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW (owner_decides + plurality)
+    deps: [K23, K06]
+    needs: group_decision
+  K11:
+    name: Role-scoped card writer (ballot, approval, over-cap, digest)
+    layer: product
+    v1: "K11 (merged with A lane 4 ballot composer)"
+    from: [A lanes 4 and 5]
+    slot: node
+    timing: sync
+    in: [Cart|Decision, MemberRef, VerifyReport]
+    out: Card
+    reads: [Card@0, Household@1]
+    writes: [Card@0]
+    errors: [UNVERIFIED_CLAIM]
+    idempotency: pure for (inputs, bundle)
+    model: {default: small_tuned, tiers: [none, small_tuned, frontier], seam: "CardWriter.write(claims, audience) -> Card@0", fallback: "template cards per (kind, role); every number filled from VerifyReport claims"}
+    caps: []
+    oracle: "100% of numbers carry claim_ref verified by K03; tone audit pass (older-reader dignity, kid legibility); WCAG AA; comprehension by role (simulated + QR round)"
+    mock: claim fixtures; K25 simulated readers
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    mvp: HW (templates); model tier after Nov 25
+    deps: [K03]
+    needs: role_card
+  K12:
+    name: Ledger and audit chain
+    layer: product
+    v1: "K12 (now the single source of 'who asked, who approved, what was bought')"
+    from: [A trace chain mandate->cart->token->order, B ledger_correctness, B requested_by]
+    slot: store
+    timing: "event: append on every mandate, cart, vote, decision, consent, token, order"
+    in: [LedgerEntry]
+    out: entry hash
+    reads: [Ledger@0]
+    writes: [Ledger@0]
+    errors: []
+    idempotency: entry_id unique; hash chain
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-02]
+    oracle: "ledger_correctness 100% (replay reconstructs every order's mandate, requester, approver, token); chain verifies; requester_faithfulness 100%"
+    org2_note: "Each entry references the published Agent Mandate's immutable record id; the ledger adds requester, profile and hash chain on our side"
+    mock: in-memory store; SQLite on host
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW (append + verify); CARE (requested_by)
+    deps: [K26]
+    needs: ledger
+  K13:
+    name: On-hand state (household pantry or org inventory)
+    layer: product
+    v1: "K13 (generalized: an org's inventory system is a second source)"
+    from: [Fork C PF-11]
+    slot: store + extractor
+    timing: async (receipts) / sync (lookup)
+    in: [receipts, inventory feed, manual]
+    out: PantryState
+    reads: [Household@1]
+    writes: [PantryState@0]
+    errors: [PROFILE_SCOPE]
+    idempotency: receipt_id
+    model: {default: small_tuned, tiers: [none, small_tuned], seam: "ReceiptExtractor.extract(receipt) -> items", fallback: "exact line matching + shelf-life decay table"}
+    caps: []
+    oracle: "on-hand precision >= 0.9; household-only data (no Walmart history used)"
+    mock: synthetic receipts from several stores
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: stub (on_hand carried in the request)
+    deps: [K06]
+    needs: on_hand
+  K14:
+    name: Change and recall notice ingest + lock watcher
+    layer: product
+    v1: "K14 (merged with A lane 10 safe-food watcher)"
+    from: [A lane 10, CAP-22]
+    slot: adapter (a K09 source)
+    timing: "event: notice.received -> alert"
+    in: [Notice]
+    out: "TriggerEvent + matched households"
+    reads: [Household@1, PantryState@0, Catalog@0]
+    writes: [Trigger@0]
+    errors: [CAPABILITY_UNAVAILABLE]
+    idempotency: notice_id
+    model: {default: none, tiers: [none], fallback: "catalog diff on packaging_version when no notice feed exists"}
+    caps: [CAP-22]
+    oracle: "notice-to-alert < 1 h; lot/UPC match precision 1.0; injected packaging changes caught"
+    mock: injected catalog changes in the twin
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: cut
+    deps: [K09, K16]
+    needs: change_notice
+  K15:
+    name: Fulfiller handoff (picker line, driver note, put-away plan)
+    layer: product
+    v1: K15
+    from: [CAP-19, CAP-23]
+    slot: adapter
+    timing: sync at checkout
+    in: [Cart, Household locks, recipient notes]
+    out: FulfillerNote
+    reads: [Household@1, Card@0]
+    writes: [ShoppingPort@1.checkout.notes]
+    errors: [CAPABILITY_UNAVAILABLE]
+    idempotency: order_ref
+    model: {default: none, tiers: [none], fallback: "truncate into the delivery-notes field when no structured channel exists"}
+    caps: [CAP-19, CAP-23, CAP-13]
+    oracle: "locked-line substitutions = 0 in the twin pick simulation; notes reach the right party (recipient's, not payer's)"
+    mock: twin pick/drive simulator
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: cut
+    deps: [K06, K11]
+    needs: fulfiller_note
+  K16:
+    name: Catalog attribute resolver
+    layer: product
+    v1: K16
+    from: [platform catalog, B risk_class (deferred)]
+    slot: tool + extractor
+    timing: sync
+    in: [Offer]
+    out: AttributeSet
+    reads: [Catalog@0]
+    writes: []
+    errors: []
+    idempotency: pure per (sku, packaging_version)
+    model: {default: none, tiers: [none, small_tuned], seam: "AttrExtractor.extract(listing) -> AttributeSet", fallback: "structured catalog fields only; anything missing -> unknown, and unknown never satisfies a lock"}
+    caps: [CAP-20, CAP-12]
+    oracle: "attribute precision >= 0.98; eligibility labels correct; property: unknown attribute never satisfies a lock"
+    mock: synthetic catalog with Open Food Facts-style attributes
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: stub (structured fields only)
+    deps: [K24]
+    needs: item_attributes
+  K18:
+    name: Support view over agent orders
+    layer: product
+    v1: "K18 (split: trace plumbing moved to K26; audit record is K12)"
+    from: [Fork C PF-48, CAP-25]
+    slot: tool (read-only)
+    timing: sync
+    in: [order_ref]
+    out: "SupportView {mandate, requester, approver, cart diff, trace links}"
+    reads: [Ledger@0, Telemetry@1, Profile@1]
+    writes: []
+    errors: [PROFILE_SCOPE]
+    idempotency: read-only
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-25]
+    oracle: "'who asked, who approved?' answered in < 10 s for 100% of synthetic orders; no member data beyond role + hash"
+    mock: ledger + trace fixtures
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    mvp: stub (CLI query over K12; cheap insurance for the PF-48 drill)
+    deps: [K12, K07, K26]
+    needs: support_view
+  K21:
+    name: Need-list builder (occasion, checklist or plan -> bill of materials)
+    layer: product
+    v1: "new (A lane 2 meal decomposer, generalized)"
+    from: [A lane 2]
+    slot: node
+    timing: sync
+    in: [Mandate]
+    out: NeedList
+    reads: [Mandate@1]
+    writes: []
+    errors: [AMBIGUOUS]
+    idempotency: pure per (occasion, headcount, template version)
+    model: {default: none, tiers: [none, small_tuned, frontier], seam: "NeedListBuilder.build(mandate) via template RAG", fallback: "template lookup by occasion key (taco, spaghetti, storm kit, first-night kit, rental checklist, snack rotation); unknown occasion -> AMBIGUOUS"}
+    caps: []
+    oracle: "role accuracy and bill-of-materials recall on the transfer set; spaghetti night held out"
+    mock: occasion templates (RecipeNLG-derived, synthetic)
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    mvp: HW (taco + spaghetti templates)
+    deps: []
+    needs: need_list
+  K22:
+    name: Feedback interpreter
+    layer: product
+    v1: "new (A lane 6)"
+    from: [A lane 6; A lane 7 = K22 -> K06.authorize -> K03.verify]
+    slot: node
+    timing: "event: poll.response with a request"
+    in: [free text | one-liner | pick, Mandate, MemberRef]
+    out: Edit
+    reads: [Mandate@1, Household@1]
+    writes: []
+    errors: [RIGHTS_DENIED, LOCK_VIOLATION]
+    idempotency: response idempotency_key
+    model: {default: small_tuned, tiers: [none, small_tuned, frontier], seam: "ModelPort.structured(schema=Edit)", fallback: "curated pick lists only; free text routed to the owner verbatim"}
+    caps: []
+    oracle: "exact-match edit accuracy; out-of-scope rejection ('buy me a PS5'); 0 lock violations after K06/K03"
+    mock: synthetic requests per role
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: cut unless hello world runs end to end by Nov 25 (A's rule)
+    deps: [K06, K03]
+    needs: feedback_edits
+  K24:
+    name: ShoppingPort client + adapters (H1 conversational / H2 UCP-shaped / H3 hybrid)
+    layer: product
+    v1: "new (was implicit in platform shopping-port; A lane 11 Sparky extractor is H1's parser)"
+    from: [platform shopping-port, A lane 11, B ask 2]
+    slot: adapter
+    timing: sync calls + events (consent.requested, order.placed)
+    in: [Brief | Cart | consent request]
+    out: "Offer list | Cart | consent result | order"
+    reads: [ShoppingPort@1, Brief@1, org@]
+    writes: [Ledger@0 (token, order)]
+    errors: [CAPABILITY_UNAVAILABLE, STALE, OVER_CAP]
+    idempotency: "one-time token per decision, never reused; checkout keyed by decision_id"
+    model: {default: none, tiers: [none, small_tuned], seam: "SparkyExtractor.extract(prose) -> Offer list (H1 only)", fallback: "H3: send the brief as text, but price, stock and cart via structured discover(); own solver (K04) over returned items"}
+    caps: [CAP-01, CAP-02, CAP-03, CAP-17]   # CAP-07 attaches through K02, CAP-10 through K05
+    oracle: "contract tests per adapter (adapters.yaml); H1 extraction F1 >= 0.95 incl. prompt-injection replies; token single use; every Gateway guess labeled published|inferred|invented"
+    mock: K17 twin
+    owner: HP   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: HW (H3 against the twin)
+    deps: [K26]
+    needs: walmart_io
+
+  # ============================ PLATFORM LAYER ============================================
+  K17:
+    name: Gateway twin (mock Gateway, Agent Profiles, Sparky, catalog, slots, clock)
+    layer: platform
+    v1: "K17 (split: the conformance suite moved to K20)"
+    from: [platform mock-gateway + catalog, B ask 1]
+    slot: fixture (FastMCP server)
+    timing: sync + simulated clock
+    in: [ShoppingPort@1 calls]
+    out: [ShoppingPort@1 responses, consent gate events]
+    reads: [Catalog@0, Profile@1]
+    writes: []
+    errors: [all ShoppingPort errors, seeded violations]
+    idempotency: replayable from (seed, clock)
+    model: {default: frontier, tiers: [none, small_tuned, frontier], seam: "MockSparky.answer(brief|text) with incentives", fallback: "scripted replay of recorded mock-Sparky answers"}
+    caps: [CAP-01, CAP-02, CAP-03, CAP-05, CAP-07, CAP-10, CAP-21, CAP-26]
+    oracle: "every behaviour labeled published|inferred|invented; seeded violations reproducible; replay deterministic"
+    mock: n/a (it is the mock)
+    owner: HP   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: L
+    mvp: HW
+    deps: [K26]
+    needs: null
+  K23:
+    name: Event bus (SNS/SQS on LocalStack + in-process fallback)
+    layer: platform
+    v1: "new (split from K10)"
+    from: [A topics and queues, platform poll-bus]
+    slot: bus
+    timing: async; FIFO by group key
+    in: [message + trace context]
+    out: delivery
+    reads: [Telemetry@1 (trace headers)]
+    writes: []
+    errors: [dead-letter after 3]
+    idempotency: message dedupe id
+    model: {default: none, tiers: [none], fallback: "in-process bus with the same interface (Wi-Fi or Docker failure)"}
+    caps: []
+    oracle: "same message log under LocalStack and in-process; trace context survives every hop (trace-integrity oracle)"
+    mock: in-process bus
+    owner: PD   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    mvp: HW
+    deps: [K26]
+    needs: null
+  K26:
+    name: Telemetry (LangSmith conventions, propagation, PII masking)
+    layer: platform
+    v1: "new (split from K18)"
+    from: [Telemetry v0 (A), Fork C metadata, Fork D bundle_id]
+    slot: library
+    timing: inline
+    in: [spans]
+    out: traces
+    reads: [Telemetry@1]
+    writes: [Telemetry@1]
+    errors: []
+    idempotency: n/a
+    model: {default: none, tiers: [none], fallback: "local JSONL exporter when LangSmith is unreachable"}
+    caps: []
+    oracle: "trace-integrity oracle (expected spans, parents, threads across restarts); every run stamped component_id, component_version, adapter_id, capability_mode, fallback_used, bundle_id"
+    mock: local exporter
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    mvp: HW
+    deps: []
+    needs: null
+
+  # ============================ EVAL LAYER ================================================
+  K19:
+    name: Fairness and parity harness
+    layer: eval
+    v1: K19
+    from: [shared principles, vision fairness floors]
+    slot: eval
+    timing: nightly + release gate
+    in: [episode results by segment]
+    out: parity report
+    reads: [Eval report@0, controls@]
+    writes: [Eval report@0]
+    errors: []
+    idempotency: n/a
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: []
+    oracle: "no parity cell below floor; counterfactual swaps (name, ZIP, language) within tolerance"
+    mock: K25 counterfactual case pairs
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: stub (counterfactual swaps on the hello-world set)
+    deps: [K25, K27]
+    needs: fairness_floor
+  K20:
+    name: Conformance suite (tier-0 Sparky parity + protocol conformance)
+    layer: eval
+    v1: "K20 (merged with the conformance half of K17)"
+    from: [A tier-0 parity set, PF-46, vision 'the lenses meet in the conformance suite']
+    slot: eval
+    timing: CI
+    in: [a ShoppingPort client + bundle]
+    out: conformance report (n/N pass)
+    reads: [ShoppingPort@1, Case@1]
+    writes: [Eval report@0]
+    errors: []
+    idempotency: n/a
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: [CAP-03, CAP-05, CAP-26]
+    oracle: "100% of seeded violations caught (consent, caps, labels, tokens); agent >= Sparky on the fixed request set"
+    mock: K17 twin; screen-recorded manual Sparky set for the real tier-0 check
+    owner: IQ   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    mvp: HW
+    deps: [K17, K24, K25]
+    needs: conformance
+  K25:
+    name: Synthetic world (personas, case engine, simulated actors)
+    layer: eval
+    v1: "new (A lane 12 + platform case-engine + profiles)"
+    from: [A lane 12, B asks 5-6, Fork C interview mode]
+    slot: fixture
+    timing: batch
+    in: [Case@1 specs, seeds]
+    out: cases, simulated votes and requests, interviews (synthetic=true)
+    reads: [Profile@1, Household@1, Case@1]
+    writes: [Case@1]
+    errors: []
+    idempotency: seeded
+    model: {default: frontier, tiers: [none, small_tuned, frontier], seam: "Persona.respond(case, ballot)", fallback: "scripted utility-max voters from persona hidden utilities"}
+    caps: []
+    oracle: "agreement with real human picks from the QR round; held-out profiles and spaghetti night never enter training (contamination check)"
+    mock: n/a
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    mvp: HW
+    deps: [K17]
+    needs: null
+  K27:
+    name: Eval harness + CI gate (pass^k, regret, ladder, engine rows)
+    layer: eval
+    v1: "new (platform eval-harness)"
+    from: [platform eval-harness, B's six eval rows, Fork C engine rows]
+    slot: eval
+    timing: CI + nightly
+    in: [bundle, case set]
+    out: Eval report@0 (one leaderboard row per lane)
+    reads: [Case@1, Telemetry@1]
+    writes: [Eval report@0]
+    errors: []
+    idempotency: n/a
+    model: {default: none, tiers: [none], fallback: n/a}
+    caps: []
+    oracle: "a lane change that lowers end-to-end pass^k is rejected; the hello-world hook returns tier 0/1/2 results"
+    mock: n/a
+    owner: IQ   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    mvp: HW
+    deps: [K25, K26]
+    needs: null
+
+# What happened to components@1 IDs: none retired. Splits and merges are recorded per component (v1 field).
+# A lane 7 (request validator) and lane 9 (conflict mediator) are compositions, not components:
+#   lane 7 = K22 -> K06.authorize -> K03.verify ; lane 9 = a K10 policy plugin that proposes via a model and checks via K04 (cut, M2).
+
+  # ============================ ENGINE LAYER (cycle 2) =======================================
+  # The Discovery Engine's stages as components. Dec 2 scope: live = runs on stage; replay = runs offline as a night
+  # engine-run job and the demo replays its bank; cut = after Dec 2. dec2_days is the Dec 2 slice, effort the full build.
+  E01:
+    name: "Org model + homework checks (org@2, H1-H5)"
+    layer: engine
+    slot: "store + eval"
+    kind: "deterministic"
+    io: "org@ matrices -> OrgModel + homework report"
+    contracts: "org@2, stated_priorities@1"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "H1-H5 pass; every row sourced with as_of"
+    mock: "org@1 files"
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: live
+    status_now: "exists (homework.py)"
+    deps: []
+    from: [cycle 2 trace]
+    needs: null
+  E02:
+    name: "Lattice + seeded cell sampler + coverage map (stage 1)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic"
+    io: "lattice@ + seed -> cells + coverage map"
+    contracts: "lattice@1"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "same seed -> same cells; no empty actor type; pairwise coverage"
+    mock: "lattice-v1.yaml"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: replay
+    status_now: "lattice exists; sampler new"
+    deps: ["E01"]
+    from: [cycle 2 trace]
+    needs: null
+  E03:
+    name: "Day-1 hypothesis writer, frozen (stage 0b)"
+    layer: engine
+    slot: "node"
+    kind: "stochastic then frozen"
+    io: "lens + org + prior bank -> Hypothesis (hash-frozen)"
+    contracts: "Readout@0"
+    model: {default_and_fallback: "frontier -> template from the prior run's top family per lens"}
+    caps: []
+    oracle: "hash logged before stage 2; readout says survived / revised / killed"
+    mock: "prior run bank"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 1
+    mvp: replay
+    status_now: "new"
+    deps: ["E01"]
+    from: [cycle 2 trace]
+    needs: null
+  E04:
+    name: "Problem-card generator (stage 2)"
+    layer: engine
+    slot: "node"
+    kind: "stochastic"
+    io: "cell x n samples -> raw cards (card schema + needs[])"
+    contracts: "card@ (C), needs@1"
+    model: {default_and_fallback: "local open-weight teacher -> template cards per cell"}
+    caps: []
+    oracle: "schema-valid 100%; synthetic labels 100%; fixed temperature per run"
+    mock: "run-0 bank replay"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 1
+    mvp: replay
+    status_now: "run 0 was session-written"
+    deps: ["E02"]
+    from: [cycle 2 trace]
+    needs: null
+  E05:
+    name: "Normalize + dedupe into families (stage 3)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic"
+    io: "raw cards -> families"
+    contracts: "card@"
+    model: {default_and_fallback: "embeddings -> MinHash lexical clusters"}
+    caps: []
+    oracle: "fixed thresholds; overlap below threshold after dedupe; metamorphic rephrasings land together"
+    mock: "run-0 families"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 1
+    mvp: replay
+    status_now: "new"
+    deps: ["E04"]
+    from: [cycle 2 trace]
+    needs: null
+  E06:
+    name: "Value-ladder placer (stage 4)"
+    layer: engine
+    slot: "node"
+    kind: "rule + model check"
+    io: "family + in-house cover + K20 parity -> tier profile"
+    contracts: "org@2"
+    model: {default_and_fallback: "rules from gateway_only -> tier; model only explains"}
+    caps: []
+    oracle: "anchors: taco 0->1->2, Care Profiles 2; precision vs the owner's manual Sparky tests"
+    mock: "anchor families"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: replay
+    status_now: "exists (score_v2.py)"
+    deps: ["E05", "E01"]
+    from: [cycle 2 trace]
+    needs: null
+  E07:
+    name: "Simulated discovery interviews (stage 5)"
+    layer: engine
+    slot: "node"
+    kind: "stochastic"
+    io: "family + personas (K25 interview mode) -> notes, synthetic=true"
+    contracts: "Case@1 interview"
+    model: {default_and_fallback: "local persona model -> scripted FDE question set"}
+    caps: []
+    oracle: "always labeled synthetic; no real-person quotes"
+    mock: "K25 personas"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 0
+    mvp: cut
+    status_now: "new"
+    deps: ["E05"]
+    from: [cycle 2 trace]
+    needs: null
+  E08:
+    name: "Evidence ladder + Fork E registry join (stage 6)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic join + manual queue"
+    io: "family -> evidence level E0-E5 + refs; manual Sparky test queue for the owner"
+    contracts: "statements@ (E), org@2"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "every ref resolves to a registry row or a dataset; E3 only from the owner's recordings"
+    mock: "statements.yaml sample"
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 1
+    mvp: replay
+    status_now: "new"
+    deps: ["E05"]
+    from: [cycle 2 trace]
+    needs: null
+  E09:
+    name: "Two-way sizer + value driver tree (stage 7)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic"
+    io: "family + sourced inputs -> VaS top-down, bottom-up, gap, driver tree"
+    contracts: "card@"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "every input labeled synthetic|public:<src>; gap flagged outside band"
+    mock: "run-0 sizing inputs"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: replay
+    status_now: "one-way exists (score_v2.py)"
+    deps: ["E05"]
+    from: [cycle 2 trace]
+    needs: null
+  E10:
+    name: "Judge panel + rubric aggregation (stage 8)"
+    layer: engine
+    slot: "eval"
+    kind: "stochastic judges, deterministic aggregate"
+    io: "family x rubric -> scores + variance"
+    contracts: "rubric@2"
+    model: {default_and_fallback: "3 local judges (D judge-batch) -> single judge J0"}
+    caps: []
+    oracle: "agreement with the owner's keep/kill labels above threshold"
+    mock: "run-0 J0 scores"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 0.5
+    mvp: replay
+    status_now: "single judge exists"
+    deps: ["E05", "P03"]
+    from: [cycle 2 trace]
+    needs: null
+  E11:
+    name: "Control engine: profiles, lenses, scenarios, never-tunable clamps (stage 9)"
+    layer: engine
+    slot: "solver"
+    kind: "deterministic"
+    io: "bank + ControlProfile (+ ControlDelta) -> re-ranked portfolio + clamp log"
+    contracts: "controls@2, ControlDelta@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "control sanity: a function's weights move its portfolio; lens flip changes only stake-dependent ranks; no floor breached; recompute < 1 s"
+    mock: "run-0 bank"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    dec2_days: 1
+    mvp: live
+    status_now: "controls-v1 + clamps exist; lens + delta API new"
+    deps: ["E09", "E10", "E01"]
+    from: [cycle 2 trace]
+    needs: null
+  E12:
+    name: "Portfolio selector + 2x2 (stage 10)"
+    layer: engine
+    slot: "solver"
+    kind: "deterministic"
+    io: "ranked portfolio -> Pareto top-k with actor diversity + 2x2 coordinates"
+    contracts: "Readout@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "diversity constraint holds; deterministic for a profile"
+    mock: "run-0 bank"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: live
+    status_now: "exists (score_v2.py)"
+    deps: ["E11"]
+    from: [cycle 2 trace]
+    needs: null
+  E13:
+    name: "Human checkpoint (stage 11)"
+    layer: engine
+    slot: "node (interrupt)"
+    kind: "human"
+    io: "top-k -> keep / kill / merge + reason"
+    contracts: "labels@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "every top-k item labeled before depth drills; labels feed judge calibration only"
+    mock: "Sheet of run-0 bank"
+    owner: EL   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 0
+    mvp: live
+    status_now: "Run 0 bank tab has the column"
+    deps: ["E12"]
+    from: [cycle 2 trace]
+    needs: null
+  E14:
+    name: "Decomposition stage (families -> components)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic"
+    io: "families + components@2 -> component sets, unlock order, adapters"
+    contracts: "components@2, needs@1, adapters@1"
+    model: {default_and_fallback: "rules; LLM proposes only with approval"}
+    caps: []
+    oracle: "truth, reuse, unlock, stability, 0 phantoms"
+    mock: "run-0 bank"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: S
+    dec2_days: 0.5
+    mvp: live
+    status_now: "done (decompose_v2.py)"
+    deps: ["E05", "E01"]
+    from: [cycle 2 trace]
+    needs: null
+  E15:
+    name: "Depth drill writer + pre-mortem (stage 12)"
+    layer: engine
+    slot: "node"
+    kind: "stochastic, templated"
+    io: "top-3 families -> JTBD, generic vs specific brief, flow, lanes to tune, evals, pre-mortem, demo spec"
+    contracts: "card@"
+    model: {default_and_fallback: "frontier -> drill template filled from the card"}
+    caps: []
+    oracle: "every drill names its components (E14) and its pre-mortem"
+    mock: "PF-28 drill"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 0
+    mvp: replay
+    status_now: "Fork C writes the top-3 by Nov 24"
+    deps: ["E13", "E14"]
+    from: [cycle 2 trace]
+    needs: null
+  E16:
+    name: "Publisher: bank, run diff, readouts per lens (stage 13)"
+    layer: engine
+    slot: "node"
+    kind: "deterministic render (+ prose with template fallback)"
+    io: "run -> bank JSON, diff vs previous run, one-page readout per control profile; partner: opportunity map + conformance checklist"
+    contracts: "Readout@0, Eval report@1"
+    model: {default_and_fallback: "template"}
+    caps: []
+    oracle: "answer-first; hypothesis verdict present; every number labeled; conformance checklist generated from K20 results"
+    mock: "run-0 outputs"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 1
+    mvp: live
+    status_now: "new"
+    deps: ["E12", "E03", "K20"]
+    from: [cycle 2 trace]
+    needs: null
+  E17:
+    name: "Engine graph shell (LangGraph) + stage-0 gate + rerun/diff"
+    layer: engine
+    slot: "graph"
+    kind: "deterministic shell"
+    io: "run config -> traced engine run (thread = run)"
+    contracts: "Telemetry@1, run config"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "aborts unless the hello-world hook passes; reruns diff cleanly"
+    mock: "scripts chain"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 0
+    mvp: cut
+    status_now: "run 0 = scripts"
+    deps: ["E02", "K27"]
+    from: [cycle 2 trace]
+    needs: null
+  E18:
+    name: "Engine evals (stability, metamorphic, coverage, sizing band, control sanity, hypothesis honesty, guardrails)"
+    layer: engine
+    slot: "eval"
+    kind: "deterministic"
+    io: "runs x seeds -> engine eval rows"
+    contracts: "Eval report@1"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "stability top-10 Jaccard >= 0.6 over 3 seeds; 0 unlabeled numbers; 0 stereotype inferences"
+    mock: "run 0 + 2 reseeded runs"
+    owner: EN   # eight-role roster, approved by the owner 2026-11-19
+    impl: codex
+    effort: M
+    dec2_days: 1
+    mvp: replay
+    status_now: "robustness check exists"
+    deps: ["E11", "E12"]
+    from: [cycle 2 trace]
+    needs: null
+  E19:
+    name: "Engine map UI: value ladder, 2x2, live control and lens flips, drill to a cell"
+    layer: engine
+    slot: "app view"
+    kind: "deterministic"
+    io: "bank + controls -> interactive map; ControlDelta events"
+    contracts: "Readout@0, ControlDelta@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "a flip re-renders in < 1 s; every number shows its label; drill opens the cell's components (E14) and its demo"
+    mock: "run-0 bank"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 2
+    mvp: live
+    status_now: "new"
+    deps: ["E11", "E12", "E14"]
+    from: [cycle 2 trace]
+    needs: null
+
+  # ============================ DEMO LAYER (cycle 2) =========================================
+  D01:
+    name: "Demo console shell: one app, three beats (taco, engine map, Care Profiles)"
+    layer: demo
+    slot: "app"
+    kind: "deterministic"
+    io: "beat id -> view"
+    contracts: "Card@0, Readout@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "every beat reachable by one key; works offline on the stage host"
+    mock: "recorded runs"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 1
+    mvp: live
+    status_now: "new"
+    deps: []
+    from: [cycle 2 trace]
+    needs: null
+  D02:
+    name: "Room-is-the-family ballot (phones, roles, countdown)"
+    layer: demo
+    slot: "app view"
+    kind: "deterministic"
+    io: "QR join -> role ballot (K11 card) -> poll.response"
+    contracts: "Poll@0, Card@0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "60-second poll closes on time with >= 20 phones; role rights enforced by K06"
+    mock: "scripted voters (K25)"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: M
+    dec2_days: 1
+    mvp: live
+    status_now: "new"
+    deps: ["K10", "K11", "D01"]
+    from: [cycle 2 trace]
+    needs: null
+  D03:
+    name: "Care Profiles view + voice request (Ruth) + Jen's phone card"
+    layer: demo
+    slot: "app view"
+    kind: "seam"
+    io: "audio -> Request(channel=voice) -> over-cap card on Jen's phone"
+    contracts: "Request, Card@0"
+    model: {default_and_fallback: "local speech-to-text -> typed request labeled 'voice'"}
+    caps: []
+    oracle: "transcript slot F1 >= K01 bar on 20 scripted utterances; typed fallback in < 5 s"
+    mock: "recorded audio"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 1
+    mvp: live
+    status_now: "new"
+    deps: ["K07", "K08", "K11", "D01"]
+    from: [cycle 2 trace]
+    needs: null
+  D04:
+    name: "Tier-ladder overlay (0 -> 1 -> 2 chips on the taco run)"
+    layer: demo
+    slot: "app view"
+    kind: "deterministic"
+    io: "episode + K20 results -> ladder chips"
+    contracts: "Eval report@1"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "chip only lights from server-side evidence"
+    mock: "recorded episode"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 0.5
+    mvp: live
+    status_now: "new"
+    deps: ["K20", "D01"]
+    from: [cycle 2 trace]
+    needs: null
+  D05:
+    name: "Proof view: trace, pass^k, parity chart"
+    layer: demo
+    slot: "app view"
+    kind: "deterministic"
+    io: "LangSmith run + K27/K19 rows -> two charts + one trace"
+    contracts: "Eval report@1, Telemetry@1"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "numbers match the eval report hash"
+    mock: "eval report fixture"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 0.5
+    mvp: live
+    status_now: "new"
+    deps: ["K27", "K19"]
+    from: [cycle 2 trace]
+    needs: null
+  D06:
+    name: "Demo runtime: offline bundle, warm-up, beat controller, recorded fallback per beat"
+    layer: demo
+    slot: "runtime"
+    kind: "deterministic"
+    io: "demo bundle -> running stack on the stage host + recordings"
+    contracts: "Bundle manifest v0"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "cold start to ready < 2 min; switch to recording < 10 s; hello world < 3 min"
+    mock: "n/a"
+    owner: DX   # eight-role roster, approved by the owner 2026-11-19
+    impl: claude_code
+    effort: S
+    dec2_days: 1
+    mvp: live
+    status_now: "new"
+    deps: ["P01", "P02"]
+    from: [cycle 2 trace]
+    needs: null
+  D07:
+    name: "Talk assets"
+    layer: demo
+    slot: "asset"
+    kind: "human"
+    io: "run of show -> slides + recordings"
+    contracts: "n/a"
+    model: {default_and_fallback: "none"}
+    caps: []
+    oracle: "12:00 +/- 0:30 on three timed reps"
+    mock: "n/a"
+    owner: EL   # eight-role roster, approved by the owner 2026-11-19
+    impl: n/a
+    effort: M
+    dec2_days: 2
+    mvp: live
+    status_now: "A's Talk tab (12-min, taco-only)"
+    deps: []
+    from: [cycle 2 trace]
+    needs: null
+
+  # ============================ FACTORY LAYER (owned and specified by Fork D; referenced here) ===============
+  P01:
+    name: "Local serving (MLX, OpenAI-compatible, fail-closed JSON Schema)"
+    layer: factory
+    slot: runtime
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    effort: S
+    dec2_days: 1
+    mvp: live
+    spec: "D bake-off Nov 20-21"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P02:
+    name: "Bundle manifest + kit gate"
+    layer: factory
+    slot: tool
+    owner: IQ   # eight-role roster, approved by the owner 2026-11-19
+    effort: M
+    dec2_days: 1
+    mvp: live
+    spec: "D spec v0"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P03:
+    name: "Fleet job kinds (engine-run, bundle-eval first)"
+    layer: factory
+    slot: jobs
+    owner: HP   # eight-role roster, approved by the owner 2026-11-19
+    effort: M
+    dec2_days: 1
+    mvp: live
+    spec: "D spec v0; Fleet asks A1-A8 open"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P04:
+    name: "case-gen + sft-build + blind holdout"
+    layer: factory
+    slot: jobs
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    effort: M
+    dec2_days: 1
+    mvp: live
+    spec: "D spec v0"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P05:
+    name: "LoRA K01 (Qwen3.5-2B) + adapter-eval"
+    layer: factory
+    slot: jobs
+    owner: MF   # eight-role roster, approved by the owner 2026-11-19
+    effort: M
+    dec2_days: 1
+    mvp: live
+    spec: "D: Nov 22-24"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P06:
+    name: "Leaderboard (base / tuned / frontier / tier none)"
+    layer: factory
+    slot: eval
+    owner: ED   # eight-role roster, approved by the owner 2026-11-19
+    effort: S
+    dec2_days: 0
+    mvp: cut
+    spec: "rows come from K27 for Dec 2"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null
+  P07:
+    name: "Privacy guard (repo, logs, job specs)"
+    layer: factory
+    slot: tool
+    owner: HP   # eight-role roster, approved by the owner 2026-11-19
+    effort: S
+    dec2_days: 1
+    mvp: live
+    spec: "existing fleet pattern"
+    caps: []
+    deps: []
+    from: [fork-d]
+    needs: null

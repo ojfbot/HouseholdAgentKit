@@ -1,0 +1,207 @@
+org: walmart
+org_model_version: org@2
+as_of: 2026-11-19
+# origin: walmart_published = in Walmart's own terms, filings or statements; our_rule = a project rule we chose (it may be
+# supported by Walmart statements, cited in sources); regulation = law or a regulator's order.
+constraints:
+- id: CON-01
+  rule: "No use of data obtained through agents to generate content, target ads, make synthetic data, train or benchmark models, or build databases; the agent's own privacy policy governs what it receives"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-014, ST-190]
+  enforced_at: [1, 6, 7]
+  never_tunable: true
+  changed_from_org1: "re-sourced to the terms; wording widened"
+- id: CON-02
+  rule: "Agents identify themselves when asked, do not mask origin or mimic human timing, never receive card data or change payment methods, and do not act beyond the shopper's intent"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-011, ST-020]
+  enforced_at: [2, 12]
+  never_tunable: true
+  changed_from_org1: re-sourced
+- id: CON-03a
+  rule: "Honor customer-set brand, price-ceiling and category constraints; label substitutes and recommendations"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-021]
+  enforced_at: [2, 12]
+  never_tunable: true
+  changed_from_org1: "CORRECTION: split from CON-03; the terms say this, not 'label sponsored items'"
+- id: CON-03b
+  rule: "Mark sponsored items wherever an agent shows them"
+  origin: our_rule
+  scope: [all]
+  sources: [ST-104, ST-130, ST-064]
+  enforced_at: [2, 12]
+  never_tunable: true
+  changed_from_org1: "CORRECTION: our rule, not in the Agentic Access Terms; supported by P&G's ask for auditable checkout and Furner's 'won't hide lower-priced options'"
+- id: CON-04
+  rule: "No scraping, no third-party scraping APIs; outside agents use the Gateway (invite-only) or behave as identified agents under the terms"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-020, ST-023, ST-028]
+  enforced_at: [6]
+  never_tunable: true
+  changed_from_org1: "re-sourced to the terms"
+- id: CON-05
+  rule: "Price is never set per person or time of day; same prices for agents as for people; controls tune effort, priority and assortment only"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-008, ST-129]
+  enforced_at: [9]
+  never_tunable: true
+  changed_from_org1: "now Walmart-published (CEO letter Sep 25 2026), not only our vision"
+- id: CON-06
+  rule: "Hard rules and locks (allergies, religious law, safe foods, blocked categories) are constraints, never weights"
+  origin: our_rule
+  scope: [all]
+  sources: [ST-021, ST-018]
+  enforced_at: [2, 8, 9]
+  never_tunable: true
+  changed_from_org1: "partly published: the terms require honoring category constraints and the guardrail carries category restrictions"
+- id: CON-07
+  rule: "Rules, never diagnoses; no health data stored"
+  origin: our_rule
+  scope: [all]
+  sources: [ST-131, ST-166]
+  enforced_at: [2]
+  never_tunable: true
+  changed_from_org1: "supporting Walmart statements attached (choice to share; RAI privacy)"
+- id: CON-08
+  rule: "No inference from name, ZIP, language or benefits; segments are whole persons"
+  origin: our_rule
+  scope: [all]
+  sources: [ST-130, ST-168, ST-166]
+  enforced_at: [1, 2, 8]
+  never_tunable: true
+  changed_from_org1: "supporting statements attached"
+- id: CON-09
+  rule: "Fairness floors: no segment pushed below parity"
+  origin: our_rule
+  scope: [all]
+  sources: [ST-166, ST-045]
+  enforced_at: [9, 10]
+  never_tunable: true
+  changed_from_org1: "supporting statements attached (RAI fairness; 10-K bias risk)"
+- id: CON-10
+  rule: "Program eligibility follows program rules (SNAP/EBT, vouchers); labels only"
+  origin: regulation
+  scope: [shopper, community_org]
+  sources: [ST-188]
+  enforced_at: [2]
+  never_tunable: true
+  changed_from_org1: "secondary source only"
+- id: CON-11
+  rule: "Spark drivers are contractors and never enter homes; never misstate driver pay or tips"
+  origin: regulation
+  scope: [spark_driver]
+  sources: [ST-112, ST-114]
+  enforced_at: [2]
+  never_tunable: true
+  changed_from_org1: "FTC/11-state judgment (Feb 2026) added: no misrepresenting offer earnings"
+- id: CON-12
+  rule: "Children's data: no personal data from kids; parent mediates"
+  origin: regulation
+  scope: [shopper]
+  sources: []
+  enforced_at: [2]
+  never_tunable: true
+  changed_from_org1: none
+- id: CON-13
+  rule: "Synthetic content always labeled; no quotes attributed to real people"
+  origin: our_rule
+  scope: [all]
+  sources: []
+  enforced_at: [5, 6, 13]
+  never_tunable: true
+  changed_from_org1: none
+- id: CON-14
+  rule: "Unofficial concept: no Walmart logos or implied affiliation"
+  origin: our_rule
+  scope: [all]
+  sources: []
+  enforced_at: [13]
+  never_tunable: true
+  changed_from_org1: none
+# --- new rows (all from the Agentic Access Terms and Addendum 1 unless noted)
+- id: CON-15
+  rule: "Consent: customers approve agent purchases by default; outside the Gateway a Human Consent Gate precedes every checkout; through the Gateway autonomous checkout only when the Agent Mandate is inside the User-Defined Guardrail; Walmart may still require approval"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-009, ST-015, ST-016]
+  enforced_at: [2, 12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-16
+  rule: "Agent identification on request: deployer, product and contact"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-020]
+  enforced_at: [12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-17
+  rule: "Walmart may throttle, suspend or block agents and hold deployers responsible; build for revocation"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-023]
+  enforced_at: [12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-18
+  rule: "Fetch the current terms before each session; terms change without notice"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-024]
+  enforced_at: [12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-19
+  rule: "Never misrepresent availability, delivery speed or fulfillment options; no stale data presented as current"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-022]
+  enforced_at: [2, 12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-20
+  rule: "One Scoped Access Token per session, bound to merchant, cart, amount and session; consumed at checkout"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-017]
+  enforced_at: [12]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-21
+  rule: "Shopping tools do not use what customers share to raise prices or hide lower-priced options that meet the need"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-130]
+  enforced_at: [8, 9]
+  never_tunable: true
+  changed_from_org1: "new (Furner letter, commitment 2)"
+- id: CON-22
+  rule: "Responsible AI pledge: transparency, security, privacy, fairness, accountability, customer-centricity; people stay accountable"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-166, ST-167]
+  enforced_at: [2, 13]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-23
+  rule: "Assistive technology a person uses directly is outside the terms' definition of Agent; do not treat accessibility tools as agents"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-189]
+  enforced_at: [2]
+  never_tunable: true
+  changed_from_org1: new
+- id: CON-24
+  rule: "Privacy split: the agent's privacy policy governs what it receives; Walmart's governs what the agent provides"
+  origin: walmart_published
+  scope: [all]
+  sources: [ST-190]
+  enforced_at: [1, 7]
+  never_tunable: true
+  changed_from_org1: new

@@ -1,0 +1,104 @@
+{
+  "_fixture": "Fork H contract fixture for beat 1 (hello world), built to Fork A's hw-taco@1 (C21 Carter family) and Poll@1 (fork-a/poll-v1.yaml). Every number is synthetic. Replaced by the live twin on Nov 24 (HP + IQ); the console then renders the bus's Poll@1 messages instead.",
+  "episode_id": "ep_hw_c21_001",
+  "household_hash": "hh_c21",
+  "mandate_id": "m_hw_c21_001",
+  "request": {
+    "text": "taco night by 6, $25",
+    "actor": {"member_hash": "m_owner", "role": "owner"},
+    "channel": "chat",
+    "locale": "en-US",
+    "received_at": "2026-12-02T17:00:00-06:00"
+  },
+  "sparky_recording": {"key": "1s", "label": "Retail app, real assistant, recorded separately", "note": "Optional dated recording, never framed as the same backend as the twin"},
+  "brief": {
+    "_source": "fork-a/sparky-brief-v1.yaml example_C21",
+    "json": {
+      "brief_version": "brief@1", "mandate_id": "m_hw_c21_001", "round": 0, "occasion": "taco_night",
+      "headcount": {"adults": 2, "kids": 2},
+      "deadline": {"type": "pickup_ready_by", "time": "2026-12-02T17:30:00-06:00", "store": "store_rr_01"},
+      "budget": {"max": "25.00", "currency": "USD", "includes": ["tax", "fees"], "hard": true},
+      "locks": [{"item_ref": "usual:tortilla#a1", "rule": "exact_item_and_packaging", "no_substitutes": true},
+                {"item_ref": "usual:cheddar#b7", "rule": "exact_item", "no_substitutes": true}],
+      "exclude": [{"kind": "ingredient", "value": "tomato", "hard": false}, {"kind": "category", "value": "alcohol", "hard": true}],
+      "on_hand": ["salsa", "sour_cream"],
+      "ask": {"options": 3, "vectors": ["repeat", "fresh", "savings"], "format": "line_items_with_price_and_stock", "include": ["slot_options"]},
+      "disclosure": {"mark_sponsored": true, "mark_substitutes": true}
+    },
+    "h1_text": "Taco night for 2 adults and 2 kids. It must be ready for pickup at store store_rr_01 by 5:30 PM today (pickup time, not cooking time). Hard budget: $25.00 including tax and fees. Do not substitute these two items: usual:tortilla#a1 (exact item and packaging) and usual:cheddar#b7 (exact item). Avoid tomatoes if possible; no alcohol. We already have salsa and sour cream. Give 3 options, one each for repeat, fresh and savings, with line-item prices and stock, plus the pickup options. Mark anything sponsored and any substitute.",
+    "verified_by": "k03:ct07a#roundtrip"
+  },
+  "clock": {"rate": 20, "sim_start": "2026-12-02T17:05:00-06:00"},
+  "poll_opened": {
+    "type": "poll.opened",
+    "poll_version": "poll@1",
+    "poll_id": "p_hw_c21_001",
+    "episode_id": "ep_hw_c21_001",
+    "mandate_id": "m_hw_c21_001",
+    "household_hash": "hh_c21",
+    "opened_at": "2026-12-02T17:05:00-06:00",
+    "closes_at": "2026-12-02T17:20:00-06:00",
+    "reminder_at": "2026-12-02T17:12:30-06:00",
+    "policy": "owner_decides",
+    "carts": [
+      {"cart_id": "c_a", "label": "Same as last time", "vector": "repeat", "total": "21.40", "budget_delta": "-3.60", "ready_by": "2026-12-02T17:30:00-06:00",
+       "slot_status": "estimated", "lines_hash": "9f1c2e", "sponsored_count": 0, "substitute_count": 0, "claims_ref": "vr_hw_c_a"},
+      {"cart_id": "c_b", "label": "Fresh and light", "vector": "fresh", "total": "23.85", "budget_delta": "-1.15", "ready_by": "2026-12-02T17:30:00-06:00",
+       "slot_status": "estimated", "lines_hash": "a03b77", "sponsored_count": 1, "substitute_count": 0, "claims_ref": "vr_hw_c_b"},
+      {"cart_id": "c_c", "label": "Cheapest that works", "vector": "savings", "total": "18.92", "budget_delta": "-6.08", "ready_by": "2026-12-02T17:30:00-06:00",
+       "slot_status": "estimated", "lines_hash": "5d2e90", "sponsored_count": 0, "substitute_count": 0, "claims_ref": "vr_hw_c_c"}
+    ],
+    "rights": {"owner": ["vote", "decide", "edit"], "partner": ["vote", "free_text"], "teen": ["vote", "one_request"], "kid": ["vote", "pick_add"], "guest": ["flags_only"]},
+    "pick_add_list": [
+      {"item_ref": "syn-queso-01", "label": "queso", "picture_ref": "pic:queso"},
+      {"item_ref": "syn-guac-01", "label": "guacamole", "picture_ref": "pic:guacamole"},
+      {"item_ref": "syn-corn-01", "label": "corn", "picture_ref": "pic:corn"},
+      {"item_ref": "syn-lime-01", "label": "limes", "picture_ref": "pic:limes"}
+    ],
+    "ballot_cards": {}
+  },
+  "no_quorum_default_cart_id": "c_a",
+  "ballot_words": {
+    "question": "Which taco night should we do?",
+    "teen_sees_prices": false,
+    "carts": {
+      "c_a": {"highlights": ["Ground beef, soft shells, cheddar"], "kid_words": ["Beef tacos", "Soft shells"], "lock_note": "Maya's tortillas: exact pack, no swaps"},
+      "c_b": {"highlights": ["Chicken, peppers, lime"], "kid_words": ["Chicken tacos", "Crunchy peppers"], "lock_note": "Maya's tortillas: exact pack, no swaps",
+              "sponsored_note": "One sponsored salsa, marked; your brand rule still wins"},
+      "c_c": {"highlights": ["Beans and beef, store-brand cheese"], "kid_words": ["Bean and beef tacos"], "lock_note": "Maya's tortillas: exact pack, no swaps"}
+    }
+  },
+  "packaging_change": {
+    "_source": "hw-taco@1 HW-PKG-01, K11 template packaging_change@1 (copy from fork-a/hello-world-spec.md)",
+    "kind": "approval",
+    "audience": {"member_hash": "m_owner", "role": "owner"},
+    "claims": [
+      {"id": "effective_date", "value": "2026-11-30", "verified_by": "k14:notice_pkg_v4#effective", "label": "synthetic"},
+      {"id": "tonight_packs", "value": 1, "verified_by": "k03:vr_hw_c_a#line_tortilla_qty", "label": "synthetic"},
+      {"id": "stockup_packs", "value": 2, "verified_by": "k04:buffer_offer_01#qty", "label": "synthetic"},
+      {"id": "stockup_delta", "value": {"amount": "7.96", "currency": "USD"}, "verified_by": "k04:buffer_offer_01#delta", "label": "synthetic"}
+    ],
+    "facts": {"template": "packaging_change@1", "member_name": "Maya", "item_words": "Brand A soft flour tortillas", "stockup_separate": true}
+  },
+  "consent": {
+    "_note": "Twin stand-in for HP's consent gate (K17) and checkout (K24): what the stage shows after the owner approves.",
+    "steps": [
+      {"name": "Owner approval", "status": "done", "evidence": "k12:ledger#consent"},
+      {"name": "Walmart consent gate (guardrail check)", "status": "done", "evidence": "k17:consent_gate#approved"},
+      {"name": "One-time scoped token, used once", "status": "done", "evidence": "k24:token#single_use"},
+      {"name": "Order placed on the twin, for pickup", "status": "done", "evidence": "k24:order#twin_ord_001"}
+    ]
+  },
+  "steps": [
+    {"id": "request", "title": "Mom's text", "say": "Walmart's own example. The chore is a delivered dinner, not a recipe.", "tier": null},
+    {"id": "sparky", "title": "Sparky today", "say": "Sparky does this well: ideas and an estimate. “By 6” became cooking time.", "tier": 0},
+    {"id": "brief", "title": "The brief", "say": "Rules travel, reasons don't.", "tier": 1},
+    {"id": "menu", "title": "Three priced carts", "say": "Same backend, specific question, better answer.", "tier": 1},
+    {"id": "join", "title": "The room is the family", "say": "Scan the code. You get a role.", "tier": 2},
+    {"id": "vote", "title": "Countdown", "say": "Forty-five seconds.", "tier": 2},
+    {"id": "tally", "title": "Tally and policy", "say": "Owner decides, then flip to auto.", "tier": 2},
+    {"id": "tortilla", "title": "Tortilla heads-up", "say": "The riskiest line isn't the most expensive one.", "tier": 2},
+    {"id": "approve", "title": "Approval card", "say": "Trust before autonomy: the owner approves.", "tier": 2},
+    {"id": "order", "title": "Consent gate and order", "say": "Then checkout runs under her profile.", "tier": 2}
+  ]
+}

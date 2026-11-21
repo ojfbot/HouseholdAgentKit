@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+out/
+# never in the repo: weights, checkpoints, adapters, generated data, secrets, traces
+*.safetensors
+*.gguf
+*.mlx
+adapters/
+checkpoints/
+.env
+.env.*
+traces/
+*.jsonl
+holdout-seed*
+holdout_seed*
+# generated at run time
+apps/demo-console/console.json
+apps/demo-console/logs/
+apps/demo-console/fixtures/engine/readout.*.json
+apps/demo-console/fixtures/engine/deltas.json
+apps/demo-console/recordings/*.mp4
+packages/discovery-engine/runs/*/bank.json
+packages/discovery-engine/prototypes/fork_e/homework_v2.json
+node_modules/

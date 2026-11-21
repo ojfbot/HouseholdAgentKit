@@ -1,0 +1,42 @@
+{
+  "_note": "One recorded fallback per beat, captured at the Nov 30 dress rehearsal (D06). Drop the files here, then run tools/register_recording.py <beat> <file> to fill sha256, duration and captured_at. The stage preloads every file at warm-up; R switches the current beat to its recording, L returns to live.",
+  "beats": {
+    "1": {
+      "title": "Hello world",
+      "file": "beat1-hello-world.mp4",
+      "sha256": null,
+      "captured_at": null,
+      "duration_s": null
+    },
+    "2": {
+      "title": "Engine map",
+      "file": "beat2-engine-map.mp4",
+      "sha256": null,
+      "captured_at": null,
+      "duration_s": null
+    },
+    "3": {
+      "title": "Care Profiles",
+      "file": "beat3-care-profiles.mp4",
+      "sha256": null,
+      "captured_at": null,
+      "duration_s": null
+    },
+    "3v": {
+      "title": "Ruth's request (audio clip for a loud room)",
+      "file": "ruth-request.m4a",
+      "sha256": null,
+      "captured_at": null,
+      "duration_s": null,
+      "transcript": "I'm out of my coffee and the soft bread, and get some sour cream."
+    },
+    "1s": {
+      "title": "Tier 0: an optional recording of the retailer's own assistant",
+      "file": "sparky-baseline.mp4",
+      "sha256": null,
+      "captured_at": null,
+      "duration_s": null,
+      "note": "Optional. Labeled with its date on stage, never framed as the twin's backend."
+    }
+  }
+}

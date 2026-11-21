@@ -1,0 +1,11 @@
+# IQ lint settings; fold into the founding PR's root pyproject.toml as [tool.ruff] (HP owns that file).
+target-version = "py312"
+line-length = 160
+src = ["packages/*/src", "kit/src", "tests"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "SIM108", "RUF012"]
+
+[lint.isort]
+known-first-party = ["kit_contracts", "mock_gateway", "kit_verifier", "kit_eval", "kit_gate", "kit_cli", "contract", "mutation"]

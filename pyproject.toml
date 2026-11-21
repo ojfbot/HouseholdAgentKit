@@ -1,0 +1,74 @@
+[project]
+name = "household-agent-kit"
+version = "0.1.0"
+description = "HouseholdAgentKit: an independent, unofficial, synthetic-only proof of concept for household shopping agents."
+requires-python = ">=3.12,<3.13"
+license = {text = "Apache-2.0"}
+dependencies = [
+  "kit-cli", "kit-contracts", "kit-mock-gateway", "kit-verifier", "kit-eval-harness", "kit-gate",
+  "kit-card-writer", "discovery-engine", "pyyaml>=6",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.8", "pyright>=1.1.390"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["kit", "packages/contracts", "packages/mock-gateway", "packages/verifier", "packages/eval-harness",
+           "packages/kit-gate", "packages/card-writer", "packages/discovery-engine"]
+
+[tool.uv.sources]
+kit-cli = {workspace = true}
+kit-contracts = {workspace = true}
+kit-mock-gateway = {workspace = true}
+kit-verifier = {workspace = true}
+kit-eval-harness = {workspace = true}
+kit-gate = {workspace = true}
+kit-card-writer = {workspace = true}
+discovery-engine = {workspace = true}
+
+[tool.pytest.ini_options]
+testpaths = ["packages", "tests", "apps", "kit"]
+pythonpath = ["tests", "packages/shopping-port/reference"]
+norecursedirs = ["prototypes", "fixtures", "node_modules", ".venv", "out"]
+markers = [
+  "cap07: CAP-07 agent-to-agent with Sparky (CT-07a..f)",
+  "cap10: CAP-10 pickup and delivery slots (CT-10a..d)",
+  "cap43: CAP-43 slot hold for an agent (CT-43a)",
+  "cap02: CAP-02 Agent Profiles (CT-02a..c)",
+  "cap21: CAP-21 care profile per person cared for (CT-21a..c)",
+  "cap28: CAP-28 org principal, two approvers (CT-28a)",
+  "contract: capability-tagged contract suite",
+  "conformance: K20 conformance suite",
+  "mutation: K03 verifier mutation suite",
+  "redteam: prompt-injection / red-team cases",
+  "slow: long-running suites (engine 3-seed eval); nightly only",
+  "loose_contract: depends on a block held loose until Decisions batch 1 (Case v1, Mandate.standing)",
+  "requires_core: needs HP's twin core half; skipped until it registers",
+  "doctor: kit doctor checks, each proven red on a planted break",
+]
+
+# Lint: IQ's rule set (docs/iq/staged-config/ruff.toml) is the standard. Only the trees that already
+# meet it are held to it; the others are held to pyflakes (F) until issue "bring G/H/C code to the lint standard".
+[tool.ruff]
+target-version = "py312"
+line-length = 160
+src = ["packages/*/src", "kit/src", "tests", "packages/card-writer"]
+extend-exclude = ["packages/discovery-engine/prototypes"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "SIM108", "RUF012"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kit_contracts", "mock_gateway", "kit_verifier", "kit_eval", "kit_gate", "kit_cli", "contract", "mutation"]
+
+[tool.pyright]
+include = ["packages/contracts/src", "packages/mock-gateway/src", "packages/verifier/src", "packages/eval-harness/src",
+           "packages/kit-gate/src", "kit/src"]
+extraPaths = ["tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+reportMissingModuleSource = "none"

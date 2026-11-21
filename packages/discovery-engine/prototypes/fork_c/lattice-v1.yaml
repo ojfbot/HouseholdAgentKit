@@ -1,0 +1,82 @@
+# Fork C discovery lattice — taxonomy v1 (2026-11-18)
+# Extends the brief's v0 axes; nothing removed. Values carry provenance where they name a Walmart capability:
+#   published = in Walmart's Oct 21 2026 announcement, terms or public pages; inferred; proposed (ours).
+taxonomy_version: lattice@1
+extends: lattice@0 (the planning project)
+
+axes:
+  actor_type:            # stratification axis: every run samples every value
+    shopper:             [C01-C29 seeds, generated profiles]
+    never_shopper:       [rarely or never shops Walmart; their agent chose Walmart, or might]
+    caregiver:           [adult child, spouse, home health aide, guardian]
+    marketplace_seller:  [3P seller]
+    supplier_brand:      [1P supplier, brand]
+    store_associate:     [OGP picker, InHome associate, pharmacy tech, store manager]
+    spark_driver:        [independent contractor on the Spark Driver platform, NOT an associate]
+    community_org:       [church meal, food pantry, school/PTA, youth team, shelter/case worker, relief org, mutual aid]
+    small_business:      [Walmart Business account, Sam's Club member, short-term-rental host, food truck, home daycare, office manager]
+    walmart_team:        [Gateway, Sparky, Connect ads, customer care, fulfillment ops, trust & safety, returns]
+    agent_builder:       [Gateway beta partner building an outside agent]
+
+  role_in_order:         # NEW. Who this actor is in the agent-placed order. Lets non-shoppers enter the lattice honestly.
+    - principal          # account holder whose agent orders
+    - requester          # asks, does not pay (Ruth; a teen; an aide)
+    - approver_payer     # approves and pays (Jen; a treasurer)
+    - recipient          # receives at the door
+    - fulfiller          # picks, delivers, puts away
+    - item_supplier      # whose product the agent chooses or rejects
+    - walmart_operator   # runs the Walmart side
+    - agent_builder      # builds the outside agent
+
+  job_to_be_done:
+    [feed, restock, host_or_celebrate, care_for_someone, set_up_a_home, stretch_money, recover, prepare,
+     gifts, school, hobby_or_build, seasonal, run_a_small_business, give_or_donate, manage_group_money,
+     keep_a_routine (pet, shift, observance), protect_someone (scams, recalls, allergens)]
+
+  trigger:
+    [calendar_event, paycheck_day, benefits_issuance_day, weather_alert, power_outage, low_stock_signal,
+     life_event, family_message, price_threshold, school_email, failed_delivery, guest_dietary_need,
+     packaging_or_recipe_change, recall_notice, booking_calendar_checkout, pos_sales_close, donation_intake,
+     team_schedule, shift_schedule, observance_calendar (stated only), return_window_closing,
+     route_eta_change, move_date, prescription_or_care_schedule, headcount_change]
+
+  agent_surface:
+    [general_assistant (ChatGPT, Gemini, Claude, Muse), family_chat_agent, calendar_agent, budget_finance_app,
+     meal_planner, smart_home_hub, car_or_eld, caregiver_app, school_app, small_business_ops_agent,
+     property_management_agent, pos_system, team_or_club_app, church_or_pantry_inventory_system,
+     expense_system, weather_app, baby_tracker, pet_app, seller_ops_agent, partner_built_agent]
+
+  walmart_capability:
+    published:   [gateway_mcp, agent_profile.cap, agent_profile.approve_each, agent_profile.separate_history,
+                  agent_profile.revoke, consent_gate, scoped_one_time_token (Addendum 1), sparky_a2a (inferred from
+                  "talk to Sparky"), pickup_delivery_slots, walmart_plus, walmart_plus_assist, snap_online,
+                  sams_club, marketplace, returns_incl_home_pickup, inhome_delivery, walmart_business
+                  (multi-user <=5, tax-exempt), spark_good (registry, round up, local grants), school_supply_lists,
+                  registries]
+    proposed:    [care_profile (B), profile_scoped_usuals (B), requested_by (B), packaging_change_notice,
+                  put_away_plan, flexible_window_mandate, agent_order_support_view, sparky_brief_schema (A)]
+
+  walmart_in_house_cover:   # NEW. The necessity test generalised per actor (gate step 2)
+    sparky:          shoppers inside the Walmart app (inspiration, comparisons, recipe-to-cart, reorder coming)
+    marty:           suppliers, sellers, advertisers (onboarding, orders, campaigns)
+    associate_agent: associates (schedules, HR, store data)
+    developer_agent: Walmart engineers
+    features:        [walmart_business, spark_good, school_supply_lists, registries, inhome, agent_profiles_itself]
+
+  constraint:
+    [agentic_access_terms (identify, no payment methods, label sponsored, no Walmart data for training/synthetic/analytics),
+     whole_person_profiles, rules_not_diagnoses, no_identity_inference, access_region, time, money_rhythm,
+     program_eligibility (SNAP/EBT, vouchers), contractor_boundary (drivers never enter homes),
+     children_data, org_governance (treasurer, receipts, tax-exempt), age_restricted_items, pharmacy_privacy]
+
+  hidden_problem_quadrant:   # NEW sampling axis (FDE method) so every run looks in all four
+    [chronic, workaround_became_process, world_changed, never_formed_desire]
+
+sampling:
+  method: pairwise over (actor_type x job x trigger x agent_surface x quadrant), stratified by actor_type
+  quota: {min_cells_per_actor_type: 6, min_cells_per_quadrant: 10}
+  invalid_combinations:        # filtered before sampling, logged
+    - [spark_driver, benefits_issuance_day]       # drivers are not the payer
+    - [agent_builder, guest_dietary_need]
+    - [walmart_team, role_in_order: principal]
+  seed: required; logged on the run thread

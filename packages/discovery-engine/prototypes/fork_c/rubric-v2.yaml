@@ -1,0 +1,24 @@
+# Fork C scoring rubric v2 (2026-11-18, after the value-ladder revision). Supersedes rubric@1.
+rubric_version: rubric@2
+score: "100 * (sum(w_i * x_i) / 5 - 0.10 * risk / 5)"
+criteria:
+  pain:            {weight: 0.15, x: "sqrt(frequency * severity)"}
+  value_at_stake:  {weight: 0.15, x: "clip(log10(VaS_usd_per_year) - 5, 0, 5)  # $100k -> 0, $10B -> 5"}
+  tier:            {weight: 0.15, x: "tier 0 -> 1; tier 1 -> 2.5; tier 2 -> 3 + 0.4 * gateway-only conditions (max 5)"}
+  demo_ability:    {weight: 0.12, anchors: {1: "needs a month", 3: "15 min, staged moment", 5: "15 min, live moment, eval with a number"}}
+  evidence:        {weight: 0.10, x: "ladder level E0-E5"}
+  novelty:         {weight: 0.10, anchors: {1: "is A or B or a shipped feature", 5: "nothing like them"}}
+  walmart_stake:   {weight: 0.08}
+  visible_approval: {weight: 0.08}
+  reuse:           {weight: 0.07}
+penalty:
+  risk:            {weight: 0.10, x: "max of dignity, privacy, terms risk 0-5"}
+value_at_stake: "segment_size x adoption_share x frequency_per_year x basket_usd x gap; every input tagged S (sourced) or A (assumption)"
+judges: {run_0: "one seed judge", engine: "3 judges, median, flag spread >= 2"}
+selection:
+  anchors_excluded: [PF-51 hello world, G-01 hello world tier-0 rung, PF-28 Care Profiles]
+  diversity: {max_per_actor_type: 3, max_per_cluster: 1, min_actor_types_in_top10: 6}
+calibration_anchors:
+  hello_world: "PF-51 must climb tier 0 -> 1 -> 2 (observed Sparky baseline, a specific brief, >= 1 Gateway-only condition); else the run aborts"
+  care_profiles: "PF-28 must reach tier 2"
+  tier0_valid: "tier-0 families stay in the bank and score lower than families that climb"

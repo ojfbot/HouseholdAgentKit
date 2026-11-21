@@ -1,0 +1,89 @@
+# Required check `ci` (ruleset main). GitHub-hosted Ubuntu, tier `none` only, no secrets, so forks run green.
+# The aggregate job is named exactly `ci`; renaming it silently blocks every merge (punchlist block 3).
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  UV_FROZEN: "1"
+  KIT_TIER: none
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16", enable-cache: true}
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pyright
+
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16", enable-cache: true}
+      - run: uv sync --frozen
+      - name: unit + contract suites (every capability tag) + conformance
+        run: uv run pytest -q -m "not mutation and not slow" --junitxml=out/junit.xml   # engine's 3-seed eval (-m slow) runs nightly
+      - name: capability tags are present (pytest -m cap07 / cap10 must select tests)
+        run: |
+          for m in cap07 cap10 cap43 cap02 cap21 cap28; do
+            n=$(uv run pytest -q --collect-only -m "$m" | grep -c '::' || true)
+            test "$n" -gt 0 || { echo "marker $m selects no tests"; exit 1; }
+          done
+      - name: verifier mutation suite (must be 100%)
+        run: uv run kit mutate --out out/mutation.json
+      - name: hello world at tier none (reference hook until A's hook registers)
+        run: uv run kit eval hello-world --k 5 --out out/hello-world.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: ci-reports, path: out/}
+
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16", enable-cache: true}
+      - run: uv sync --frozen
+      - name: schema validation of contracts/
+        run: uv run kit contracts validate contracts/          # HP/ED: lands with contracts-v1 at the Nov 22 freeze
+      - name: bundle manifests recompute without drift
+        run: for f in bundles/*.yaml bundles/examples/*.yaml; do [ "$(basename "$f")" = gate-config.yaml ] && continue; uv run kit bundle check "$f"; done
+      - name: homework checks H1-H5
+        run: uv run python packages/discovery-engine/prototypes/homework_v2.py   # moved by the founding PR
+      - name: decomposition stage is deterministic
+        run: |
+          uv run python packages/discovery-engine/prototypes/decompose_v2.py > out-a.json
+          uv run python packages/discovery-engine/prototypes/decompose_v2.py > out-b.json
+          cmp out-a.json out-b.json
+
+  ui:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: {version: 9.15.4}
+      - uses: actions/setup-node@v4
+        with: {node-version: 24.22.2, cache: pnpm, cache-dependency-path: apps/console/pnpm-lock.yaml}
+      - run: pnpm -C apps/console install --frozen-lockfile
+      - run: pnpm -C apps/console build
+
+  ci:
+    # The one required check. Green only if every job above succeeded (skipped counts as failure).
+    if: always()
+    needs: [lint, tests, contracts, ui]
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'
