@@ -9,7 +9,7 @@ You have the repo, its CI and its issues. Do not re-plan and do not read the pla
 - **Rungs 0 and 1 are done.** The audit is [`integration-risk-register.md`](integration-risk-register.md). The founding pull request (#1, `hp/repo-init`) is green in CI on CPython 3.12.16. It imports four code trees that had never been run together; they pass together. CI runs on GitHub-hosted runners at tier `none`.
 - **The founding PR is the owner's to merge.** If it is still open when you start, work from its branch and tell him.
 - **Nothing has been run on a Mac.** Every result so far is from Linux on CPython 3.12.3 or from GitHub's runners.
-- **The independent review has not happened.** the owner sends [`ladder-review-request.md`](ladder-review-request.md) to a different model. Rung 3 does not start until its findings are recorded in the risk register; `kit doctor` prints that line red until then.
+- **The independent review is in, and its fixes are open.** It found 15 setups that get past `kit doctor` checks (#38) and three product bugs on the demo path (#35, #36, #37). Rung 2 can run now. Rung 3 does not start until #38 is closed; `kit doctor` prints that line red until then.
 - **Decisions batch 1 is unanswered.** The repo was founded on the recommended defaults. The risk register lists them and the contracts nobody has acked.
 
 ## Rung 2: runs on the stage host
@@ -49,7 +49,7 @@ After rung 2, write the owner a few plain lines and wait:
 
 1. Rungs 0 to 2: green or red, as `kit doctor` printed them.
 2. Anything that differed between CI and the stage host.
-3. What rung 3 needs from him: the independent review recorded, the founding PR merged, the ruleset approved (see "Owner steps").
+3. What rung 3 needs: #38 closed, the founding PR merged, the ruleset approved (see "Owner steps").
 4. Whether any check looked wrong.
 
 ## After the owner says go
@@ -61,7 +61,7 @@ Climb rungs 3 to 10 in order. Each has an issue labeled `rung` (#3 to #10; rung 
 - Never skip a red rung. Never make a check green by editing the file it reads.
 - Follow the fleet's conventions as you find them on the machine. This repo does not describe them, because the bootstrap session was told not to assume anything about the owner's machines or other repos.
 
-After rung 4, work the build backlog (issues labeled `build`, #11 to #34) in the order of their `P0`, `P1`, `P2` labels, and within a label in issue-number order unless an issue's "Depends on" line says otherwise. Issues labeled `blocked` wait for the decision they name. P0 is the taco-night critical path (#11 to #21). Taco night first: it is the one live beat on Dec 2, and it is the engine's first gate. Dispatch each issue to a worker at the tier it names; a worker reads only its issue, its files and its contract.
+After rung 4, work the build backlog (issues labeled `build`, #11 to #34) in the order of their `P0`, `P1`, `P2` labels, and within a label in issue-number order unless an issue's "Depends on" line says otherwise. Issues labeled `blocked` wait for the decision they name. P0 is the taco-night critical path (#11 to #21) plus the review's findings (#35 to #38). Taco night first: it is the one live beat on Dec 2, and it is the engine's first gate. Dispatch each issue to a worker at the tier it names; a worker reads only its issue, its files and its contract.
 
 ## Things that will bite
 
@@ -80,7 +80,7 @@ After rung 4, work the build backlog (issues labeled `build`, #11 to #34) in the
 | When | Step | Minutes |
 | --- | --- | --- |
 | Now | Read the top three risks in the risk register | 5 |
-| Now | Send `docs/ladder-review-request.md` to an independent model; paste its findings into the register's "Independent review" section | 15 |
+| Done | Independent review sent and recorded; its fixes are #35 to #38 | |
 | Now | Review and merge the founding PR (rebase) | 10 |
 | Before rung 2 | On the stage host: uv, and CPython 3.12.16 if uv cannot fetch it | 10 |
 | Before rung 3 | Answer Q-BS-1 to Q-BS-4 and Q-I-1 in the decision queue; run `scripts/apply-repo-settings.sh ojfbot/HouseholdAgentKit`; turn on secret scanning and CodeQL default setup if the script reports it could not | 15 |
