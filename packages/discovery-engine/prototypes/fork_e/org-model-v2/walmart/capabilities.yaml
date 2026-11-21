@@ -1,0 +1,392 @@
+org: walmart
+org_model_version: org@2
+as_of: 2026-11-19
+capabilities:
+- id: CAP-01
+  name: Agent Gateway (MCP or similar protocol)
+  status: published
+  status_note: "Announced Oct 21 2026; early, invitation-only beta; may be suspended; no public API reference or tool list."
+  exposed_to_outside_agents: beta
+  actors_served: [shopper, caregiver, small_business, community_org, agent_builder]
+  sources: [ST-001, ST-002, ST-013, ST-025, ST-028, ST-029]
+  as_of: 2026-11-19
+  changed_from_org1: "exposure 'beta' made explicit; sources now primary"
+- id: CAP-02
+  name: "Agent Profiles: one per agent, approve-each or spend limit ($50/$100/$200 examples), separate history, delete any time"
+  status: published
+  status_note: "Announced to launch 'in the next month' (i.e. by late Nov 2026). Not confirmed live as of Nov 19; profile is created on first Gateway use, so a browser agent never gets one."
+  exposed_to_outside_agents: beta
+  actors_served: [shopper, caregiver]
+  sources: [ST-005, ST-006, ST-003]
+  as_of: 2026-11-19
+  changed_from_org1: "rollout still pending; daily sweep item"
+- id: CAP-03
+  name: Human Consent Gate and Scoped Access Token
+  status: published
+  status_note: "Outside the Gateway a gate is required before every checkout. Through the Gateway, autonomous checkout is allowed when the Agent Mandate stays inside the User-Defined Guardrail (Addendum 1 s.5). Token bound to merchant, cart, amount, session; consumed at checkout."
+  exposed_to_outside_agents: beta
+  actors_served: [all]
+  sources: [ST-015, ST-016, ST-017, ST-009]
+  as_of: 2026-11-19
+  changed_from_org1: "autonomy-within-guardrail added; org@1 read the gate as always-on"
+- id: CAP-04
+  name: Same prices for agents as for people (EDLP); offers and fees shown before purchase
+  status: published
+  status_note: "Restated by CEO letter Sep 25 2026: no price by who you are or time of day."
+  exposed_to_outside_agents: "yes"
+  actors_served: [all]
+  sources: [ST-008, ST-129]
+  as_of: 2026-11-19
+  changed_from_org1: "second primary source"
+- id: CAP-05
+  name: "Sparky in-app: search, compare, review summaries, lists, recipes-to-cart, occasions; in stores too"
+  status: published
+  status_note: "Oct 30 2026 added image input, photo/Notes lists to cart matched to past purchases, Shop to Light, recipe generation, healthier swaps, Spanish/French; voice chainwide by year end. About half of app users engage; baskets ~35% larger (company)."
+  exposed_to_outside_agents: "no"
+  actors_served: [shopper]
+  sources: [ST-120, ST-040, ST-053, ST-107, ST-111, ST-037]
+  as_of: 2026-11-19
+  changed_from_org1: "feature list updated (don't-pitch)"
+- id: CAP-06
+  name: Sparky replenishment, reorder and meal planning
+  status: published
+  status_note: "Replenishment and meal planning added (Guggina, Jun 2026); Sparky nudges regular orders (Jan 2026). Fully automatic restock is stated as future ('not quite there yet')."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper]
+  sources: [ST-107, ST-108, ST-060, ST-137, ST-160]
+  as_of: 2026-11-19
+  changed_from_org1: "was 'announced, coming'"
+- id: CAP-07
+  name: Agent-to-agent shopping with Sparky
+  status: published
+  status_note: "RE-TESTED: Addendum 1 defines the Gateway as 'agent-to-agent shopping with Walmart's agent, Sparky'; the beta page says it 'connects AI agents through Sparky'; Danker (ICR) describes partners' agents working with Walmart's agent; a Jul 2026 posting hires to define the a2a architecture. Still unknown: the request format (free text vs structured brief), so CAP-27 stays proposed."
+  exposed_to_outside_agents: beta
+  actors_served: [all]
+  sources: [ST-013, ST-025, ST-136, ST-072, ST-033, ST-077]
+  as_of: 2026-11-19
+  changed_from_org1: "inferred -> published (exposure beta)"
+- id: CAP-08
+  name: "Marty: supplier, seller, advertiser super agent (onboarding, orders, campaigns, ad assistant, Scintilla insights)"
+  status: published
+  status_note: "Marty advertising assistant beta for Sponsored Search (Jan 2026), rollout to all Sponsored Search advertisers in H1; Marty for Scintilla."
+  exposed_to_outside_agents: "no"
+  actors_served: [marketplace_seller, supplier_brand]
+  sources: [ST-064, ST-070, ST-071]
+  as_of: 2026-11-19
+  changed_from_org1: "ad assistant and Scintilla added"
+- id: CAP-09
+  name: "Associate agent and tools: schedules, HR, task management, translation (44 languages), fresh touring next-best-action, OOS and spill guidance"
+  status: published
+  status_note: "~1.3M associates carry fresh touring agents (Jun 2026)."
+  exposed_to_outside_agents: "no"
+  actors_served: [store_associate]
+  sources: [ST-109, ST-111, ST-139, ST-048]
+  as_of: 2026-11-19
+  changed_from_org1: "re-sourced; scope widened"
+- id: CAP-10
+  name: Pickup and delivery slots (fulfillment options)
+  status: published
+  status_note: "RE-TESTED. Consumer capability published (same-day at substantially all U.S. stores; under 3h; delivery to chosen location and time in the Gemini experience). Exposure to outside agents is INFERRED, not stated: the terms forbid agents to misrepresent 'delivery speed, or fulfillment options' and disclaim Walmart liability for an agent's 'delivery choices'; the beta FAQ lists availability and order status; the a2a PM posting requires 'fulfillment context'; the Dec 2 event page suggests 'store availability data'. No source names slot selection, windows or holds. Holding a slot is split out as CAP-43 (proposed)."
+  exposed_to_outside_agents: inferred
+  actors_served: [shopper, caregiver, small_business]
+  sources: [ST-049, ST-134, ST-022, ST-026, ST-072, ST-079, ST-083]
+  as_of: 2026-11-19
+  changed_from_org1: "exposure unknown -> inferred (fulfillment options visible); slot hold split to CAP-43"
+- id: CAP-11
+  name: Walmart+ membership; membership recognized in linked third-party experiences
+  status: published
+  status_note: "Walmart+ members spend ~4x non-members (Q2 FY27). Agent support needs no Walmart+. Linked Gemini accounts carry membership benefits; the a2a posting asks for membership recognition. Walmart+ Assist not re-verified this pass."
+  exposed_to_outside_agents: inferred
+  actors_served: [shopper]
+  sources: [ST-041, ST-029, ST-134, ST-074]
+  as_of: 2026-11-19
+  changed_from_org1: "exposure unknown -> inferred"
+- id: CAP-12
+  name: SNAP/EBT online
+  status: published
+  status_note: "Secondary source only this pass; Walmart.com-sold SNAP-eligible items only, not Marketplace."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper]
+  sources: [ST-188]
+  as_of: 2026-11-19
+  changed_from_org1: "secondary re-source; re-verify on walmart.com"
+- id: CAP-13
+  name: InHome delivery into fridge or garage (associates, wearable camera, smart entry)
+  status: published
+  status_note: "45M households / 50+ markets as of mid-2024; not re-verified for 2026."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper, store_associate]
+  sources: [ST-144]
+  as_of: 2026-11-19
+  changed_from_org1: "re-sourced (dated)"
+- id: CAP-14
+  name: "Walmart Business: multi-user, tax-exempt"
+  status: published
+  status_note: "Not re-verified this pass (org@1 source stands)."
+  exposed_to_outside_agents: unknown
+  actors_served: [small_business, community_org]
+  sources: []
+  as_of: 2026-11-18
+  changed_from_org1: none
+- id: CAP-15
+  name: "Spark Good: registry, Round Up, local grants"
+  status: published
+  status_note: "Not re-verified this pass."
+  exposed_to_outside_agents: "no"
+  actors_served: [community_org]
+  sources: []
+  as_of: 2026-11-18
+  changed_from_org1: none
+- id: CAP-16
+  name: School Supply List finder
+  status: published
+  status_note: "Not re-verified this pass."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper]
+  sources: []
+  as_of: 2026-11-18
+  changed_from_org1: none
+- id: CAP-17
+  name: "Sam's Club (bulk, business; Scan & Go, Just Go); in scope of the Gateway"
+  status: published
+  status_note: "Agent tools cover Walmart and Sam's Club."
+  exposed_to_outside_agents: beta
+  actors_served: [small_business, community_org, shopper]
+  sources: [ST-001, ST-157]
+  as_of: 2026-11-19
+  changed_from_org1: "exposure yes -> beta"
+- id: CAP-18
+  name: Returns, including when an agent did not act as intended
+  status: published
+  status_note: "Returns process applies to agent orders; customer stays responsible for returns and disputes."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper]
+  sources: [ST-010, ST-097]
+  as_of: 2026-11-19
+  changed_from_org1: "agent clause added"
+- id: CAP-19
+  name: Spark Driver app customer notes; drivers are contractors and never enter homes
+  status: published
+  status_note: "FTC/11-state $100M judgment (Feb 2026) over how offer pay and tips were shown; Walmart must not misrepresent offer earnings."
+  exposed_to_outside_agents: "no"
+  actors_served: [spark_driver]
+  sources: [ST-112, ST-113, ST-114]
+  as_of: 2026-11-19
+  changed_from_org1: "risk context added"
+- id: CAP-20
+  name: Marketplace listing quality and seller readiness for AI discovery
+  status: published
+  status_note: "Walmart says agentic commerce can surface lesser-known brands; catalog LLM pipeline; no seller enrollment step for the Gateway."
+  exposed_to_outside_agents: "no"
+  actors_served: [marketplace_seller]
+  sources: [ST-158, ST-123, ST-095, ST-068]
+  as_of: 2026-11-19
+  changed_from_org1: "primary re-source"
+- id: CAP-21
+  name: "Care profile per person cared for (pinned ship-to, scoped usuals, requested-by)"
+  status: proposed
+  status_note: "Still unpublished: profiles are one per agent, not per person. PARTIAL COVER: the published User-Defined Guardrail (CAP-29) already carries spend limits, transaction frequency and category or department restrictions, so B's 'category limits per profile' should reuse it."
+  exposed_to_outside_agents: n/a
+  actors_served: [caregiver]
+  sources: [ST-018, ST-005, ST-137]
+  as_of: 2026-11-19
+  changed_from_org1: "partial overlap with CAP-29 recorded"
+- id: CAP-22
+  name: Packaging/recipe change notice to agents
+  status: proposed
+  status_note: "Partner demand is stated: P&G wants one trusted product source and a correction path for health, safety and regulatory claims."
+  exposed_to_outside_agents: n/a
+  actors_served: [supplier_brand, shopper]
+  sources: [ST-103, ST-123]
+  as_of: 2026-11-19
+  changed_from_org1: "partner evidence attached"
+- id: CAP-23
+  name: Put-away plan carried to InHome associates
+  status: proposed
+  status_note: "No public signal."
+  exposed_to_outside_agents: n/a
+  actors_served: [store_associate]
+  sources: []
+  as_of: 2026-11-19
+  changed_from_org1: none
+- id: CAP-24
+  name: Flexible-window mandate (slack for an offer)
+  status: proposed
+  status_note: "Walmart links density to speed and profit (Rainey). Any offer must be slot- or product-based and open to everyone (CON-05, CON-21)."
+  exposed_to_outside_agents: n/a
+  actors_served: [shopper]
+  sources: [ST-192]
+  as_of: 2026-11-19
+  changed_from_org1: "pricing-pledge check added"
+- id: CAP-25
+  name: "Support view of agent orders (mandate, requester, approver, trace)"
+  status: proposed
+  status_note: "Inputs are published: separate agent history (CAP-02) and an immutable transaction record of signed mandates and consent (CAP-30). The rep-facing view is not."
+  exposed_to_outside_agents: n/a
+  actors_served: [walmart_team]
+  sources: [ST-019, ST-005, ST-010]
+  as_of: 2026-11-19
+  changed_from_org1: "inputs now published"
+- id: CAP-26
+  name: Partner sandbox and conformance suite
+  status: absent
+  status_note: "None published (beta only). Demand is stated inside Walmart: an evaluation framework to show an agent does 'what it's doing, and nothing more' (Karnati); partner-performance metrics and launch playbooks (a2a PM posting). Field-wide need: Visa's benchmark failed 42.8% of runs."
+  exposed_to_outside_agents: n/a
+  actors_served: [agent_builder, walmart_team]
+  sources: [ST-028, ST-127, ST-073, ST-145]
+  as_of: 2026-11-19
+  changed_from_org1: "need now evidenced"
+- id: CAP-27
+  name: Sparky brief schema (structured a2a request)
+  status: proposed
+  status_note: "A2A is published (CAP-07); the request format is not. Walmart learned agents work best on highly specific tasks (Sparky launch)."
+  exposed_to_outside_agents: n/a
+  actors_served: [walmart_team, agent_builder]
+  sources: [ST-122, ST-013]
+  as_of: 2026-11-19
+  changed_from_org1: "framing: the gap is format, not a2a itself"
+- id: CAP-28
+  name: "Org principal: multi-approver, tax-exempt agent profile"
+  status: proposed
+  status_note: "No public signal; Walmart Business multi-user is the nearest cover."
+  exposed_to_outside_agents: n/a
+  actors_served: [community_org, small_business]
+  sources: []
+  as_of: 2026-11-19
+  changed_from_org1: none
+# --- new rows
+- id: CAP-29
+  name: "User-Defined Guardrail: standing spend limits, transaction frequency, category or department restrictions"
+  status: published
+  status_note: "Addendum 1. Set in Account Settings or with Walmart; Walmart may still gate a transaction it judges misaligned."
+  exposed_to_outside_agents: beta
+  actors_served: [shopper, caregiver, small_business]
+  sources: [ST-018, ST-016, ST-027]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-30
+  name: Agent Mandate and immutable transaction record (signed mandates, hashes, consent records)
+  status: published
+  status_note: "Agents must send them; they become part of an immutable record. Shape is close to AP2's mandates."
+  exposed_to_outside_agents: beta
+  actors_served: [agent_builder, walmart_team]
+  sources: [ST-019, ST-084]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-31
+  name: Usuals without history (agent finds a customer's usual items without seeing broader history)
+  status: published
+  status_note: "Walmart's examples: sourdough bread, a particular milk brand."
+  exposed_to_outside_agents: beta
+  actors_served: [shopper, caregiver]
+  sources: [ST-007, ST-026]
+  as_of: 2026-11-19
+  changed_from_org1: "new (was only a lattice value)"
+- id: CAP-32
+  name: Sparky inside ChatGPT and Gemini (account linking, synced cart, Walmart checkout and membership)
+  status: published
+  status_note: "Replaced Instant Checkout after in-chat conversion ran ~3x lower (Mar 2026). For people in those apps, not an agent API."
+  exposed_to_outside_agents: "yes"
+  actors_served: [shopper]
+  sources: [ST-058, ST-057, ST-134, ST-161, ST-033]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-33
+  name: Marketplace MCP server for seller API documentation
+  status: inferred
+  status_note: "One secondary explainer only (developer.walmart.com/mcp, Oct 14 2026); page did not load for us."
+  exposed_to_outside_agents: inferred
+  actors_served: [marketplace_seller, agent_builder]
+  sources: [ST-162]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-34
+  name: Ads in Sparky (sponsored prompts; ad formats in testing)
+  status: published
+  status_note: "How sponsorship reaches outside agents through the Gateway is not published; advertisers pay for conversion and Walmart keeps its ranking role."
+  exposed_to_outside_agents: unknown
+  actors_served: [supplier_brand, marketplace_seller]
+  sources: [ST-064, ST-163, ST-164, ST-035, ST-069]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-35
+  name: "Fast fulfillment: under 3h for local items, under 30 min in 38 markets, ~70% of online orders same day or faster"
+  status: published
+  status_note: "Company figures from 2026 calls and conferences."
+  exposed_to_outside_agents: inferred
+  actors_served: [shopper]
+  sources: [ST-041, ST-102, ST-134, ST-169]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-36
+  name: Drone delivery with Wing (150 more stores in 2026, 270 sites by 2027)
+  status: published
+  status_note: "DFW is an early market."
+  exposed_to_outside_agents: unknown
+  actors_served: [shopper]
+  sources: [ST-143]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-37
+  name: Agentic supply-chain orchestration (inventory placement, delivery coordination)
+  status: published
+  status_note: "Internal."
+  exposed_to_outside_agents: "no"
+  actors_served: [walmart_team]
+  sources: [ST-039, ST-170]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-38
+  name: Walmart Scintilla (formerly Luminate) commerce intelligence platform with Marty for Scintilla
+  status: published
+  status_note: "Correction: the brief's 'Luminate' was renamed Scintilla in 2024."
+  exposed_to_outside_agents: "no"
+  actors_served: [supplier_brand]
+  sources: [ST-071]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-39
+  name: Supplier One agentic and agent-to-agent workflows
+  status: inferred
+  status_note: "Job posting only."
+  exposed_to_outside_agents: unknown
+  actors_served: [supplier_brand]
+  sources: [ST-075, ST-187]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-40
+  name: Universal Commerce Protocol participation (Walmart-built experience in Gemini)
+  status: published
+  status_note: "Walmart co-developed UCP; UCP delegates payment to AP2."
+  exposed_to_outside_agents: "yes"
+  actors_served: [shopper, ai_platform]
+  sources: [ST-062, ST-082, ST-134, ST-081]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-41
+  name: "Lists to cart from a photo or Notes export; recipe generation to cart; healthier swaps"
+  status: published
+  status_note: "Oct 30 2026 Sparky release; patent application on NLP list building."
+  exposed_to_outside_agents: "no"
+  actors_served: [shopper]
+  sources: [ST-120, ST-141]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-42
+  name: Substitution-rejection modeling
+  status: inferred
+  status_note: "Granted patent models the likelihood a customer rejects a substitution; long-stated problem. Signal of intent, not proof of product."
+  exposed_to_outside_agents: "no"
+  actors_served: [shopper, store_associate]
+  sources: [ST-140, ST-165]
+  as_of: 2026-11-19
+  changed_from_org1: new
+- id: CAP-43
+  name: Slot hold or reservation for outside agents
+  status: proposed
+  status_note: "Split from CAP-10. Nothing public describes an agent reserving a pickup or delivery window; needed for 'ready by 5:30' briefs and for approval rounds that outlast a slot."
+  exposed_to_outside_agents: n/a
+  actors_served: [shopper, caregiver, small_business, community_org]
+  sources: [ST-022, ST-026]
+  as_of: 2026-11-19
+  changed_from_org1: new

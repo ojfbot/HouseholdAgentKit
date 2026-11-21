@@ -1,0 +1,15 @@
+{
+  "_note": "Copy to console.json on the stage host. Flip each port from fixture to http as its owner ships: poll (A/PD K10 + K23 bus), engine (Fork G E11/E12), care (B/PD K07/K08 chain). cards=model uses P01's local endpoint with the template fallback.",
+  "bind": "0.0.0.0",
+  "port": 8765,
+  "public_url": "http://192.168.137.1:8765",
+  "mode": {"poll": "fixture", "engine": "fixture", "care": "fixture", "cards": "template"},
+  "engine_url": "http://127.0.0.1:8790",
+  "poll_bus_url": "http://127.0.0.1:8791",
+  "model_url": "http://127.0.0.1:8080",
+  "card_model": "k11-qwen3.5-4b-lora",
+  "stt": {"engine": "auto", "timeout_s": 4.0, "model": "mlx-community/whisper-small-mlx"},
+  "stage_guard": true,
+  "log_dir": "logs",
+  "seed": 1202
+}

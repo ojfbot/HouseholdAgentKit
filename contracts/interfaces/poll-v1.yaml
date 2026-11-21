@@ -1,0 +1,84 @@
+# Poll/decision contract v1 = Poll@1 (owner: Fork A). Confirmed for Fork H (DX: D02 ballot, D04, K11 cards) and PD (K10, K23).
+# v0 (poll.opened / poll.response / decision, FIFO by poll_id) is unchanged in meaning; v1 adds fields H needs to render
+# without computing anything, plus poll.closed and poll.reminder. Freezes Nov 22.
+# Rule for H: render only what these messages carry. Never compute a tally, a total, a countdown from the wall clock, or a winner.
+
+version: poll@1
+supersedes: poll@0
+as_of: 2026-11-19
+transport: "SNS topic household.polls / household.responses / household.decisions; FIFO SQS grouped by poll_id; trace headers in message attributes (Telemetry v1)"
+
+common:   # on every message
+  type: str
+  poll_version: "poll@1"
+  poll_id: str
+  episode_id: str
+  clock: {sim_now: "ISO 8601 with offset", wall_now: "ISO 8601 UTC", rate: "float (1 = real time; 20 on stage)"}   # NEW: countdowns run off sim time
+
+states: [draft, open, closed, expired, decided, awaiting_owner, approved, consent_pending, booked, lapsed]
+
+messages:
+  poll.opened:
+    mandate_id: str
+    household_hash: str
+    opened_at: datetime
+    closes_at: datetime            # sim time; = slot cutoff minus a 10-minute checkout buffer
+    reminder_at: datetime          # half the window
+    policy: "owner_decides | auto_plurality | auto_approval | weighted | owner_only"
+    carts:                         # 1-4 CartSummary, already verified by K03; a lock-breaking cart can never appear
+      - cart_id: str
+        label: str                 # e.g. "Same as last time"
+        vector: "vectors@1 key this cart wins on"
+        total: decimal
+        budget_delta: decimal      # total minus budget.max; negative = under
+        ready_by: datetime
+        slot_status: "estimated | confirmed"
+        lines_hash: str
+        sponsored_count: int
+        substitute_count: int
+        claims_ref: str            # K03 VerifyReport id; every number above is a verified claim
+    rights:                        # per role, what a ballot may send
+      owner: [vote, decide, edit]
+      partner: [vote, free_text]
+      teen: [vote, one_request]    # one_request <= 80 chars, one per poll
+      kid: [vote, pick_add]        # picks only from pick_add_list; no free text
+      guest: [flags_only]
+    pick_add_list: [{item_ref: str, label: str, picture_ref: str}]
+    options: "optional [{option_id, label, claims_ref}]: actions instead of carts (B's 'room is Jen' over-cap card); a poll carries carts or options, never both; votes name an option_id"
+    ballot_cards: {role: card_id}  # Card@0 ids (K11) per role; H renders these
+  poll.reminder:                   # NEW
+    to_member_hashes: [str]
+    closes_at: datetime
+  poll.progress:                   # NEW (H's ask): emitted by K10 on each accepted response, so the stage shows 'N voted' without counting
+    voted: int
+    eligible: int
+  poll.response:
+    member_hash: str
+    role: str
+    vote: "cart_id | null"
+    approvals: "[cart_id] (auto_approval policy only)"
+    request: "null | {kind: free_text | one_request | pick_add | flag, text: str?, item_ref: str?}"
+    ballot_token_sha256: str       # NEW: hash of the signed single-use ballot link; the token itself never travels
+    idempotency_key: str           # member_hash + poll_id + attempt; last vote wins
+    sent_at: datetime
+  poll.closed:                     # NEW: H shows this tally; it never counts votes itself
+    closed_at: datetime
+    reason: "deadline | all_voted | owner_closed"
+    tally: {cart_id: int}
+    turnout: {voted: int, eligible: int}
+  decision:
+    decision_id: str
+    cart_id: "str | null"          # null when lapsed
+    policy: str
+    tie_break: "none | owner_weights | fairness_rotation"
+    recheck: {status: "ok | stale_next_cart | stale_reconsent", reason: "str?"}
+    next_state: "awaiting_owner | consent_pending | booked | lapsed"
+    decided_at: datetime
+    explanation_card: card_id      # Card@0; says why (tie rule, stale winner, default ran)
+
+room_mode:   # D02 "the room is the family" (stage only)
+  join: "QR -> POST /join -> {member_hash, role (random among partner, teen, kid), ballot_link (signed, single use), card_id}; no personal data collected"
+  roles_filled_by_k25: "empty roles are filled by scripted voters so the poll always has a household"
+  close_on_time: "the poll closes at closes_at even if phones are still joining (D02 oracle: 60 s, >= 20 phones)"
+
+changes_from_v0: ["clock on every message", "poll.reminder, poll.progress and poll.closed added", "optional options[] for action polls (room is Jen)", "CartSummary fields fixed (vector, budget_delta, slot_status, counts, claims_ref)", "rights per role fixed", "pick_add_list and ballot_cards added", "ballot_token_sha256 added", "decision gains tie_break, recheck, next_state, explanation_card"]

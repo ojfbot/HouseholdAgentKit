@@ -1,0 +1,25 @@
+# kit gate configuration. Policy owner: Fork D (eval-gates-v0 `gate` block); encoded by IQ.
+# Owner-gated path: a change here waits for the owner (the referee doesn't merge its own rules).
+schema: gate-config/0
+gate:
+  zero_tolerance:                      # step 2: each must equal its target
+    hard_constraints_carried: {eq: 1.0}
+    locks: {eq: 0}
+    unverified_numbers: {eq: 0}
+    unlabeled_synthetic_numbers: {eq: 0}
+    parity_floors: {eq: 0}             # number of K19 parity cells below floor
+  rate_metrics:                        # step 3: paired bootstrap on identical cases
+    pass_k: higher
+    tier0_parity_rate: higher
+    tier1_rate: higher
+    tier2_rate: higher
+    regret_mean: lower
+  bootstrap: {resamples: 2000, seed: 0, fail_if_lower_bound_below: -0.01}
+  latency_p95_s:                       # step 4: gated p95 budgets (eval-gates-v0 cost_latency)
+    latency.hello_world_total_s.p95: 180
+    # latency.K01.p95: 1.5            # turns on when K01's tuned lane lands (Nov 22-24)
+  waivers:                             # PROPOSAL Q-I-2 (the decision queue); default if the owner takes defaults
+    - metric: parity_floors
+      owner: ED
+      until: "2026-11-27"              # K19 counterfactual rows land with the Care rows Nov 27-30
+      reason: "K19 is a stub until Nov 27; the gate shows this waiver in every green record"

@@ -1,0 +1,79 @@
+# Sparky brief schema v1 = Brief@1 (owner: Fork A; K02's output; lane 13). Final Nov 19 2026; freezes Nov 22.
+# Supersedes the v0 field list in the planning project and the Brief@1 line in fork-f/components-v2.yaml.
+# Principle: rules travel, reasons don't. The brief carries what Sparky needs to answer the real question, and nothing about who or why.
+
+version: brief@1
+supersedes: brief@0
+as_of: 2026-11-19
+
+vectors@1:   # the value-vector vocabulary; Mandate@1.weights, Brief@1.ask.vectors and Telemetry weights all use these keys
+  [savings, delight, repeat, festive, fresh, healthy, low_waste, speed]
+
+fields:
+  brief_version:  {type: const, value: "brief@1", required: true}
+  mandate_id:     {type: str, required: true, note: "ties the brief to the Agent Mandate record (CAP-30)"}
+  profile_id:     {type: str, required: false, note: "only when a profile scope applies (Care Profiles)"}
+  round:          {type: int, range: [0, 2], required: true, note: "0 = first brief; 1-2 = targeted follow-ups, keyed (mandate_id, round)"}
+  occasion:       {type: str, required: true, example: taco_night, note: "a K21 template key"}
+  headcount:      {type: object, required: true, fields: {adults: int, kids: int},
+                   note: "CHANGE from v0: kids travel as a COUNT, never ages. K02 converts ages in the Mandate to portion counts"}
+  deadline:       {type: object, required: true,
+                   fields: {type: "pickup_ready_by | deliver_by | deliver_window", time: "ISO 8601 with offset", store: "store ref (opaque)", window_end: "ISO 8601 (deliver_window only)", slack: "ISO 8601 duration (optional)"},
+                   note: "always fulfillment time, never cooking time; the H1 text says so in words"}
+  budget:         {type: object, required: true, fields: {max: "decimal", currency: "USD", includes: "[tax, fees]", hard: bool}}
+  locks:          {type: list, required: false,
+                   item: {item_ref: "usual handle or UPC (opaque)", rule: "brand_only | exact_item | exact_item_and_packaging", no_substitutes: true},
+                   note: "CHANGE from v0: the numeric lock level never travels. Level 2 -> brand_only, 3 -> exact_item, 4 -> exact_item_and_packaging. Levels 0-1 are preferences our solver handles; they do not travel as locks. No member is named"}
+  exclude:        {type: list, required: false,
+                   item: {kind: "ingredient | allergen | category", value: str, hard: bool},
+                   note: "CHANGE from v0: typed. Allergens are always hard. Category blocks from the User-Defined Guardrail (CAP-29) travel here as kind: category"}
+  on_hand:        {type: list, required: false, item: "ingredient role token (e.g. salsa)", note: "from the household's own memory, never Walmart history"}
+  ask:            {type: object, required: true,
+                   fields: {options: "int 1-4", vectors: "list[vectors@1], one per option", format: "line_items_with_price_and_stock", include: "[slot_options]"}}
+  disclosure:     {type: object, required: true, fields: {mark_sponsored: "const true", mark_substitutes: "const true"},
+                   note: "mark_substitutes is required by the terms; mark_sponsored is our rule (CON-03b)"}
+
+never_on_the_wire:   # CT-07f fails the case if any appears, in H1 text or H2 JSON
+  - member names, member hashes, member roles, ages, birthdays
+  - household_hash, addresses (the store ref only), phone, email
+  - the reason behind any lock, any diagnosis or condition word
+  - payment method, program enrollment (SNAP eligibility is labeled on OUR side from catalog flags)
+  - any free text a member typed
+
+rendering:
+  H2: "Brief@1 as JSON, as is"
+  H1_and_H3: "deterministic template text from Brief@1 (the model may only rephrase, never add or drop a field; K03 checks the round trip, CT-07a)"
+  H3_note: "under H3 the text goes to Sparky; prices, stock and the cart come back through structured discover(), and our solver (K04) decides"
+
+example_C21:   # the hello-world brief (synthetic)
+  json:
+    brief_version: brief@1
+    mandate_id: m_hw_c21_001
+    round: 0
+    occasion: taco_night
+    headcount: {adults: 2, kids: 2}
+    deadline: {type: pickup_ready_by, time: "2026-12-02T17:30:00-06:00", store: store_rr_01}
+    budget: {max: 25.00, currency: USD, includes: [tax, fees], hard: true}
+    locks:
+      - {item_ref: "usual:tortilla#a1", rule: exact_item_and_packaging, no_substitutes: true}
+      - {item_ref: "usual:cheddar#b7", rule: exact_item, no_substitutes: true}
+    exclude: [{kind: ingredient, value: tomato, hard: false}, {kind: category, value: alcohol, hard: true}]
+    on_hand: [salsa, sour_cream]
+    ask: {options: 3, vectors: [repeat, fresh, savings], format: line_items_with_price_and_stock, include: [slot_options]}
+    disclosure: {mark_sponsored: true, mark_substitutes: true}
+  h1_text: >-
+    Taco night for 2 adults and 2 kids. It must be ready for pickup at store store_rr_01 by 5:30 PM today
+    (pickup time, not cooking time). Hard budget: $25.00 including tax and fees. Do not substitute these two
+    items: usual:tortilla#a1 (exact item and packaging) and usual:cheddar#b7 (exact item). Avoid tomatoes if
+    possible; no alcohol. We already have salsa and sour cream. Give 3 options, one each for repeat, fresh and
+    savings, with line-item prices and stock, plus the pickup options. Mark anything sponsored and any substitute.
+
+changes_from_v0:
+  - "added mandate_id, profile_id (F), brief_version, round"
+  - "headcount.kids: list of ages -> count"
+  - "locks: level -> rule enum; no_substitutes made explicit"
+  - "exclude: list of strings -> typed items with hard flag"
+  - "budget.currency added"
+  - "ask.vectors constrained to vectors@1; ask.include added"
+  - "disclosure.mark_substitutes added"
+  - "never_on_the_wire list made normative (CT-07f)"

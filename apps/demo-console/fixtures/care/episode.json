@@ -1,0 +1,97 @@
+{
+  "_fixture": "Fork H contract fixture for beat 3 (Care Profiles). Story from B's Cycle 2 doc. Every number is synthetic. The live chain (K01 -> K07/K08 -> K11) replaces the scripted results on Nov 30.",
+  "profile": {
+    "profile_id": "prof_ruth_tampa",
+    "name": "Ruth · Tampa",
+    "requester": {"member_hash": "m_ruth", "role": "requester"},
+    "approver": {"member_hash": "m_jen", "role": "approver_payer"},
+    "claims": [
+      {"id": "cap_per_order", "value": {"amount": "75", "currency": "USD"}, "verified_by": "k07:prof_ruth_tampa#cap.per_order", "label": "synthetic"},
+      {"id": "cap_per_month", "value": {"amount": "250", "currency": "USD"}, "verified_by": "k07:prof_ruth_tampa#cap.per_month", "label": "synthetic"}
+    ],
+    "settings_words": [
+      "Ships only to Ruth's address in Tampa",
+      "Gift cards, prepaid cards and electronics: off",
+      "Requests come from Ruth's voice line",
+      "Ruth's usuals come from Ruth's orders only"
+    ]
+  },
+  "utterances": {
+    "usual": {
+      "canonical": "I'm out of my coffee and the soft bread, and get some sour cream.",
+      "match_any": ["coffee", "bread", "sour cream"]
+    },
+    "heater": {
+      "canonical": "And a little space heater, the bedroom gets cold at night.",
+      "match_any": ["heater", "space heat"]
+    }
+  },
+  "steps": [
+    {"id": "today", "title": "Today's model", "say": "The same voice request, through Jen's account as announced.", "utterance": "usual"},
+    {"id": "profile", "title": "One profile for Ruth", "say": "Thirty seconds of settings."},
+    {"id": "care", "title": "Through the care profile", "say": "Inside the rules, Jen's phone stays quiet.", "utterance": "usual"},
+    {"id": "heater", "title": "Over the cap", "say": "The room is Jen.", "utterance": "heater"},
+    {"id": "decision", "title": "Jen decides", "say": "Ruth's own words, three buttons."},
+    {"id": "lock", "title": "Locked bread is out", "say": "No silent swap.", "optional": true},
+    {"id": "scam", "title": "The profile can't buy gift cards", "say": "Nothing reaches checkout.", "optional": true},
+    {"id": "month", "title": "Ruth's month", "say": "Apart from Jen's family's orders.", "optional": true}
+  ],
+  "results": {
+    "today": {
+      "_note": "Announced Agent Profiles behaviour (one profile per agent, account-level usuals). Marks are eval rows scored from the mock Gateway log, not from what the agent says.",
+      "result": {"ok": {"value": {"cart_ref": "cart_today_01"}, "trace": "trace:fixture/today", "fallback_used": false, "adapter_id": "k24.h3@twin"}},
+      "compare_ref": "compare.json"
+    },
+    "care": {
+      "result": {"ok": {"value": {"cart_ref": "cart_care_01", "within_mandate": true}, "trace": "trace:fixture/care", "fallback_used": false, "adapter_id": "k24.h3@twin"}},
+      "readback": {
+        "kind": "readback",
+        "audience": {"member_hash": "m_ruth", "role": "requester"},
+        "claims": [],
+        "facts": {"headline": "Here's your order, Ruth", "items": ["your coffee", "the soft bread", "sour cream"], "when_words": "Thursday", "place_words": "your house"}
+      }
+    },
+    "heater": {
+      "result": {"refusal": {"code": "OVER_CAP", "reason": "order total exceeds the per-order cap on prof_ruth_tampa", "retryable": false,
+                             "owner_action": "ask approver_payer m_jen", "evidence": ["k08:mandate_ruth#cap_per_order", "k03:vr_care_02#total"]}},
+      "over_cap": {
+        "kind": "over_cap",
+        "audience": {"member_hash": "m_jen", "role": "approver_payer"},
+        "claims": [
+          {"id": "words", "value": "@transcript", "verified_by": "@transcript_ref", "label": "synthetic"},
+          {"id": "item_price", "value": {"amount": "79", "currency": "USD"}, "verified_by": "k03:vr_care_02#line_4", "label": "synthetic"},
+          {"id": "order_total", "value": {"amount": "96.18", "currency": "USD"}, "verified_by": "k03:vr_care_02#total", "label": "synthetic"},
+          {"id": "cap_per_order", "value": {"amount": "75", "currency": "USD"}, "verified_by": "k08:mandate_ruth#cap_per_order", "label": "synthetic"}
+        ],
+        "facts": {"requester_name": "Mom", "profile_name": "Ruth", "item_title": "Space heater", "call_label": "Call Mom",
+                  "ship_to_words": "Ships only to Ruth's address in Tampa"}
+      },
+      "poll": {"poll_id": "p_jen_01", "closes_in_s": 45, "policy": "auto_plurality", "options_from_actions": true, "no_quorum_default": "call"}
+    },
+    "lock": {
+      "readback": {
+        "kind": "readback",
+        "audience": {"member_hash": "m_ruth", "role": "requester"},
+        "claims": [],
+        "facts": {"headline": "One thing is out, Ruth", "items": ["your coffee", "sour cream"], "when_words": "Thursday", "place_words": "your house",
+                  "held_words": ["Your soft bread is out at this store. I'm holding it, not swapping it. Another Tampa store has it, if Jen says yes."]}
+      }
+    },
+    "scam": {
+      "result": {"refusal": {"code": "PROFILE_SCOPE", "reason": "category gift_cards is blocked on prof_ruth_tampa", "retryable": false,
+                             "owner_action": "note in approver digest", "evidence": ["k07:prof_ruth_tampa#blocked_categories"]}}
+    },
+    "month": {
+      "digest": {
+        "kind": "digest",
+        "audience": {"member_hash": "m_jen", "role": "approver_payer"},
+        "claims": [
+          {"id": "month_spend", "value": {"amount": "212", "currency": "USD"}, "verified_by": "k12:ledger/prof_ruth_tampa#month_to_date", "label": "synthetic"},
+          {"id": "cap_per_month", "value": {"amount": "250", "currency": "USD"}, "verified_by": "k07:prof_ruth_tampa#cap.per_month", "label": "synthetic"},
+          {"id": "orders_count", "value": 4, "verified_by": "k12:ledger/prof_ruth_tampa#orders", "label": "synthetic"}
+        ],
+        "facts": {"profile_name": "Ruth", "notes": ["A gift card request was blocked. Nothing reached checkout.", "Kept apart from your family's orders. Export ready for your brother."], "note_mark": "info"}
+      }
+    }
+  }
+}

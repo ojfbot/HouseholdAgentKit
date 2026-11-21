@@ -1,0 +1,8 @@
+HouseholdAgentKit
+Copyright 2026 ojfbot
+
+Licensed under the Apache License, Version 2.0.
+
+This project contains no third-party datasets and no model weights. Catalogs, prices,
+households and personas are synthetic and labeled as such. The research registry under
+packages/discovery-engine/prototypes/fork_e/ paraphrases public statements and cites each source URL.

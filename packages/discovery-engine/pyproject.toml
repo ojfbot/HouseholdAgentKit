@@ -1,0 +1,21 @@
+[project]
+name = "discovery-engine"
+version = "0.1.0"
+description = "Discovery Engine (Fork C design) as a package: overnight engine-run job + live controls API. Synthetic only."
+requires-python = ">=3.12,<3.13"
+dependencies = ["pyyaml>=6"]
+license = {text = "Apache-2.0"}
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+discovery-engine = "discovery_engine.cli:main"
+kit-engine-run = "discovery_engine.jobs.engine_run:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,16 @@
+{
+  "_fixture": "D04's input is the hook's HelloWorldResult@1 (fork-a/hello-world-spec.md, built by IQ in K27). A chip lights only from tiers[t].pass in a server-side result with source=live. This fixture is the pre-Nov-24 state: placement_only, so no chip lights.",
+  "source": "fixture",
+  "result": {
+    "result_version": "hello_world_result@1", "oracle_version": "hw-taco@1", "meal": "taco",
+    "status": "placement_only", "mode": "smoke", "k": 1, "bundle_id": null, "adapter_id": "H3",
+    "highest_tier": null,
+    "tiers": {"0": {"pass": null, "cases": 0, "passed": 0}, "1": {"pass": null, "cases": 0, "passed": 0}, "2": {"pass": null, "cases": 0, "passed": 0}},
+    "synthetic": true
+  },
+  "names": {
+    "0": "Parity with Sparky in the app",
+    "1": "A better brief: same backend, better answer",
+    "2": "Only through the Gateway: the family decides, the order completes under rules"
+  }
+}

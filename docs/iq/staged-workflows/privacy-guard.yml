@@ -1,0 +1,25 @@
+# Required check `privacy-guard`. The guard itself is HP's P07 (ported from another fleet repo);
+# this workflow only gives it its required check name. Also refuses a committed holdout seed.
+name: privacy-guard
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  privacy-guard:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16"}
+      - run: uv sync --frozen
+      - name: privacy guard (repo, logs, job specs)
+        run: uv run kit privacy scan .          # HP, P07
+      - name: no holdout seed, no generated data, no weights
+        run: |
+          ! git ls-files | grep -E '(^|/)(holdout[-_]seed|.*\.safetensors|.*\.gguf|adapters/|checkpoints/)' || { echo "forbidden file tracked"; exit 1; }
+          ! git ls-files data/ | grep -vE '^data/(seeds|research)/' || { echo "only seeds and research live under data/"; exit 1; }
+          ! git grep -nE '"split"\s*:\s*"holdout"|split:\s*holdout' -- data/ || { echo "holdout cases never live in the repo"; exit 1; }

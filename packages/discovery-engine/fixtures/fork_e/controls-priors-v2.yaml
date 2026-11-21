@@ -1,0 +1,106 @@
+# Vendored from project doc fork-e/controls-priors-v2.yaml (Fork E, 2026-11-19): every weight and evidence key
+# verbatim; the provenance prose (value_basis, tagged_evidence_rows) and new_family_seeds are left in E's file.
+# Fixture for controls@2 until Fork C delivers it (Sat Nov 21). Do not edit here; replace with controls@2.
+proposal: controls@2 priors (Fork E -> Fork C)
+as_of: '2026-11-19'
+rules:
+- 'Priors only: Fork C owns controls@2 and may override.'
+- stated = Walmart said it wants this (registry rows cited); would_also_serve = our inference; keep them in separate keys so the UI can show which
+  is which.
+- Never-tunable keys from controls@1 stay never-tunable; CON-05 and CON-21 are Walmart-published, so price and hiding cheaper options are out
+  of every profile.
+- 'Fairness floor unchanged: protected-tag families never weighted below 1.0.'
+- value_prior is a starting point for the value vector; bounds and owner_boost unchanged from controls@1.
+profiles:
+  default:
+    value_prior: {revenue: 0.45, trust: 0.32, cost: 0.08, risk: 0.15}
+    segment_stated: {}
+    segment_would_also_serve: {}
+    intent_stated: {}
+    intent_would_also_serve: {}
+  marketing_crm:
+    value_prior: {revenue: 0.52, trust: 0.48, cost: 0.0, risk: 0.0}
+    segment_stated: {shopper: 1.6, never_shopper: 2.0}
+    segment_would_also_serve: {}
+    intent_stated: {feed: 1.4, restock: 1.4}
+    intent_would_also_serve: {}
+    evidence: {shopper: ST-137 ST-041, never_shopper: ST-101, feed: ST-137, restock: ST-137 detergent before it runs out}
+  supply_chain:
+    value_prior: {revenue: 0.55, trust: 0.25, cost: 0.17, risk: 0.03}
+    segment_stated: {store_associate: 2.0, spark_driver: 1.5}
+    segment_would_also_serve: {}
+    intent_stated: {restock: 1.5}
+    intent_would_also_serve: {prepare: 1.8}
+    evidence: {store_associate: ST-170 ST-111, spark_driver: ST-112 ST-114, prepare: storm and event surges, restock: ST-170 position before demand}
+  product:
+    value_prior: {revenue: 0.46, trust: 0.43, cost: 0.02, risk: 0.08}
+    segment_stated: {shopper: 1.4, never_shopper: 1.5}
+    segment_would_also_serve: {}
+    intent_stated: {restock: 1.5, feed: 1.4}
+    intent_would_also_serve: {}
+    evidence: {shopper: ST-031 ST-108, never_shopper: 'ST-101: AI arrivals are often new customers', restock: ST-031 ST-060 chores, reorder nudges, feed: ST-120 ST-191 recipes, taco night}
+  trust_safety:
+    value_prior: {revenue: 0.12, trust: 0.51, cost: 0.0, risk: 0.37}
+    segment_stated: {agent_builder: 1.5}
+    segment_would_also_serve: {caregiver: 1.3}
+    intent_stated: {}
+    intent_would_also_serve: {protect_someone: 1.6, care_for_someone: 1.3}
+    evidence: {caregiver: delegated buying for someone else is where consent breaks, agent_builder: ST-127 ST-145, protect_someone: scam-aware consent, PF-29, care_for_someone: approval by someone other than the shopper}
+  partnerships:
+    value_prior: {revenue: 0.55, trust: 0.16, cost: 0.02, risk: 0.27}
+    segment_stated: {never_shopper: 2.0, agent_builder: 1.8}
+    segment_would_also_serve: {}
+    intent_stated: {feed: 1.3, restock: 1.2}
+    intent_would_also_serve: {}
+    evidence: {never_shopper: 'ST-033 ST-101 ST-136: be chosen inside third-party AI', agent_builder: ST-072 ST-073 partner performance, feed: ST-155 ST-191, restock: ST-058 usuals in ChatGPT}
+  finance:
+    value_prior: {revenue: 0.71, trust: 0.14, cost: 0.08, risk: 0.07}
+    segment_stated: {shopper: 1.3, never_shopper: 1.4}
+    segment_would_also_serve: {}
+    intent_stated: {restock: 1.3}
+    intent_would_also_serve: {host_or_celebrate: 1.3}
+    evidence: {shopper: ST-040 ST-053 bigger baskets, never_shopper: ST-101, host_or_celebrate: large multi-item baskets, restock: ST-148 replenishment fastest-growing (analyst)}
+  connect_ads:
+    value_prior: {revenue: 0.79, trust: 0.05, cost: 0.03, risk: 0.12}
+    segment_stated: {supplier_brand: 1.8, marketplace_seller: 1.4}
+    segment_would_also_serve: {}
+    intent_stated: {}
+    intent_would_also_serve: {gifts: 1.3, host_or_celebrate: 1.3}
+    evidence: {supplier_brand: ST-064 ST-067, marketplace_seller: ST-068, gifts: discovery-heavy jobs, host_or_celebrate: discovery-heavy jobs}
+  merchandising:
+    value_prior: {revenue: 0.64, trust: 0.24, cost: 0.04, risk: 0.09}
+    segment_stated: {supplier_brand: 1.6, marketplace_seller: 1.3}
+    segment_would_also_serve: {}
+    intent_stated: {restock: 1.3}
+    intent_would_also_serve: {}
+    evidence: {supplier_brand: ST-123 ST-160, marketplace_seller: ST-159, restock: ST-160 keep on hand}
+  marketplace:
+    value_prior: {revenue: 0.85, trust: 0.05, cost: 0.05, risk: 0.05}
+    segment_stated: {marketplace_seller: 2.5}
+    segment_would_also_serve: {never_shopper: 1.3}
+    intent_stated: {gifts: 1.3}
+    intent_would_also_serve: {set_up_a_home: 1.3}
+    evidence: {marketplace_seller: ST-158 ST-041, never_shopper: long-tail discovery for new customers, gifts: ST-068 long-tail example, set_up_a_home: broad-assortment job}
+  store_ops:
+    value_prior: {revenue: 0.07, trust: 0.07, cost: 0.86, risk: 0.0}
+    segment_stated: {store_associate: 2.5}
+    segment_would_also_serve: {}
+    intent_stated: {}
+    intent_would_also_serve: {restock: 1.3, care_for_someone: 1.2}
+    evidence: {store_associate: ST-048 ST-111 ST-139, restock: picks with locked lines, care_for_someone: InHome put-away}
+  care_returns:
+    value_prior: {revenue: 0.42, trust: 0.0, cost: 0.0, risk: 0.58}
+    thin_evidence: true
+    segment_stated: {walmart_team: 2.0}
+    segment_would_also_serve: {caregiver: 1.3}
+    intent_stated: {recover: 1.5}
+    intent_would_also_serve: {}
+    evidence: {walmart_team: ST-039 ST-056, caregiver: disputes on orders for someone else, recover: ST-010 returns when an agent misfired}
+  b2b:
+    value_prior: {revenue: 0.17, trust: 0.56, cost: 0.27, risk: 0.0}
+    thin_evidence: true
+    segment_stated: {small_business: 2.5}
+    segment_would_also_serve: {community_org: 2.0}
+    intent_stated: {restock: 1.5}
+    intent_would_also_serve: {}
+    evidence: {small_business: ST-001 ST-157 (Sam's in scope), community_org: no Walmart statement; PF-39 PF-43, restock: ST-157}

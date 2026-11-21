@@ -1,0 +1,116 @@
+/* Card@0 skin, shared by stage and phones. One dark theme, built from the owner's editorial dark
+   (warm ink black, cream type, one signal colour, Helvetica) crossed with the subject: taco night.
+   Palette: char (page), comal (raised), crema (type), masa (quiet type), salsa (the one action colour),
+   avocado (done, approved, passed), corn (estimated, locked, heads-up), agave (sponsored), sky (recorded).
+   Contrast pairs are checked by tests/test_a11y.py against the tokens below. */
+:root {
+  color-scheme: dark;
+  --char: #14110d;
+  --comal: #1f1a15;
+  --comal-2: #2a231c;
+  --comal-3: #362d24;
+  --line: #3d342a;
+  --crema: #f4ecdc;
+  --masa: #b9ac96;
+  --masa-2: #9a8e7b;
+  --salsa: #ff5b3a;
+  --salsa-deep: #3a1710;
+  --avocado: #93d36b;
+  --avocado-deep: #1b2a12;
+  --corn: #ffc940;
+  --corn-deep: #33270a;
+  --agave: #c6a6ff;
+  --agave-deep: #251c38;
+  --sky: #8ec5ff;
+  --sky-deep: #13243a;
+  --on-bright: #14110d;
+
+  --display: "Helvetica Neue", "Inter Display", Inter, "Arial Nova", Arial, sans-serif;
+  --text: "Helvetica Neue", Inter, "Segoe UI", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- the card ---- */
+.card { background: var(--comal); color: var(--crema); border-radius: 22px; padding: 1.3em 1.4em 1.4em; position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.06), 0 18px 40px -24px rgba(0, 0, 0, 0.9); }
+.card-headline { margin: 0 0 .8em; font: 800 1.45em/1.08 var(--display); letter-spacing: -0.02em; }
+.card-sections { display: grid; gap: 1em; }
+.card-section { padding-top: .9em; border-top: 1px solid var(--line); }
+.card-section:first-child { border-top: 0; padding-top: 0; }
+.card-section h3 { margin: 0 0 .45em; font: 750 1.08em/1.15 var(--display); letter-spacing: -0.01em; }
+.card-section ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .35em; }
+.line { display: flex; align-items: baseline; gap: .5em; flex-wrap: wrap; line-height: 1.35; color: var(--crema); }
+.line .mark { font-size: .85em; flex: none; }
+.line.mark-lock { color: var(--corn); }
+.line.mark-lock .mark { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 50%; background: var(--corn-deep); }
+.line.mark-sponsored { color: var(--agave); }
+.line.mark-sponsored .mark { background: var(--agave-deep); color: var(--agave); font: 700 .66em/1.6 var(--text); padding: 0 .55em; border-radius: 999px; letter-spacing: .02em; }
+.line.mark-quote .text { font: 500 1.12em/1.3 var(--display); }
+.line.mark-ok .mark { color: var(--avocado); }
+.line.mark-warn .mark, .line.mark-info .mark { color: var(--corn); }
+
+/* the money line: the first line with a claim reads as the price on a shelf tag */
+.line.is-lead .text { font: 800 1.5em/1.05 var(--display); letter-spacing: -0.02em; }
+
+/* provenance chip: small and quiet, present on every number */
+.chip { display: inline-block; font: 500 .6em/1.65 var(--mono); padding: 0 .6em; border-radius: 999px; white-space: nowrap; vertical-align: .15em; }
+.chip-synthetic { background: var(--comal-3); color: var(--masa); }
+.chip-public { background: var(--sky-deep); color: var(--sky); }
+.chip-observed { background: var(--agave-deep); color: var(--agave); }
+.chip-draft { background: var(--corn-deep); color: var(--corn); }
+.chip-refusal { background: var(--salsa-deep); color: var(--salsa); }
+.chip-warn { background: var(--corn-deep); color: var(--corn); }
+
+/* ---- product tiles: ballot and menu sections that carry an option ---- */
+.card-section.tile { --tone: var(--salsa); --tone-deep: var(--salsa-deep); border: 0; padding: 0; background: var(--comal-2);
+  border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; position: relative;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+.card-section.tile:nth-child(3n+2) { --tone: var(--avocado); --tone-deep: var(--avocado-deep); }
+.card-section.tile:nth-child(3n+3) { --tone: var(--corn); --tone-deep: var(--corn-deep); }
+.tile-art { background: var(--tone-deep); display: grid; place-items: center; aspect-ratio: 16 / 7; position: relative; }
+.tile-art svg { width: 46%; height: auto; }
+.tile-body { padding: .9em 1em 1em; display: grid; gap: .35em; }
+.tile-body h3 { margin: 0; font-size: 1.15em; }
+.card-section.tile.is-picked { box-shadow: 0 0 0 3px var(--tone); transform: translateY(-2px); }
+.card-section.tile.is-picked .tile-art::after { content: "✓"; position: absolute; top: .55em; right: .6em; width: 1.7em; height: 1.7em; display: grid;
+  place-items: center; border-radius: 50%; background: var(--tone); color: var(--on-bright); font: 800 1em/1 var(--text); }
+
+/* ---- actions ---- */
+.card-actions { margin-top: 1.1em; display: grid; gap: .7em; }
+.card-actions.is-static { display: flex; gap: .5em; flex-wrap: wrap; }
+.btn { font: 700 1em/1.15 var(--text); border: 0; border-radius: 999px; padding: .8em 1.3em; min-height: 48px; cursor: pointer;
+  background: var(--salsa); color: var(--on-bright); transition: transform .12s var(--ease), filter .12s; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn:focus-visible { outline: 3px solid var(--crema); outline-offset: 2px; }
+.btn-vote { width: 100%; margin-top: auto; background: var(--tone, var(--salsa)); }
+.btn.is-on { background: var(--crema); color: var(--on-bright); }
+.btn-approve { background: var(--avocado); }
+.btn-counter, .btn-defer, .btn-decline, .btn-send, .btn-pick { background: var(--comal-3); color: var(--crema); box-shadow: inset 0 0 0 1px var(--line); }
+.btn-pick.is-on { background: var(--corn); color: var(--on-bright); box-shadow: none; }
+.is-static .btn { cursor: default; min-height: 0; padding: .55em 1.05em; font-size: .9em; }
+.pick-row, .decision-row { display: flex; flex-wrap: wrap; gap: .55em; }
+.decision-row .btn { flex: 1 1 10em; }
+.text-row { display: flex; gap: .5em; align-items: end; }
+.text-row label { flex: 1; display: grid; gap: .35em; font-size: .9em; color: var(--masa); }
+.text-row input { font: inherit; padding: .7em .9em; border-radius: 14px; border: 1px solid var(--line); min-height: 48px; color: var(--crema); background: var(--char); }
+.text-row input::placeholder { color: var(--masa-2); }
+.text-row input:focus { outline: 2px solid var(--salsa); outline-offset: 1px; }
+.hint { margin: 0; color: var(--masa); font-size: .9em; }
+
+/* ---- kinds ---- */
+.card-over_cap { box-shadow: inset 0 3px 0 var(--salsa), 0 18px 40px -24px rgba(0, 0, 0, 0.9); }
+.card-over_cap .card-headline { color: var(--crema); }
+.card-over_cap .card-section:first-child { background: var(--char); border-radius: 16px; padding: .9em 1em; }
+.card-approval { box-shadow: inset 0 3px 0 var(--avocado), 0 18px 40px -24px rgba(0, 0, 0, 0.9); }
+.card-readback { font-size: 1.3em; }
+.card-readback .line { font: 500 1.05em/1.35 var(--display); }
+
+/* kids get bigger, simpler tiles */
+.role-kid .card-section h3 { font-size: 1.35em; }
+.role-kid .line { font-size: 1.15em; }
+
+/* a marked line keeps its icon beside the words */
+.line[class*="mark-"] { flex-wrap: nowrap; align-items: flex-start; }
+.line[class*="mark-"] .text { flex: 1 1 auto; min-width: 0; }

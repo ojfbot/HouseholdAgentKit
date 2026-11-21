@@ -1,0 +1,96 @@
+# Required check `ci`. GitHub-hosted Ubuntu only, tier `none`, no secrets, so forks run green.
+# The aggregate job is named exactly `ci`; `kit doctor` (required_checks_exist) fails if it is renamed.
+# Adapted from Fork I's staged workflow (docs/iq/staged-workflows/ci.yml); what changed and why is in
+# docs/integration-risk-register.md, section "CI as staged vs CI as founded".
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  UV_FROZEN: "1"
+  KIT_TIER: none
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - run: uv sync --frozen
+      - name: IQ standard on the trees that meet it
+        run: |
+          uv run ruff check packages/contracts packages/mock-gateway packages/verifier packages/eval-harness packages/kit-gate kit tests
+          uv run ruff format --check packages/contracts packages/mock-gateway packages/verifier packages/eval-harness packages/kit-gate kit tests
+      - name: real errors only on the trees that do not meet it yet (engine, console, card writer, shopping-port reference)
+        run: uv run ruff check --isolated --select F --ignore F401,F541,F841 packages/discovery-engine/src packages/discovery-engine/tests packages/card-writer apps packages/shopping-port
+      - run: uv run pyright
+
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - run: uv sync --frozen
+      - name: build the console's engine fixtures (generated, not committed)
+        run: uv run python apps/demo-console/fixtures/build_engine_fixtures.py
+      - name: every tree in one run (unit, contract, conformance, console, engine, doctor proofs)
+        run: uv run pytest -q -m "not mutation and not slow" --junitxml=out/junit.xml
+      - name: capability tags select tests
+        run: |
+          for m in cap07 cap10 cap43 cap02 cap21 cap28; do
+            n=$(uv run pytest -q --collect-only -m "$m" | grep -c '::' || true)
+            test "$n" -gt 0 || { echo "marker $m selects no tests"; exit 1; }
+          done
+      - name: verifier mutation suite (must be 100%)
+        run: uv run kit mutate --out out/mutation.json
+      - name: hello world at tier none (reference hook)
+        run: uv run kit eval hello-world --k 5 --out out/hello-world.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: ci-reports, path: out/}
+
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - run: uv sync --frozen
+      - name: every contract file parses
+        run: uv run python scripts/check_contracts_parse.py contracts bundles data/seeds
+      - name: bundle manifests recompute without drift
+        run: for f in bundles/examples/*.yaml; do uv run kit bundle check "$f"; done
+      - name: homework checks H1-H5 (Fork E)
+        run: cd packages/discovery-engine/prototypes/fork_e && uv run python homework_v2.py | tail -1 | grep -qx 'ALL PASS'
+      - name: decomposition regenerates the committed output (canonical JSON, two hash seeds)
+        run: uv run python scripts/check_decomposition_stable.py
+
+  doctor:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - run: uv sync --frozen
+      - run: uv run python apps/demo-console/fixtures/build_engine_fixtures.py
+      - name: every check is red on its planted breaks and green on a working setup
+        run: uv run kit doctor --self-test
+      - name: rungs 0-2 on this runner (rung 2 here proves the repo, not the owner's machines)
+        run: uv run kit doctor --rung 2
+
+  ci:
+    # The one required check. Green only if every job above succeeded (skipped counts as failure).
+    if: always()
+    needs: [lint, tests, contracts, doctor]
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'

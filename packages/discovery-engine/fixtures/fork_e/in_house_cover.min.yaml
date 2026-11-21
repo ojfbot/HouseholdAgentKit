@@ -1,0 +1,24 @@
+# Subset of fork-e/org-model-v2/walmart/in_house_cover.yaml (org@2, as_of 2026-11-19): id, surface, actors, jobs,
+# does_not_cover only. Test fixture for E06's cover lookup. The full org@2 file is authoritative (E01, owner ED).
+org_model_version: org@2
+cover:
+- {id: COV-01, surface: "Sparky (app, web, stores, voice)", actors: [shopper, never_shopper], jobs: [feed, restock, host_or_celebrate, gifts, stretch_money],
+   does_not_cover: "outside triggers, unattended action on the household's behalf, other people's input, completion under a household's rules, auto-restock (stated as future)"}
+- {id: COV-02, surface: Marty, actors: [marketplace_seller, supplier_brand], jobs: [run_a_small_business],
+   does_not_cover: "the rule vocabulary of outside shopper agents; correcting what an outside agent says about a product"}
+- {id: COV-03, surface: Associate agent and tools, actors: [store_associate], jobs: [keep_a_routine], does_not_cover: "household rules arriving with agent orders"}
+- {id: COV-04, surface: Walmart Business, actors: [small_business, community_org], jobs: [run_a_small_business, give_or_donate, manage_group_money],
+   does_not_cover: "donated stock, grant rules, booking or POS triggers, treasurer approval flow"}
+- {id: COV-05, surface: Spark Good, actors: [community_org], jobs: [give_or_donate, school], does_not_cover: "the org's own gap buying under its rules"}
+- {id: COV-06, surface: School Supply List finder, actors: [shopper], jobs: [school], does_not_cover: "two homes, siblings, budgets"}
+- {id: COV-07, surface: InHome, actors: [shopper, store_associate], jobs: [restock], does_not_cover: "the household's own put-away rules"}
+- {id: COV-08, surface: Agent Profiles plus User-Defined Guardrail, actors: [shopper, caregiver], jobs: [all],
+   does_not_cover: "a profile per person cared for, pinned ship-to, requested-by (B's asks); category limits are COVERED by the guardrail, so B should reuse it"}
+- {id: COV-09, surface: Spark Driver app, actors: [spark_driver], jobs: [care_for_someone], does_not_cover: "notes from the person receiving"}
+- {id: COV-10, surface: Returns, actors: [shopper], jobs: [restock], does_not_cover: "windows across a household's orders and stores"}
+- {id: COV-11, surface: Sparky inside ChatGPT and Gemini, actors: [shopper, never_shopper], jobs: [feed, restock, gifts],
+   does_not_cover: "an outside agent acting for the household; triggers; rules beyond the user's chat"}
+- {id: COV-12, surface: Walmart Connect in Sparky, actors: [supplier_brand, marketplace_seller], jobs: [run_a_small_business],
+   does_not_cover: "how sponsorship is labeled or carried to outside agents"}
+- {id: COV-13, surface: Scintilla with Marty for Scintilla, actors: [supplier_brand], jobs: [run_a_small_business], does_not_cover: "what outside agents asked for or rejected"}
+- {id: COV-14, surface: Agentic supply chain, actors: [walmart_team], jobs: [keep_a_routine], does_not_cover: "deadlines and windows stated by outside agents"}

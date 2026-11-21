@@ -1,0 +1,31 @@
+org: walmart
+as_of: 2026-11-18
+capabilities:
+- {id: CAP-01, status: published, exposed: beta}
+- {id: CAP-02, status: published, exposed: "yes"}
+- {id: CAP-03, status: published, exposed: "yes"}
+- {id: CAP-04, status: published, exposed: "yes"}
+- {id: CAP-05, status: published, exposed: "no"}
+- {id: CAP-06, status: "published (announced, coming)", exposed: unknown}
+- {id: CAP-07, status: inferred, exposed: unknown}
+- {id: CAP-08, status: published, exposed: "no"}
+- {id: CAP-09, status: published, exposed: "no"}
+- {id: CAP-10, status: published, exposed: unknown}
+- {id: CAP-11, status: published, exposed: unknown}
+- {id: CAP-12, status: published, exposed: unknown}
+- {id: CAP-13, status: published, exposed: unknown}
+- {id: CAP-14, status: published, exposed: unknown}
+- {id: CAP-15, status: published, exposed: "no"}
+- {id: CAP-16, status: published, exposed: unknown}
+- {id: CAP-17, status: published, exposed: "yes"}
+- {id: CAP-18, status: published, exposed: unknown}
+- {id: CAP-19, status: published, exposed: "no"}
+- {id: CAP-20, status: published, exposed: "no"}
+- {id: CAP-21, status: proposed, exposed: n/a}
+- {id: CAP-22, status: proposed, exposed: n/a}
+- {id: CAP-23, status: proposed, exposed: n/a}
+- {id: CAP-24, status: proposed, exposed: n/a}
+- {id: CAP-25, status: proposed, exposed: n/a}
+- {id: CAP-26, status: absent, exposed: n/a}
+- {id: CAP-27, status: proposed, exposed: n/a}
+- {id: CAP-28, status: proposed, exposed: n/a}

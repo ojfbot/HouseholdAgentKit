@@ -1,0 +1,53 @@
+# Bundle manifest v0 (proposed shared contract, owner: Fork D). Status: proposal, ack by A, B, C by Sat Nov 21.
+# One file pins the whole agent. bundle_id = sha256(model_id + harness_sha + context_version), each the sha256 of the
+# canonical JSON (sorted keys, no whitespace) of its block. Computed by `kit bundle build`; CI recomputes and fails on drift.
+schema: bundle-manifest/0
+name: string                      # human label; not hashed
+kind: experiment | release        # an experiment may change exactly one of model/harness/context
+needs_network: bool               # computed: true if any lane has provider: frontier (day shift only; never the offline demo bundle)
+
+model:                            # -> model_id
+  serving:
+    runtime: string               # bake-off winner (ADR-002)
+    version: string
+    helper_pin: "kit-serve@sha256:<64 hex>"   # serving entry point + uv.lock + Python patch
+  lanes:                          # keyed by components@1 ID
+    K01:
+      provider: local | frontier
+      base:                       # local only
+        repo: string              # e.g. Qwen/Qwen3.5-2B (MLX build repo when quantized)
+        revision: "<commit sha>"
+        files_sha256: "<sha256 over sorted per-file sha256 list>"
+        license_sha256: "<sha256 of LICENSE file>"
+        quant: 4bit | 8bit | bf16
+      adapter:                    # optional
+        sha256: "<sha256 of adapter files>"
+        card: "cards/K01-<sha12>.md"
+        trained_on: {dataset_version: "<sha>", run_ids: [string]}
+      model: string               # frontier only: API model string
+      gen: {temperature: 0, max_tokens: int, seed: int, response_format: "schemas/<name>.json | null"}
+
+harness:                          # -> harness_sha
+  repo_commit: "<git sha>"
+  graph: {agent: "taco-night@<ver>", engine: "discovery-engine@<ver>"}
+  tool_contracts: {shopping_port: v1, mandate: v1, sparky_brief: v1, poll: v1, case: v1}
+  guards: {K03: "<sha>", K08: "<sha>", privacy: "<sha>"}
+  solver: {version: string, sha: "<sha>"}
+  prompts_sha: "<sha over prompt and few-shot files>"   # lineage-scanned for holdout leakage
+
+context:                          # -> context_version
+  profiles: "profiles@<ver>"      # C01–C31 + generated range
+  catalog: "catalog@<ver>"
+  case_set: {dev: "<sha>", test: "<sha>", holdout_commitment: "<sha256 of sealed seed>"}
+  org_model: org@1
+  lattice: lattice@1
+  components: components@1
+  controls: controls@1
+
+model_id: "<computed>"
+harness_sha: "<computed>"
+context_version: "<computed>"
+bundle_id: "<computed>"
+
+# Named bundles for the handover: demo, base-local, tuned-local, frontier, plus one per leaderboard cell.
+# `kit bundle diff A B` reports changed blocks; an experiment changing more than one is refused.

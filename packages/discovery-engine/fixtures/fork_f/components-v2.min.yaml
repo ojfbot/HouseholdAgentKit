@@ -1,0 +1,55 @@
+# Extract of fork-f/components-v2.yaml (components@2, owner Fork F): only the fields the decomposition stage reads
+# (needs@1 map; per component layer, deps, caps, effort, name). Test fixture; at repo import E14 reads the full
+# contracts/components-v2.yaml instead. Values copied, not edited.
+version: components@2
+needs:
+  parse_intent: K01
+  specific_brief: K02
+  verify: K03
+  solve_cart: K04
+  slot_deadline: K05
+  household_rules: K06
+  scoped_principal: K07
+  standing_mandate: K08
+  outside_trigger: K09
+  group_decision: K10
+  role_card: K11
+  ledger: K12
+  on_hand: K13
+  change_notice: K14
+  fulfiller_note: K15
+  item_attributes: K16
+  support_view: K18
+  fairness_floor: K19
+  conformance: K20
+  need_list: K21
+  feedback_edits: K22
+  walmart_io: K24
+components:
+  K01: {name: Intent parser, layer: product, deps: [], caps: [], effort: S, from: [A lane 1]}
+  K02: {name: Sparky brief writer, layer: product, deps: [K01, K24], caps: [CAP-07, CAP-27], effort: S, from: [A lane 13]}
+  K03: {name: Constraint verifier, layer: product, deps: [], caps: [CAP-04], effort: S, from: [A lane 13]}
+  K04: {name: Cart solver, layer: product, deps: [K03, K24], caps: [CAP-04], effort: M, from: [A lane 3]}
+  K05: {name: Deadline-to-slot feasibility, layer: product, deps: [K24], caps: [CAP-10], effort: M, from: [A]}
+  K06: {name: Household and org model + rights, layer: product, deps: [], caps: [], effort: M, from: [A roles table]}
+  K07: {name: Profile scopes, layer: product, deps: [K06], caps: [CAP-02, CAP-21, CAP-28, CAP-14], effort: M, from: [B]}
+  K08: {name: Standing mandate + guard, layer: product, deps: [K06, K12], caps: [CAP-02, CAP-24], effort: M, from: [A M3]}
+  K09: {name: Trigger gateway, layer: product, deps: [K23], caps: [], effort: "M core + S per source", from: [Fork C]}
+  K10: {name: Poll state machine + decision policies, layer: product, deps: [K23, K06], caps: [], effort: M, from: [A lane 8]}
+  K11: {name: Role-scoped card writer, layer: product, deps: [K03], caps: [], effort: S, from: [A lanes 4 and 5]}
+  K12: {name: Ledger and audit chain, layer: product, deps: [K26], caps: [CAP-02], effort: M, from: [A trace chain]}
+  K13: {name: On-hand state, layer: product, deps: [K06], caps: [], effort: M, from: [Fork C PF-11]}
+  K14: {name: Change and recall notice ingest + lock watcher, layer: product, deps: [K09, K16], caps: [CAP-22], effort: M, from: [A lane 10]}
+  K15: {name: Fulfiller handoff, layer: product, deps: [K06, K11], caps: [CAP-19, CAP-23, CAP-13], effort: M, from: [CAP-19]}
+  K16: {name: Catalog attribute resolver, layer: product, deps: [K24], caps: [CAP-20, CAP-12], effort: M, from: [platform catalog]}
+  K18: {name: Support view over agent orders, layer: product, deps: [K12, K07, K26], caps: [CAP-25], effort: S, from: [Fork C PF-48]}
+  K21: {name: Need-list builder, layer: product, deps: [], caps: [], effort: S, from: [A lane 2]}
+  K22: {name: Feedback interpreter, layer: product, deps: [K06, K03], caps: [], effort: M, from: [A lane 6]}
+  K24: {name: ShoppingPort client + adapters, layer: product, deps: [K26], caps: [CAP-01, CAP-02, CAP-03, CAP-17], effort: M, from: [platform shopping-port]}
+  K17: {name: Gateway twin, layer: platform, deps: [K26], caps: [CAP-01, CAP-02, CAP-03, CAP-05, CAP-07, CAP-10, CAP-21, CAP-26], effort: L, from: [platform mock-gateway]}
+  K23: {name: Event bus, layer: platform, deps: [K26], caps: [], effort: S, from: [A topics and queues]}
+  K26: {name: Telemetry, layer: platform, deps: [], caps: [], effort: S, from: [Telemetry v0]}
+  K19: {name: Fairness and parity harness, layer: eval, deps: [K25, K27], caps: [], effort: M, from: [shared principles]}
+  K20: {name: Conformance suite, layer: eval, deps: [K17, K24, K25], caps: [CAP-03, CAP-05, CAP-26], effort: S, from: [A tier-0 parity set]}
+  K25: {name: Synthetic world, layer: eval, deps: [K17], caps: [], effort: M, from: [A lane 12]}
+  K27: {name: Eval harness + CI gate, layer: eval, deps: [K25, K26], caps: [], effort: M, from: [platform eval-harness]}

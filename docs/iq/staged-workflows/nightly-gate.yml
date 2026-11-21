@@ -1,0 +1,62 @@
+# Nightly `kit gate` at tier none on GitHub-hosted runners (no self-hosted runners on a public repo, R6.3).
+# Model-tier bundle-evals run as Fleet `bundle-eval` jobs that pull main only and post the `kit-gate:fleet`
+# status themselves; this workflow gates the deterministic stack and every open PR head.
+# 02:07 CST nightly, from Nov 24 (brief: "nightly gate on from Nov 24").
+name: nightly-gate
+on:
+  schedule:
+    - cron: "7 8 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+  issues: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16"}
+      - name: baseline = main
+        run: |
+          uv sync --frozen
+          uv run kit eval hello-world --k 5 --bundle-id "main@$(git rev-parse --short HEAD)" --out out/baseline.json
+          uv run kit gate --candidate out/baseline.json --out out/main-gate.json || true
+      - name: slow suites on main (engine 3-seed eval, Fork G)
+        run: uv run pytest -q -m slow
+      - name: gate every open, non-draft PR head (rebased onto main)
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          echo '{}' > out/gates.json
+          for n in $(gh pr list --state open --json number,isDraft -q '.[] | select(.isDraft|not) | .number'); do
+            sha=$(gh pr view "$n" --json headRefOid -q .headRefOid)
+            git fetch -q origin "pull/$n/head:pr-$n"
+            git checkout -q -B "gate-$n" "pr-$n"
+            if ! git rebase -q main 2>/dev/null; then
+              git rebase --abort || true
+              gh api "repos/$GITHUB_REPOSITORY/statuses/$sha" -f state=failure -f context=kit-gate -f description="does not rebase onto main"
+              continue
+            fi
+            uv sync --frozen -q
+            uv run kit eval hello-world --k 5 --bundle-id "pr-$n@${sha:0:7}" --out "out/pr-$n.json" || true
+            set +e; uv run kit gate --candidate "out/pr-$n.json" --baseline out/baseline.json --out "out/gate-$n.json"; set -e
+            verdict=$(jq -r .verdict "out/gate-$n.json"); why=$(jq -r '.reasons | join("; ")' "out/gate-$n.json" | cut -c1-140)
+            gh api "repos/$GITHUB_REPOSITORY/statuses/$sha" -f state=$([ "$verdict" = green ] && echo success || echo failure) \
+              -f context=kit-gate -f description="${why:-green}"
+            jq --arg s "$sha" --slurpfile g "out/gate-$n.json" '. + {($s): $g[0]}' out/gates.json > out/g.tmp && mv out/g.tmp out/gates.json
+            git checkout -q main
+          done
+      - name: red main opens or updates the gate issue (R1.3 interrupt only if it blocks a milestone)
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          if [ "$(jq -r .verdict out/main-gate.json)" != green ]; then
+            body=$(jq -r '"Nightly kit gate is RED on main.\n\n" + (.reasons | map("- " + .) | join("\n")) + "\n\nrecord_sha: " + .record_sha' out/main-gate.json)
+            num=$(gh issue list --label gate-red --state open --json number -q '.[0].number')
+            if [ -n "$num" ]; then gh issue comment "$num" --body "$body"; else gh issue create --title "kit gate red on main" --label gate-red --label eval-failure --body "$body"; fi
+          fi
+      - uses: actions/upload-artifact@v4
+        with: {name: nightly-gate, path: out/, retention-days: 30}

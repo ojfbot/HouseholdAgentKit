@@ -1,0 +1,36 @@
+# Required check `security`. Runs on PRs and weekly. CodeQL default setup (Python, JS) is enabled in repo
+# settings (scripts/apply-repo-settings.sh) and reports its own check; it is not duplicated here.
+name: security
+on:
+  pull_request:
+  schedule:
+    - cron: "17 9 * * 1"   # Mondays 03:17 CST
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: gitleaks/gitleaks-action@v2
+        env: {GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"}
+
+  deps:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16"}
+      - run: uv export --frozen --no-hashes -o /tmp/req.txt && uvx pip-audit -r /tmp/req.txt --strict
+      - uses: pnpm/action-setup@v4
+        with: {version: 9.15.4}
+      - run: pnpm -C apps/console audit --prod --audit-level high
+
+  security:
+    if: always()
+    needs: [gitleaks, deps]
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'

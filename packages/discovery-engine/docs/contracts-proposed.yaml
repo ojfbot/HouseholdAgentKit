@@ -1,0 +1,100 @@
+# Contracts proposed by Fork G (engine engineer), 2026-11-19. Freeze target Nov 22 with the rest of R4.
+# ControlDelta@0 and Readout@0 are named in components@2 (owner F, "new, shared") with no fields anywhere; these are
+# drafts for F to accept, amend or replace. The others are inputs the engine needed that C owns; C decides.
+# Everything here is implemented in src/discovery_engine and tested; changing a field is a one-file edit.
+
+ControlDelta@0:            # owner: Fork F (shared). One event per control or lens flip; logged and traced like a code change.
+  request:                 # POST /delta body
+    op: "set | scale | reset | lens | scenario | switch"
+    path: "[root, key]  root in {segment, intent, value, partner_value}; e.g. [segment, shopper]"
+    value: "number (set/scale), in_house|partner (lens), adoption share (scenario), profile id (switch)"
+    profile_id: "base profile for the session"
+    session: "stage (default) | any id"
+    actor: {role: "EL | DX | ..."}
+    reason: str
+  event:
+    contract: "ControlDelta@0 (draft)"
+    delta_id: "CD-<12 hex> over (seq, session, op, path, applied, prev_hash)"
+    seq: int
+    session: str
+    at: "ISO-8601 UTC, ms"
+    bank_id: str
+    profile_id: str
+    base_profile_hash: "profile state before"
+    profile_hash: "profile state after"
+    op: str
+    path: [str]
+    requested: any
+    prev: any
+    applied: any
+    status: "applied | clamped | rejected"
+    codes: "[NEVER_TUNABLE | UNKNOWN_PATH | UNKNOWN_LENS | UNKNOWN_OP | OUT_OF_BOUNDS]"
+    clamps_in_readout: "count of clamp-log entries in the resulting readout (fairness floor, bounds)"
+    actor: {role: str}
+    reason: str
+    readout_hash: "hash of the Readout@0 this delta produced"
+    prev_hash: "previous event's hash (chain); genesis = 64 zeros"
+    hash: "sha256 over the event without `hash`"
+  rules:
+    - never-tunable keys (price, per_person_price, hard_rules, locks, fairness_floor, data_source) are rejected, logged, and change nothing
+    - segment/intent weights clamp to bounds [0.5, 3.0]; value weights to [0, 1]; adoption share to [0.01, 0.5]
+    - protected families never get w_segment or w_intent below 1.0 (clamp logged in the readout)
+    - telemetry (Telemetry@1): stamp delta_id, bank_id, profile_id, lens, control_profile on the span
+
+Readout@0:                 # owner: Fork F (shared); rendered by Fork H (E16 one-pagers, E19 map). Every number is {value, label}.
+  contract: "Readout@0 (draft)"
+  bank_id: str
+  run_id: str
+  profile_id: str
+  profile_hash: str
+  lens: "in_house | partner"
+  scenario: {adoption_share: {value, label}}
+  deltas_applied: int
+  answer_first: "one sentence: the top opportunity, its priority, how many of the top-k are new vs the base profile"
+  hypothesis: {text, hash, verdict: "survived | revised | killed"}
+  top_k:                   # E12 selection (Fork C's diversity rule), k = 10
+    - rank: int
+      family_id: "lineage id (PF-xx when it matches a prior family, NF-xxxxxx when new)"
+      title: str
+      actor_type: str
+      job: str
+      tier: {value, label: "score:rubric@2"}
+      priority: {value, label: "score:priority"}
+      score: {value, label: "score:rubric@2"}
+      value_at_stake_usd: {value, label: "derived:synthetic | derived:public"}
+      terms: {w_segment, w_intent, owner_boost, stake_fit}   # each {value, label: "weight:controls"}
+      on_pareto: bool
+      components: [K-ids]  # E14
+      moved: "{from, to} vs base profile, or null if new"
+  moved_in: [family_id]
+  moved_out: [family_id]
+  two_by_two:
+    axes: {impact: "priority / max priority in the bank", effort: "build effort days (E14) / max"}
+    thresholds: {impact: {value, label}, effort: {value, label}}
+    points: [{family_id, impact, effort, cell: "quick_win | big_bet | fill_in | deprioritize"}]
+  pareto: [family_id]      # non-dominated on (priority up, build effort down)
+  clamp_log: [{family_id, term, asked, applied, code: "FAIRNESS_FLOOR | OUT_OF_BOUNDS"}]
+  hello_world: "placement_only (through Nov 24) | pass (HelloWorldResult@1 status from a full run; required from Nov 25)"
+  unlabeled_numbers: "int, must be 0"
+  readout_hash: str
+  compute_ms: number
+
+partner_fit@0:             # owner: Fork C (card field `partner_fit` in C's schema). Derived by rule until C defines it.
+  builder_types: "[builder type from the agent surface: meal_planner, caregiving_app, family_assistant, smb_ops, ...]"
+  build_effort: "S (<= 14 component-days) | M (<= 20) | L, from E14's component set and components@2 effort"
+  conformance_risks: "the family's unconfirmed capabilities (E14 unconfirmed_caps)"
+partner_stake@0:           # owner: Fork C (rubric, stake per lens). The partner-lens replacement for the walmart_stake criterion.
+  value: "min(5, 1 + specific builder type (1) + effort (S 2, M 1, L 0) + 'partner' in business_owners (1))"
+  tags: "market (specific builder or partner owner), effort (S or M), platform_risk (<= 2 unconfirmed caps)"
+  partner_value_keys: [market, effort, platform_risk]
+
+sizing-topdown@0:          # owner: Fork C (sizing method) with ED (sources). All synthetic placeholders.
+  formula: "segment_size x adoption_share x job_spend_per_unit[job] x occasion_share x gap"
+  band: "[1/3, 3] on top-down / bottom-up; outside -> flagged, never reconciled silently"
+  note: "replace job_spend_per_unit with public:BLS-CE (households) and sector sources (orgs, businesses)"
+
+bank@0:                    # owner: Fork G. What the overnight engine-run writes and the live API serves.
+  keys: [contract, run_id, seed, bank_id, versions, controls_source, generator, fallback_used, judge, hello_world,
+         coverage, cells_hash, dedupe, cut, hypotheses, families, sparky_test_queue, novel_families,
+         unreached_seed_families, readouts, run_log, unlabeled_numbers_in_sizing]
+  bank_id: "sha256(run_id, seed, families)[:16]; same seed -> same bank_id"

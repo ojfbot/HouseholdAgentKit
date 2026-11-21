@@ -1,0 +1,24 @@
+# Required check `security`. Dependency audit only for now; gitleaks and CodeQL are owner settings
+# (secret scanning with push protection, CodeQL default setup) listed in docs/hand-off.md.
+name: security
+on:
+  pull_request:
+  schedule:
+    - cron: "17 9 * * 1"
+permissions:
+  contents: read
+
+jobs:
+  deps:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv export --frozen --no-hashes --no-emit-workspace -o "$RUNNER_TEMP/req.txt" && uvx pip-audit -r "$RUNNER_TEMP/req.txt" --strict
+
+  security:
+    if: always()
+    needs: [deps]
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == "success")'

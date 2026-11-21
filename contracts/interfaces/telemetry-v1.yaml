@@ -1,0 +1,98 @@
+# Telemetry v1 (owner: Fork A). Merges A's v0 (the planning project), C's discovery keys, D's seven factory keys,
+# F's five component keys and B's two Care keys (J's R4.3). Proposed Nov 19 2026; freezes with the contracts Nov 22.
+# Implemented by K26 (ED). Every key below is LangSmith run metadata unless marked `tag`.
+
+version: telemetry@1
+supersedes: telemetry@0
+as_of: 2026-11-19
+
+ontology:   # unchanged from v0
+  project: "one per environment and product: taco-dev, taco-eval, taco-demo; care-dev, care-eval; discovery-dev, discovery-eval; kit-eval (gate records)"
+  thread: "one order episode (thread_id = episode_id) | one engine run | one factory job"
+  trace: "one event in the thread: a request, one member's response, poll close and tally, an approval resuming the graph, checkout"
+  run: "one graph node, LLM call, ShoppingPort call, solver call, guard check or twin tool call"
+
+keys:
+  # ---- Every run, every project ------------------------------------------------------------------
+  every_run:
+    component_id:      {type: str, example: K04, from: F, note: "components@2 ID (K/E/D/P). Decomposition truth reads this"}
+    component_version: {type: str, example: "K04@0.3.1", from: F}
+    bundle_id:         {type: str, from: D, note: "computed by the bundle manifest; the source of model_id, harness_sha, context_version"}
+    model_id:          {type: str, from: A, derived: bundle_id, note: "still stamped for filtering; must equal the manifest's value for this lane, else a trace-integrity failure. 'none' at tier none"}
+    harness_sha:       {type: str, from: A, derived: bundle_id}
+    context_version:   {type: str, from: A, derived: bundle_id, example: "prompts@7/mem@2/catalog@taco_hw1/oracle@hw-taco@1"}
+    capability_mode:   {type: str, from: F, example: "CAP-07:H3,CAP-10:estimated,CAP-43:absent", note: "canonical: sorted by CAP id, comma-joined; read at startup"}
+    fallback_used:     {type: bool, from: F, note: "true when the deterministic fallback ran instead of the model seam"}
+    source:            {type: enum, values: [synthetic, live_demo, discovery, manual_baseline], from: "A + C", note: "prod is reserved and unused before Dec 2; manual_baseline = the owner's scored Sparky recordings imported as eval rows"}
+  # ---- When an adapter is involved ---------------------------------------------------------------
+  adapter_runs:
+    adapter_id:        {type: str, example: H3, from: F, note: "REPLACES v0 gateway_adapter. Values: H1 | H2 | H3 for K24; catalog_diff for K14-lite; notes_field for K15. The exporter accepts gateway_adapter as an alias until Nov 30"}
+  # ---- Twin tool runs (K17) ------------------------------------------------------------------------
+  twin_runs:
+    cap_id:            {type: str, example: CAP-10, from: "A (C's ask)", note: "the capability the twin behavior stands in for"}
+    cap_status:        {type: enum, values: [published, inferred, proposed, absent], from: "org@2"}
+  # ---- Order episodes (taco, care) ----------------------------------------------------------------
+  episode_runs:
+    episode_id:        {type: str, from: A, note: "= thread_id"}
+    household_hash:    {type: str, from: A, note: "salted per environment; never reversible from logs"}
+    mandate_id:        {type: str, from: A}
+    meal:              {type: str, example: taco, from: A}
+    occasion:          {type: str, example: weeknight_quick, from: A}
+    weights:           {type: "map[vectors@1 -> float]", from: A, where: "on the root trace and on K01 runs only", note: "keys from vectors@1 (fork-a/sparky-brief-v1.yaml)"}
+    member_role:       {type: enum, from: A, values: [owner, partner, teen, kid, guest, requester, approver_payer, key_holder, treasurer, fulfiller], where: "runs acting for a member"}
+    member_hash:       {type: str, from: A, where: "runs acting for a member"}
+    requested_by:      {type: "str (member_hash)", from: B, where: "every run in the episode once the mandate exists"}
+    profile_id:        {type: str, from: B, where: "when a profile scope applies"}
+    poll_id:           {type: str, from: A, where: "from poll.opened on"}
+    policy:            {type: enum, from: A, values: [owner_decides, auto_plurality, auto_approval, weighted, owner_only], where: "from poll.opened on"}
+  # ---- Eval runs (hook, bundle-eval, CI) -----------------------------------------------------------
+  eval_runs:
+    case_id:           {type: str, example: HW-T2-01, from: A}
+    split:             {type: enum, values: [train, val, test, holdout], from: D}
+    dataset_version:   {type: str, from: D}
+    oracle_version:    {type: str, example: hw-taco@1, from: A, where: "hello-world and blind runs"}
+    seed:              {type: int, from: A}
+  # ---- Factory jobs (Fleet) ------------------------------------------------------------------------
+  factory_runs:
+    lane:              {type: str, from: D, note: "the bundle lane block; equals a component_id (K01, K11...). Required on factory jobs and leaderboard rows only"}
+    fleet_job_key:     {type: str, from: D}
+    fleet_fence:       {type: str, from: D}
+    fleet_receipt_sha256: {type: str, from: D}
+  # ---- Engine runs (Fork C/G) ----------------------------------------------------------------------
+  engine_runs:
+    control_profile:   {type: str, from: C}
+    lens:              {type: enum, values: [in_house, partner], from: C}
+    hello_world:       {type: enum, values: [pass, fail, placement_only, not_run], from: C, note: "the HelloWorldResult@1 status of the gating run"}
+    org_model_version: {type: str, example: org@2, from: C}
+
+propagation:
+  message_attributes: "LangSmith distributed-tracing headers (langsmith-trace, baggage) plus W3C traceparent and tracestate, in SNS/SQS message attributes, never in the body"
+  attribute_budget: "SQS allows 10 message attributes; tracing uses 4, so the bus keeps at most 6 of its own"
+  consumer_rule: "continue the parent run if the headers are present; otherwise start a new trace on the same thread_id and set metadata broken_parent: true (counted by the trace-integrity oracle)"
+
+privacy:
+  - "Members appear only as member_hash + member_role. No names, ages, addresses, phone numbers or diagnoses in any key, input or output"
+  - "Kids never send free text, so none is stored; their picks are stored as item_ref only"
+  - "Teen and partner free text is kept in synthetic and taco-eval; masked to [masked:n chars] in taco-demo"
+  - "Lock reasons never exist in the system, so they can't leak; lock levels stay in the household store, never in Sparky-bound runs"
+  - "the owner's manual Sparky recordings stay off the repo and out of LangSmith; only their R0 scores are imported (source: manual_baseline)"
+
+checks:   # the trace-integrity oracle (K26) asserts these
+  - "every run carries the every_run keys"
+  - "model_id, harness_sha and context_version equal the bundle manifest's values"
+  - "one thread per episode across process restarts and SNS/SQS hops; broken_parent count = 0 on the hello-world set"
+  - "eval runs carry case_id, split and seed; hello-world runs carry oracle_version"
+  - "no key outside this file appears in metadata (unknown keys fail CI, so additions come through the log)"
+
+changes_from_v0: [
+  "gateway_adapter -> adapter_id (alias until Nov 30)",
+  "source gains discovery and manual_baseline; prod reserved",
+  "model_id, harness_sha, context_version derived from bundle_id",
+  "weights keyed by vectors@1 instead of free keys",
+  "member_hash added beside member_role",
+  "added from C: control_profile, lens, hello_world, org_model_version",
+  "added from D: bundle_id, lane, dataset_version, split, fleet_job_key, fleet_fence, fleet_receipt_sha256",
+  "added from F: component_id, component_version, adapter_id, capability_mode, fallback_used",
+  "added from B: requested_by, profile_id",
+  "added by A: cap_id, cap_status (twin runs), oracle_version, seed",
+]

@@ -1,0 +1,416 @@
+{
+ "contract": "Eval report@1 (engine rows)",
+ "banks": [
+  {
+   "run_id": "run-1-s1",
+   "seed": 1,
+   "bank_id": "5a971751223dd5af"
+  },
+  {
+   "run_id": "run-1-s2",
+   "seed": 2,
+   "bank_id": "b44b046ed377efcd"
+  },
+  {
+   "run_id": "run-1-s3",
+   "seed": 3,
+   "bank_id": "faac3210527403d4"
+  }
+ ],
+ "generator": "template@1",
+ "judge": "J0 (seed judge; fallback)",
+ "controls_source": "controls@2-fixture",
+ "rows": [
+  {
+   "metric": "hello_world",
+   "value": "placement_only",
+   "threshold": "placement_pass or live_pass",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "metric": "anchors_placement",
+   "value": {
+    "tier0_baseline_observed": true,
+    "tier1_brief_present": true,
+    "tier2_conditions": true,
+    "care_profiles_tier2": true,
+    "placement_pass": true
+   },
+   "threshold": "all true",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "metric": "schema_valid",
+   "value": 1.0,
+   "threshold": "== 1.0",
+   "pass": true,
+   "detail": {
+    "note": "E04 raises on any invalid card; a run that completes is 100% valid"
+   }
+  },
+  {
+   "metric": "stability_top10_jaccard",
+   "value": 1.0,
+   "threshold": ">= 0.6",
+   "pass": true,
+   "detail": {
+    "pairwise": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "profile": "default",
+    "generator": "template@1"
+   }
+  },
+  {
+   "metric": "stability_top10_jaccard",
+   "value": 1.0,
+   "threshold": ">= 0.6",
+   "pass": true,
+   "detail": {
+    "pairwise": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "profile": "partner_default",
+    "generator": "template@1"
+   }
+  },
+  {
+   "metric": "stability_top10_jaccard",
+   "value": 0.768,
+   "threshold": ">= 0.6",
+   "pass": true,
+   "detail": {
+    "pairwise": [
+     0.667,
+     0.818,
+     0.818
+    ],
+    "seeds": [
+     1,
+     2,
+     3
+    ],
+    "profile": "marketing_crm",
+    "generator": "template@1"
+   }
+  },
+  {
+   "metric": "metamorphic_same_family",
+   "value": 1.0,
+   "threshold": ">= 0.95",
+   "pass": true,
+   "detail": {
+    "probes": 102,
+    "misses": []
+   }
+  },
+  {
+   "metric": "coverage_empty_actor_types",
+   "value": 0,
+   "threshold": "== 0",
+   "pass": true,
+   "detail": {
+    "by_actor": {
+     "shopper": 20,
+     "never_shopper": 20,
+     "caregiver": 20,
+     "marketplace_seller": 20,
+     "supplier_brand": 20,
+     "store_associate": 20,
+     "spark_driver": 20,
+     "community_org": 19,
+     "small_business": 19,
+     "walmart_team": 19,
+     "agent_builder": 19
+    }
+   }
+  },
+  {
+   "metric": "coverage_pairwise_min",
+   "value": 0.41,
+   "threshold": "reported",
+   "pass": true,
+   "detail": {
+    "pairs": {
+     "actor_typexjob": 0.909,
+     "actor_typextrigger": 0.698,
+     "actor_typexagent_surface": 0.873,
+     "actor_typexquadrant": 1.0,
+     "jobxtrigger": 0.485,
+     "jobxagent_surface": 0.582,
+     "jobxquadrant": 1.0,
+     "triggerxagent_surface": 0.41,
+     "triggerxquadrant": 1.0,
+     "agent_surfacexquadrant": 1.0
+    }
+   }
+  },
+  {
+   "metric": "mece_max_inter_family_similarity",
+   "value": 0.109,
+   "threshold": "< 0.45",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "metric": "sizing_gap_flagged",
+   "value": 20,
+   "threshold": "flagged, never hidden",
+   "pass": true,
+   "detail": {
+    "families": [
+     "G-07",
+     "PF-12",
+     "PF-15",
+     "PF-16",
+     "PF-21",
+     "PF-22",
+     "PF-28",
+     "PF-30",
+     "PF-31",
+     "PF-32",
+     "PF-34",
+     "PF-35",
+     "PF-36",
+     "PF-41",
+     "PF-43",
+     "PF-44",
+     "PF-45",
+     "PF-48",
+     "PF-49",
+     "PF-50"
+    ],
+    "note": "top-down inputs are synthetic placeholders (sizing-topdown@0) until ED sources them"
+   }
+  },
+  {
+   "metric": "control_sanity[marketing_crm]",
+   "value": 5,
+   "threshold": ">= default (4)",
+   "pass": true,
+   "detail": {
+    "owned_default": 4
+   }
+  },
+  {
+   "metric": "control_sanity[supply_chain]",
+   "value": 5,
+   "threshold": ">= default (4)",
+   "pass": true,
+   "detail": {
+    "owned_default": 4
+   }
+  },
+  {
+   "metric": "control_sanity[product]",
+   "value": 7,
+   "threshold": ">= default (4)",
+   "pass": true,
+   "detail": {
+    "owned_default": 4
+   }
+  },
+  {
+   "metric": "control_sanity[trust_safety]",
+   "value": 4,
+   "threshold": ">= default (0)",
+   "pass": true,
+   "detail": {
+    "owned_default": 0
+   }
+  },
+  {
+   "metric": "control_sanity[partnerships]",
+   "value": 3,
+   "threshold": ">= default (2)",
+   "pass": true,
+   "detail": {
+    "owned_default": 2
+   }
+  },
+  {
+   "metric": "control_sanity[finance]",
+   "value": 3,
+   "threshold": ">= default (3)",
+   "pass": true,
+   "detail": {
+    "owned_default": 3
+   }
+  },
+  {
+   "metric": "control_sanity[connect_ads]",
+   "value": 1,
+   "threshold": ">= default (1)",
+   "pass": true,
+   "detail": {
+    "owned_default": 1
+   }
+  },
+  {
+   "metric": "control_sanity[merchandising]",
+   "value": 3,
+   "threshold": ">= default (1)",
+   "pass": true,
+   "detail": {
+    "owned_default": 1
+   }
+  },
+  {
+   "metric": "control_sanity[marketplace]",
+   "value": 1,
+   "threshold": ">= default (0)",
+   "pass": true,
+   "detail": {
+    "owned_default": 0
+   }
+  },
+  {
+   "metric": "control_sanity[store_ops]",
+   "value": 2,
+   "threshold": ">= default (1)",
+   "pass": true,
+   "detail": {
+    "owned_default": 1
+   }
+  },
+  {
+   "metric": "control_sanity[care_returns]",
+   "value": 3,
+   "threshold": ">= default (0)",
+   "pass": true,
+   "detail": {
+    "owned_default": 0
+   }
+  },
+  {
+   "metric": "control_sanity[b2b]",
+   "value": 4,
+   "threshold": ">= default (3)",
+   "pass": true,
+   "detail": {
+    "owned_default": 3
+   }
+  },
+  {
+   "metric": "fairness_floor_breaches",
+   "value": 0,
+   "threshold": "== 0",
+   "pass": true,
+   "detail": {
+    "sample": []
+   }
+  },
+  {
+   "metric": "lens_flip_changes_only_stake_terms",
+   "value": 0,
+   "threshold": "== 0 profiles differ",
+   "pass": true,
+   "detail": {
+    "profiles_differing": [],
+    "flips": {
+     "default": {
+      "moved_in": [
+       "PF-46",
+       "PF-48",
+       "PF-15",
+       "PF-33"
+      ],
+      "moved_out": [
+       "PF-47",
+       "PF-23",
+       "PF-37",
+       "PF-49"
+      ]
+     },
+     "partner_default": {
+      "moved_in": [],
+      "moved_out": []
+     }
+    }
+   }
+  },
+  {
+   "metric": "recompute_s_p100",
+   "value": 0.0009,
+   "threshold": "< 1.0",
+   "pass": true,
+   "detail": {
+    "families": 51
+   }
+  },
+  {
+   "metric": "unlabeled_numbers",
+   "value": 0,
+   "threshold": "== 0",
+   "pass": true,
+   "detail": {
+    "sizing": 0,
+    "readouts": 0
+   }
+  },
+  {
+   "metric": "hypothesis_frozen_before_E04",
+   "value": true,
+   "threshold": "true; verdicts reported",
+   "pass": true,
+   "detail": {
+    "verdicts": [
+     "survived",
+     "survived",
+     "survived",
+     "survived",
+     "survived",
+     "survived"
+    ],
+    "always_confirms": true,
+    "note": "every verdict 'survived': expected while E04 runs the template fallback (it re-finds run-0 problems); re-check once the local teacher writes cards"
+   }
+  },
+  {
+   "metric": "stereotype_counterfactual_diffs",
+   "value": 0,
+   "threshold": "== 0",
+   "pass": true,
+   "detail": {
+    "families": []
+   }
+  },
+  {
+   "metric": "diagnoses_stored",
+   "value": 0,
+   "threshold": "== 0",
+   "pass": true,
+   "detail": {
+    "hits": []
+   }
+  },
+  {
+   "metric": "same_seed_same_bank",
+   "value": true,
+   "threshold": "true",
+   "pass": true,
+   "detail": {
+    "bank_id": "0c37e39e99be983d",
+    "cells_hash": true
+   }
+  }
+ ],
+ "pass": true,
+ "failed": []
+}

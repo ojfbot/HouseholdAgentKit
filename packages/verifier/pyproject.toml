@@ -1,0 +1,21 @@
+[project]
+name = "kit-verifier"
+version = "0.1.0"
+description = "K03 verifier and its mutation operators. Synthetic only."
+requires-python = ">=3.12,<3.13"
+license = {text = "Apache-2.0"}
+dependencies = ["kit-contracts"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["kit_verifier*"]
+
+[tool.uv.sources]
+kit-contracts = {workspace = true}
+kit-verifier = {workspace = true}
+kit-mock-gateway = {workspace = true}
+kit-eval-harness = {workspace = true}

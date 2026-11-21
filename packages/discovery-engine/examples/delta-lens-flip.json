@@ -1,0 +1,811 @@
+{
+ "request": {
+  "op": "lens",
+  "value": "partner",
+  "profile_id": "marketing_crm"
+ },
+ "event": {
+  "contract": "ControlDelta@0 (draft)",
+  "delta_id": "CD-f0837c6de2a1",
+  "seq": 1,
+  "session": "stage",
+  "at": "2026-11-19T19:59:32.495+00:00",
+  "bank_id": "0c37e39e99be983d",
+  "profile_id": "marketing_crm",
+  "base_profile_hash": "a4dc1c995b5b692bcaf4b5718d51137ed405d2534d5072a6198f6876079754d5",
+  "profile_hash": "11e5405c029dbb50cda5e11ea760b125d45063aa96059f01b49ecd76ef056851",
+  "op": "lens",
+  "path": [],
+  "requested": "partner",
+  "prev": "in_house",
+  "applied": "partner",
+  "status": "applied",
+  "codes": [],
+  "clamps_in_readout": 0,
+  "actor": {
+   "role": "EL"
+  },
+  "reason": "stage beat: flip to partner lens",
+  "readout_hash": "8c928dd6743b44c9",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "hash": "9a64d38ab3258548df109adc3577b2eaecd09a91a6904b9a6740cd175f719339"
+ },
+ "readout": {
+  "contract": "Readout@0 (draft)",
+  "bank_id": "0c37e39e99be983d",
+  "run_id": "run-1",
+  "profile_id": "marketing_crm",
+  "profile_hash": "11e5405c029dbb50cda5e11ea760b125d45063aa96059f01b49ecd76ef056851",
+  "lens": "partner",
+  "scenario": {
+   "adoption_share": {
+    "value": 0.1,
+    "label": "synthetic"
+   }
+  },
+  "deltas_applied": 1,
+  "answer_first": "Under marketing_crm (partner lens), the top opportunity is Win the order the agent is shopping around (PF-20), priority 192.6; 1 of the top 10 is new versus the profile's base.",
+  "hypothesis": {
+   "text": "Day-1 hypothesis (partner): the biggest value for a partner building for Walmart is in Restock between guests (PF-44) for short-term-rental host with 1-3 units and a cleaner, because it needs an outside trigger, unattended action, which only an outside agent through the Gateway provides.",
+   "hash": "01fcdbb888aae7b6a58961d6466a8c2dc082025a35059504752b75c9b425f2de",
+   "verdict": "survived"
+  },
+  "top_k": [
+   {
+    "rank": 1,
+    "family_id": "PF-20",
+    "title": "Win the order the agent is shopping around",
+    "actor_type": "never_shopper",
+    "job": "feed",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 192.6,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 68.8,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 936000000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 2.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": true,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K09",
+     "K12",
+     "K21",
+     "K24"
+    ],
+    "moved": {
+     "from": 1,
+     "to": 1
+    }
+   },
+   {
+    "rank": 2,
+    "family_id": "PF-01",
+    "title": "Restock on the money rhythm",
+    "actor_type": "shopper",
+    "job": "restock",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 151.9,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 67.8,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 1175200000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.6,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K08",
+     "K09",
+     "K12",
+     "K16",
+     "K19",
+     "K24"
+    ],
+    "moved": {
+     "from": 2,
+     "to": 2
+    }
+   },
+   {
+    "rank": 3,
+    "family_id": "PF-24",
+    "title": "Four budgets, one order",
+    "actor_type": "shopper",
+    "job": "feed",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 140.0,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 62.5,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 166400000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.6,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K10",
+     "K11",
+     "K12",
+     "K21",
+     "K24"
+    ],
+    "moved": {
+     "from": 3,
+     "to": 3
+    }
+   },
+   {
+    "rank": 4,
+    "family_id": "PF-09",
+    "title": "Usuals that alternate with custody weeks",
+    "actor_type": "shopper",
+    "job": "restock",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 134.8,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 60.2,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 156000000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.6,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K06",
+     "K07",
+     "K08",
+     "K09",
+     "K10",
+     "K11",
+     "K12",
+     "K16",
+     "K24"
+    ],
+    "moved": {
+     "from": 4,
+     "to": 4
+    }
+   },
+   {
+    "rank": 5,
+    "family_id": "PF-47",
+    "title": "Turn 'by 6' into a deadline Sparky can keep",
+    "actor_type": "walmart_team",
+    "job": "feed",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 94.2,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 68.4,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 549120000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 0.983,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K12",
+     "K24"
+    ],
+    "moved": {
+     "from": 5,
+     "to": 5
+    }
+   },
+   {
+    "rank": 6,
+    "family_id": "PF-37",
+    "title": "A put-away plan for an empty house",
+    "actor_type": "store_associate",
+    "job": "restock",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 85.4,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 61.0,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 15600000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K08",
+     "K09",
+     "K11",
+     "K12",
+     "K14",
+     "K15",
+     "K16",
+     "K24"
+    ],
+    "moved": {
+     "from": 6,
+     "to": 6
+    }
+   },
+   {
+    "rank": 7,
+    "family_id": "PF-50",
+    "title": "Move agent orders off the peak",
+    "actor_type": "walmart_team",
+    "job": "feed",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 75.8,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 55.1,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 102960000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.4,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 0.983,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K08",
+     "K12",
+     "K16",
+     "K19",
+     "K24"
+    ],
+    "moved": null
+   },
+   {
+    "rank": 8,
+    "family_id": "PF-44",
+    "title": "Restock between guests",
+    "actor_type": "small_business",
+    "job": "run_a_small_business",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 73.8,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 73.8,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 84960000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K07",
+     "K08",
+     "K09",
+     "K10",
+     "K11",
+     "K12",
+     "K13",
+     "K21",
+     "K24"
+    ],
+    "moved": {
+     "from": 8,
+     "to": 8
+    }
+   },
+   {
+    "rank": 9,
+    "family_id": "PF-39",
+    "title": "Buy only what the donations didn't cover",
+    "actor_type": "community_org",
+    "job": "give_or_donate",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 73.7,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 73.7,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 23400000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 1.0,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K07",
+     "K08",
+     "K09",
+     "K10",
+     "K11",
+     "K12",
+     "K13",
+     "K21",
+     "K24"
+    ],
+    "moved": {
+     "from": 7,
+     "to": 9
+    }
+   },
+   {
+    "rank": 10,
+    "family_id": "PF-48",
+    "title": "Support for orders an agent placed",
+    "actor_type": "walmart_team",
+    "job": "protect_someone",
+    "tier": {
+     "value": 2,
+     "label": "score:rubric@2"
+    },
+    "priority": {
+     "value": 66.2,
+     "label": "score:priority"
+    },
+    "score": {
+     "value": 67.3,
+     "label": "score:rubric@2"
+    },
+    "value_at_stake_usd": {
+     "value": 123552000,
+     "label": "derived:synthetic"
+    },
+    "terms": {
+     "w_segment": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "w_intent": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "owner_boost": {
+      "value": 1.0,
+      "label": "weight:controls"
+     },
+     "stake_fit": {
+      "value": 0.983,
+      "label": "weight:controls"
+     }
+    },
+    "on_pareto": false,
+    "components": [
+     "K01",
+     "K02",
+     "K03",
+     "K04",
+     "K05",
+     "K06",
+     "K07",
+     "K10",
+     "K11",
+     "K12",
+     "K18",
+     "K24"
+    ],
+    "moved": {
+     "from": 10,
+     "to": 10
+    }
+   }
+  ],
+  "moved_in": [
+   "PF-50"
+  ],
+  "moved_out": [
+   "PF-31"
+  ],
+  "two_by_two": {
+   "axes": {
+    "impact": "priority / max priority in the bank",
+    "effort": "build effort days (E14 components) / max"
+   },
+   "thresholds": {
+    "impact": {
+     "value": 0.435,
+     "label": "score:priority"
+    },
+    "effort": {
+     "value": 0.68,
+     "label": "derived:synthetic"
+    }
+   },
+   "points": [
+    {
+     "family_id": "PF-20",
+     "impact": {
+      "value": 1.0,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.64,
+      "label": "derived:synthetic"
+     },
+     "cell": "quick_win"
+    },
+    {
+     "family_id": "PF-01",
+     "impact": {
+      "value": 0.788,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.84,
+      "label": "derived:synthetic"
+     },
+     "cell": "big_bet"
+    },
+    {
+     "family_id": "PF-24",
+     "impact": {
+      "value": 0.727,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.68,
+      "label": "derived:synthetic"
+     },
+     "cell": "big_bet"
+    },
+    {
+     "family_id": "PF-09",
+     "impact": {
+      "value": 0.7,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.8,
+      "label": "derived:synthetic"
+     },
+     "cell": "big_bet"
+    },
+    {
+     "family_id": "PF-47",
+     "impact": {
+      "value": 0.489,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.52,
+      "label": "derived:synthetic"
+     },
+     "cell": "quick_win"
+    },
+    {
+     "family_id": "PF-37",
+     "impact": {
+      "value": 0.443,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.96,
+      "label": "derived:synthetic"
+     },
+     "cell": "big_bet"
+    },
+    {
+     "family_id": "PF-50",
+     "impact": {
+      "value": 0.394,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.76,
+      "label": "derived:synthetic"
+     },
+     "cell": "deprioritize"
+    },
+    {
+     "family_id": "PF-44",
+     "impact": {
+      "value": 0.383,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 1.0,
+      "label": "derived:synthetic"
+     },
+     "cell": "deprioritize"
+    },
+    {
+     "family_id": "PF-39",
+     "impact": {
+      "value": 0.383,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 1.0,
+      "label": "derived:synthetic"
+     },
+     "cell": "deprioritize"
+    },
+    {
+     "family_id": "PF-48",
+     "impact": {
+      "value": 0.343,
+      "label": "score:priority"
+     },
+     "effort": {
+      "value": 0.76,
+      "label": "derived:synthetic"
+     },
+     "cell": "deprioritize"
+    }
+   ]
+  },
+  "pareto": [
+   "G-03",
+   "G-04",
+   "G-07",
+   "PF-11",
+   "PF-20",
+   "PF-21"
+  ],
+  "clamp_log": [],
+  "hello_world": "placement_only",
+  "labels": "every number is {value,label}; see util.LABEL_RX",
+  "unlabeled_numbers": 0,
+  "readout_hash": "8c928dd6743b44c9",
+  "compute_ms": 0.94
+ }
+}

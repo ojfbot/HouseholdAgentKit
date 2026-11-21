@@ -1,0 +1,28 @@
+# Org model schema v2 (org@2, proposed by Fork E, owner Fork C). Supersedes org@1 on acceptance.
+# What changed from org@1: every row carries registry sources (ST-ids from fork-e/statements.yaml) and an as_of;
+# status is set by evidence, not guesswork; exposure has an explicit 'beta' and 'inferred' value; constraints say
+# whether Walmart published them or we chose them; a fourth matrix, stated_priorities, is added; homework gains H5.
+org_model_version: org@2
+status_rules:
+  published: "a Walmart-primary source (newsroom, terms, filing, transcript, Walmart site or job posting) says it exists or is live"
+  inferred: "no Walmart source says it directly, but published wording or several secondary sources imply it; the inference is written in status_note"
+  proposed: "ours (A, B, C or E) or a partner's ask; nothing public says Walmart has it"
+  absent: "we looked and Walmart has said publicly that it does not exist yet, or a search of every source family found nothing"
+exposure_values:
+  "yes": "outside agents (or people in third-party AI apps) can use it today per a Walmart source"
+  beta: "published for outside agents but invite-only through the Agent Gateway beta"
+  inferred: "exposure implied by published wording (e.g. the terms regulate it), not stated"
+  unknown: "no public signal either way"
+  "no": "internal or Walmart-surface only"
+  n/a: "proposed or absent"
+capability:      {id, name, status, status_note, exposed_to_outside_agents, actors_served: [actor_type], sources: [ST-id], as_of, changed_from_org1}
+in_house_cover:  {id, surface, actors, jobs, covers, does_not_cover, sources: [ST-id], as_of, changed_from_org1}
+constraint:      {id, rule, origin: walmart_published|our_rule|regulation, scope, sources: [ST-id], enforced_at: [stage], never_tunable: bool, changed_from_org1}
+stated_priority: {id, owner: walmart|partner_type, statement (paraphrase), weight (derived), evidence: [ST-id], latest, top_speaker, functions, label: derived}
+homework_checks:
+  H1_traceable:      every capability a card relies on resolves to a row; proposed and absent ones are listed as asks; beta and inferred exposure are reported separately
+  H2_no_reinvention: a card may not propose building a published capability or what a cover row covers for the same actor and job; partial overlaps are warnings with the covering row named
+  H3_constraints:    a card that conflicts with any constraint row is rejected at generation, logged with the row id
+  H4_tier0_baseline: every card's sparky_today cites the cover row it comes from
+  H5_stated_alignment: every top family (top-10 under any control profile, plus anchors) names the stated_priorities it serves, or states the unnamed need it serves; a family with neither fails
+evidence_levels: {E1: public data signal, E2: published Walmart or industry statement}

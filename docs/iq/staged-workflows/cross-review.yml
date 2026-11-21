@@ -1,0 +1,39 @@
+# Check `cross-review` (R6.3): green only when the OTHER agent's review marker approves the current head.
+# Re-evaluated on every push, review and comment. Reads PR data with the default token; no secrets.
+name: cross-review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  issue_comment:
+    types: [created, edited, deleted]
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+  statuses: write
+
+jobs:
+  # The job is NOT named cross-review: the required context is the commit status it posts on the PR head.
+  # (issue_comment runs attach check runs to main, so only an explicit status on the head SHA is reliable.)
+  evaluate:
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}   # always run main's checker, never the PR's copy of it
+      - uses: astral-sh/setup-uv@v6
+        with: {python-version: "3.12.16"}
+      - run: uv sync --frozen
+      - name: evaluate markers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: |
+          gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json number,headRefOid,labels,reviews,comments > pr.json
+          set +e; uv run kit review status pr.json --out status.json; set -e
+          state=$(jq -r .state status.json); desc=$(jq -r .description status.json | cut -c1-140)
+          sha=$(jq -r .headRefOid pr.json)
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$sha" -f state="$state" -f context=cross-review -f description="$desc"
+          echo "cross-review: $state — $desc"

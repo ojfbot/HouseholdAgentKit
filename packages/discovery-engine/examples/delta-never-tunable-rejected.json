@@ -1,0 +1,39 @@
+{
+ "request": {
+  "op": "set",
+  "path": [
+   "price"
+  ],
+  "value": 0.9
+ },
+ "event": {
+  "contract": "ControlDelta@0 (draft)",
+  "delta_id": "CD-f34949343066",
+  "seq": 2,
+  "session": "stage",
+  "at": "2026-11-19T19:59:32.496+00:00",
+  "bank_id": "0c37e39e99be983d",
+  "profile_id": "marketing_crm",
+  "base_profile_hash": "11e5405c029dbb50cda5e11ea760b125d45063aa96059f01b49ecd76ef056851",
+  "profile_hash": "11e5405c029dbb50cda5e11ea760b125d45063aa96059f01b49ecd76ef056851",
+  "op": "set",
+  "path": [
+   "price"
+  ],
+  "requested": 0.9,
+  "prev": null,
+  "applied": 0.9,
+  "status": "rejected",
+  "codes": [
+   "NEVER_TUNABLE"
+  ],
+  "clamps_in_readout": 0,
+  "actor": {
+   "role": "EL"
+  },
+  "reason": "",
+  "readout_hash": "8c928dd6743b44c9",
+  "prev_hash": "9a64d38ab3258548df109adc3577b2eaecd09a91a6904b9a6740cd175f719339",
+  "hash": "a13940b6b87900e8ea8cc7fca48f81ef3d648fbbc883199dd42589e5c3769e3c"
+ }
+}
