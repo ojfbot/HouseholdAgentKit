@@ -5,8 +5,10 @@ Rules this file keeps:
 * Fail closed. A blocker counts as done only when GitHub says so: an issue closed as completed, or a pull
   request merged. Closed as "not planned" counts only when the owner lists it under `waived`. If GitHub is
   unreachable, or an issue number is not found, the gate reads UNKNOWN, which is never green.
-* One read per run: the open and closed issue lists (two paged calls), cached in out/ for ten minutes, so a
-  doctor run costs at most two GitHub requests and works within the unauthenticated rate limit.
+* One read per run, and every answer in that run comes from it. `kit doctor` and `kit gates` without a
+  milestone may use a ten-minute cache under out/ (they report status). `kit gates --milestone N`, the check
+  that decides whether an issue may close, never uses the cache: it takes one fresh snapshot, answers only
+  from it, and fails closed if GitHub cannot be read.
 * The fetcher is a parameter, so the proofs and tests never touch the network.
 
 Exit codes for `kit gates`: 0 every gate asked about is clear; 1 one is blocked or unknown; 2 usage error.
@@ -213,8 +215,10 @@ def offline(repo: str) -> dict[int, Issue]:
     raise OSError("offline (KIT_OFFLINE is set)")
 
 
-def default_fetcher(root: Path) -> Fetcher:
-    return offline if os.environ.get("KIT_OFFLINE") else cached(fetch_github, root)
+def default_fetcher(root: Path, fresh: bool = False) -> Fetcher:
+    if os.environ.get("KIT_OFFLINE"):
+        return offline
+    return fetch_github if fresh else cached(fetch_github, root)
 
 
 # -------------------------------------------------------------------------------------------- verdicts
@@ -275,8 +279,24 @@ def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: 
     except SpecError as e:
         print(f"gates   {GATES_FILE} is broken: {e}")
         return 1
-    fetch = fetch or default_fetcher(root)
-    verdicts = evaluate(spec, fetch)
+    fetch = fetch or default_fetcher(root, fresh=milestone is not None)
+    try:
+        snapshot = fetch(spec.repo)
+    except (OSError, urllib.error.URLError, ValueError) as e:
+        if milestone is not None:
+            print(f"gates   cannot read GitHub ({e}), so nothing about #{milestone} can be answered: a gate nobody can see is not clear")
+            return 1
+        snapshot = None
+        error: Exception | None = e
+    else:
+        error = None
+
+    def from_snapshot(repo: str) -> dict[int, Issue]:
+        if snapshot is None:
+            raise OSError(str(error))
+        return snapshot
+
+    verdicts = evaluate(spec, from_snapshot)
     if milestone is not None:
         # Before answering about one milestone, every gate must name the issue it says it does. Otherwise a gate
         # mistyped onto another issue would vanish from the query for the issue it was meant to hold.
@@ -293,7 +313,7 @@ def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: 
         verdicts = [v for v in verdicts if v.gate.milestone == milestone]
         if not verdicts:
             # No gate names it. That is only an answer if the caller says they expected it, and the issue exists.
-            title = (fetch(spec.repo).get(milestone) or Issue(milestone, "", "")).title
+            title = ((snapshot or {}).get(milestone) or Issue(milestone, "", "")).title
             if not title:
                 print(f"gates   GitHub has no issue #{milestone}: check the number")
                 return 1

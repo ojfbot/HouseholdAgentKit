@@ -18,5 +18,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with: {enable-cache: true}
       - run: uv sync --frozen
-      - name: every rule on every file; exceptions only from kit/privacy-allow.yaml
-        run: uv run kit privacy scan
+      # --staged reads the committed blobs (in a fresh checkout the index is the commit), the same semantics as the
+      # pre-commit hook: a symlink is its link text, a submodule is a pointer. CI and the hook cannot disagree.
+      - name: every rule on every committed file; exceptions only from kit/privacy-allow.yaml
+        run: uv run kit privacy scan --staged

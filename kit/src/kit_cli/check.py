@@ -25,6 +25,9 @@ What it does not reproduce, by design, and says so when it starts:
 * GitHub's pull-request merge commit. CI tests your branch merged into its base; this tests your working tree.
   Rebase onto main before review (AGENTS.md) and the two agree.
 * Runner images, caches and timeouts. `RUNNER_TEMP` and `CI=true` are set; `timeout-minutes` is ignored.
+* A clean environment. Jobs inherit your shell's environment, minus the virtualenv variables in DROP_ENV.
+* Parallel, independent jobs. Jobs run one after another and the first failure stops the rest, where GitHub
+  runs independent jobs side by side and reports every one. A local red names the first failure, not all of them.
 
   kit check               every job (several minutes; pip-audit needs the network)
   kit check --fast        the lint and privacy-guard jobs (what the pre-commit hook runs)
@@ -52,7 +55,7 @@ FAST_JOBS = ("lint", "privacy-guard")
 RUNNER_ONLY = re.compile(r"\$\{\{|\$GITHUB_[A-Z_]+|\$\{GITHUB_[A-Z_]+\}|\bsecrets\.")
 AGGREGATE_RUN = "echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == \"success\")'"
 STEP_UNSUPPORTED = ("if", "shell", "continue-on-error")
-JOB_UNSUPPORTED = ("strategy", "defaults", "container", "services", "uses")
+JOB_UNSUPPORTED = ("strategy", "defaults", "container", "services", "uses", "continue-on-error")
 DROP_ENV = ("VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT", "UV_PROJECT", "PYTHONPATH")
 
 
@@ -147,6 +150,12 @@ def runner_only(root: Path) -> list[str]:
             if not agg and _needs(job) and str(job.get("if", "")).strip() == "always()":
                 bad.append(f"{where} looks like an aggregate but is not the standard needs check; kit check cannot evaluate it")
             bad += [f"{where} needs {n}, which is not a job in {name}" for n in _needs(job) if n not in ids]
+        cycle = _cycle({str(k): _needs(v) for k, v in (wf.get("jobs") or {}).items()})
+        if cycle:
+            bad.append(f"{name} has a dependency cycle ({' -> '.join(cycle)}), which GitHub cannot schedule")
+        for job_id, job in (wf.get("jobs") or {}).items():
+            where = f"{name}:{job_id}"
+            agg = is_aggregate(job)
             if not job.get("steps") and "uses" not in job:
                 bad.append(f"{where} has no steps")
             if agg:
@@ -163,6 +172,31 @@ def runner_only(root: Path) -> list[str]:
         if "defaults" in wf:
             bad.append(f"{name} sets workflow `defaults`, which kit check cannot reproduce")
     return bad
+
+
+def _cycle(graph: dict[str, list[str]]) -> list[str]:
+    """One dependency cycle in a job graph, as a path that returns to its start, or [] if there is none."""
+    state: dict[str, int] = {}  # 1 visiting, 2 done
+    stack: list[str] = []
+
+    def visit(n: str) -> list[str]:
+        state[n] = 1
+        stack.append(n)
+        for m in graph.get(n, []):
+            if m not in graph:
+                continue
+            if state.get(m) == 1:
+                return [*stack[stack.index(m) :], m]
+            if not state.get(m) and (found := visit(m)):
+                return found
+        stack.pop()
+        state[n] = 2
+        return []
+
+    for n in graph:
+        if not state.get(n) and (found := visit(n)):
+            return found
+    return []
 
 
 def snapshot(root: Path) -> str:
@@ -242,7 +276,8 @@ def run(root: Path, jobs_: list[str] | None = None, fast: bool = False, fix: boo
         lint.run(root, fix=True)
     print(
         "check   runs the run: steps of the pull-request workflows, each job in a clean worktree of your working tree.\n"
-        "        Not reproduced: uses: steps (checkout, setup-uv, upload-artifact), GitHub's PR merge commit, runner images."
+        "        Not reproduced: uses: steps (checkout, setup-uv, upload-artifact), GitHub's PR merge commit, runner images,\n"
+        "        timeouts, a clean environment (yours is inherited), and parallel jobs (these run in series; the first failure stops the rest)."
     )
     commit = snapshot(root)
     passed: set[str] = set()
