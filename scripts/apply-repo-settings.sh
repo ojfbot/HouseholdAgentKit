@@ -4,6 +4,7 @@
 # Usage: scripts/apply-repo-settings.sh ojfbot/<repo>
 set -euo pipefail
 REPO="${1:?usage: $0 owner/repo}"
+RULESET="$(cd "$(dirname "$0")/.." && pwd)/.github/rulesets/main.json"
 
 # Merge settings: rebase only, delete branch on merge, update-branch button on.
 gh api -X PATCH "repos/$REPO" \
@@ -13,9 +14,9 @@ gh api -X PATCH "repos/$REPO" \
 # Ruleset (create or replace by name).
 id=$(gh api "repos/$REPO/rulesets" -q '.[] | select(.name=="main") | .id' || true)
 if [ -n "${id:-}" ]; then
-  gh api -X PUT "repos/$REPO/rulesets/$id" --input .github/rulesets/main.json >/dev/null
+  gh api -X PUT "repos/$REPO/rulesets/$id" --input "$RULESET" >/dev/null
 else
-  gh api -X POST "repos/$REPO/rulesets" --input .github/rulesets/main.json >/dev/null
+  gh api -X POST "repos/$REPO/rulesets" --input "$RULESET" >/dev/null
 fi
 
 # Security: secret scanning + push protection, Dependabot alerts and updates, private vulnerability reporting.
@@ -35,7 +36,35 @@ for l in contract adr irreversible cross-repo eval-failure gate-red impl:claude-
 done
 for f in a b c d e f g h i j; do gh label create "fork-$f" --repo "$REPO" --force >/dev/null; done
 
-# Verify: required check names must match job names exactly (a renamed check silently blocks merges).
-gh api "repos/$REPO/rulesets/$(gh api "repos/$REPO/rulesets" -q '.[] | select(.name=="main") | .id')" \
-  -q '.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context'
-echo "expected: ci security privacy-guard cross-review"
+# Verify: the applied ruleset must require exactly the checks main.json requires (R-22). A renamed or missing
+# check silently weakens the gate; an extra one nothing emits (cross-review, R-07) blocks every merge.
+id=$(gh api "repos/$REPO/rulesets" -q '.[] | select(.name=="main") | .id')
+[ -n "$id" ] || { echo "no ruleset named main on $REPO" >&2; exit 1; }
+gh api "repos/$REPO/rulesets/$id" | python3 -I -c '
+import json, sys
+
+def checks(ruleset):
+    return sorted(
+        c["context"]
+        for r in ruleset.get("rules", [])
+        if r.get("type") == "required_status_checks"
+        for c in r["parameters"]["required_status_checks"]
+    )
+
+with open(sys.argv[1]) as f:
+    want = checks(json.load(f))
+got = checks(json.load(sys.stdin))
+print("required checks, main.json:", " ".join(want) or "(none)")
+print("required checks, applied:  ", " ".join(got) or "(none)")
+if got != want or not want:
+    missing = sorted(set(want) - set(got))
+    extra = sorted(set(got) - set(want))
+    if missing:
+        print("missing:", " ".join(missing), file=sys.stderr)
+    if extra:
+        print("extra:", " ".join(extra), file=sys.stderr)
+    if not want:
+        print("main.json requires no checks", file=sys.stderr)
+    print("the applied ruleset does not match .github/rulesets/main.json", file=sys.stderr)
+    sys.exit(1)
+' "$RULESET"
