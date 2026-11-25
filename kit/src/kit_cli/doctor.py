@@ -23,6 +23,7 @@ The review, gate and date lines are about what comes after --rung and never chan
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -33,7 +34,8 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
@@ -78,6 +80,9 @@ class Proof:
 
     name: str
     breaker: Callable[[Path], None]
+    # Something outside the files that the break needs while the check runs (a held port, an environment
+    # variable): a context manager given the working copy and the broken copy.
+    around: Callable[[Path, Path], AbstractContextManager[None]] | None = None
 
 
 @dataclass
@@ -245,12 +250,29 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
 # ------------------------------------------------------------------------------------------------ rung 1
 
 
+UV_ENV_KEPT = {
+    "UV_CACHE_DIR",
+    "UV_PYTHON",
+    "UV_PYTHON_INSTALL_DIR",
+    "UV_PYTHON_DOWNLOADS",
+    "UV_PYTHON_PREFERENCE",
+    "UV_OFFLINE",
+    "UV_NATIVE_TLS",
+    "UV_LINK_MODE",
+}
+
+
+def _uv(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run uv on exactly this root. Every other UV_* setting is dropped, because several of them change what is
+    checked: UV_FROZEN turns `uv lock --check` into a no-op (R-06), UV_PROJECT points it at another project."""
+    env = {k: v for k, v in os.environ.items() if not (k.startswith("UV_") and k not in UV_ENV_KEPT) and k != "VIRTUAL_ENV"}
+    return subprocess.run(["uv", *args, "--project", str(root)], cwd=root, capture_output=True, text=True, env=env)
+
+
 def lock_fresh(root: Path) -> Result:
     if not shutil.which("uv"):
         return Result(False, "uv is not installed")
-    # UV_FROZEN=1 (set in CI) turns `uv lock --check` into a no-op that always passes; the self-test caught that.
-    env = {k: v for k, v in os.environ.items() if k != "UV_FROZEN"}
-    out = subprocess.run(["uv", "lock", "--check"], cwd=root, capture_output=True, text=True, env=env)
+    out = _uv(root, "lock", "--check")
     return Result(out.returncode == 0, "uv.lock matches the pyproject files" if out.returncode == 0 else "uv.lock is stale: run `uv lock` and commit it")
 
 
@@ -270,24 +292,51 @@ def workspace_wired(root: Path) -> Result:
     return Result(True, f"{len(members)} workspace members wired")
 
 
+CONSOLE_CONFIG_PROBE = """
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import host
+print(json.dumps({"as the console loads it": host.load_config(None), "console.example.json": host.load_config(sys.argv[2])}))
+"""
+PORT_SERVICES = ("console", "engine", "poll_bus", "model")
+
+
+def _url_port(url: object) -> int | None:
+    from urllib.parse import urlsplit
+
+    try:
+        return urlsplit(str(url)).port if url else None
+    except ValueError:
+        return None
+
+
 def ports_agree(root: Path) -> Result:
     ports = _ports(root)
+    absent = [name for name in PORT_SERVICES if name not in ports]
+    if absent:
+        return Result(False, f"contracts/ports.yaml has no port for: {', '.join(absent)}")
     dupes = sorted(k for k, v in ports.items() if list(ports.values()).count(v) > 1)
     if dupes:
         return Result(False, f"two services share a default port: {', '.join(dupes)}")
-    found = {
-        "engine (cli default)": (
-            re.search(r'"--port", type=int, default=(\d+)', (root / "packages/discovery-engine/src/discovery_engine/cli.py").read_text()),
-            ports["engine"],
-        ),
-        "console (host default)": (re.search(r'"port": (\d+)', (root / "apps/demo-console/server/host.py").read_text()), ports["console"]),
-        "engine (as the console expects it)": (
-            re.search(r'"engine_url": "http://127\.0\.0\.1:(\d+)"', (root / "apps/demo-console/server/host.py").read_text()),
-            ports["engine"],
-        ),
-    }
-    bad = [f"{name} is {m.group(1) if m else 'not found'}, registry says {want}" for name, (m, want) in found.items() if not m or int(m.group(1)) != want]
-    return Result(not bad, "code defaults match contracts/ports.yaml, no collisions" if not bad else "; ".join(bad))
+    # The console's ports are read from the config it actually loads, not from literals in its source: once with
+    # no file named (its defaults, plus a console.json if this checkout has one), once from the example file.
+    app = root / "apps/demo-console"
+    probe = subprocess.run(
+        [sys.executable, "-c", CONSOLE_CONFIG_PROBE, str(app / "server"), str(app / "console.example.json")], cwd=root, capture_output=True, text=True
+    )
+    if probe.returncode != 0:
+        return Result(False, f"the console's config could not be loaded: {probe.stderr.strip()[-200:]}")
+    configs = json.loads(probe.stdout)
+    m = re.search(r'"--port", type=int, default=(\d+)', (root / "packages/discovery-engine/src/discovery_engine/cli.py").read_text())
+    found: list[tuple[str, int | None, int]] = [("engine (cli default)", int(m.group(1)) if m else None, ports["engine"])]
+    for where, cfg in configs.items():
+        found.append((f"console ({where})", cfg.get("port"), ports["console"]))
+        found.append((f"engine, where the console looks for it ({where})", _url_port(cfg.get("engine_url")), ports["engine"]))
+        found.append((f"model, where the console looks for it ({where})", _url_port(cfg.get("model_url")), ports["model"]))
+        if cfg.get("poll_bus_url") or where == "console.example.json":  # unset by default; the example must say where it is
+            found.append((f"poll bus, where the console looks for it ({where})", _url_port(cfg.get("poll_bus_url")), ports["poll_bus"]))
+    bad = [f"{name} is {got if got is not None else 'not set'}, registry says {want}" for name, got, want in found if got != want]
+    return Result(not bad, f"the loaded configs match contracts/ports.yaml for all {len(PORT_SERVICES)} services, no collisions" if not bad else "; ".join(bad))
 
 
 def runners_hosted(root: Path) -> Result:
@@ -309,16 +358,24 @@ def runners_hosted(root: Path) -> Result:
 def required_checks_exist(root: Path) -> Result:
     ruleset = json.loads((root / ".github/rulesets/main.json").read_text())
     want = [c["context"] for r in ruleset["rules"] if r["type"] == "required_status_checks" for c in r["parameters"]["required_status_checks"]]
-    have = {job_id for wf in _workflows(root).values() for job_id in (wf.get("jobs") or {})}
-    missing = [c for c in want if c not in have]
     if not want:
         return Result(False, "the ruleset requires no status checks")
-    return Result(
-        not missing,
-        f"required checks all exist as jobs: {', '.join(want)}"
-        if not missing
-        else f"the ruleset requires checks no workflow produces (merges would block forever): {', '.join(missing)}",
-    )
+    workflows = _workflows(root)
+    # GitHub reports a job under its `name:` when it has one, and under its id otherwise.
+    emitted = {str(job.get("name") or job_id): (wf_name, job_id) for wf_name, wf in workflows.items() for job_id, job in (wf.get("jobs") or {}).items()}
+    missing = [c for c in want if c not in emitted]
+    if missing:
+        return Result(False, f"the ruleset requires checks no workflow produces (merges would block forever): {', '.join(missing)}")
+    # A required check stands for its whole workflow, so it must wait for every other job in it.
+    loose = []
+    for c in want:
+        wf_name, job_id = emitted[c]
+        jobs = workflows[wf_name].get("jobs") or {}
+        needs = jobs[job_id].get("needs") or []
+        unwaited = sorted(set(jobs) - {job_id} - set([needs] if isinstance(needs, str) else needs))
+        if unwaited:
+            loose.append(f"`{c}` ({wf_name}) can go green without: {', '.join(unwaited)}")
+    return Result(not loose, f"required checks all exist as jobs and wait for their whole workflow: {', '.join(want)}" if not loose else "; ".join(loose))
 
 
 def no_forbidden_files(root: Path) -> Result:
@@ -336,16 +393,30 @@ def privacy_clean(root: Path) -> Result:
     return Result(True, f"every rule on all {len(privacy_mod.files(root))} files; exceptions only from {privacy_mod.ALLOW_FILE}")
 
 
+# The files vendored from Fork C. Pinned here so that emptying or trimming SHA256SUMS cannot shrink what is checked.
+VENDORED = ("bank.py", "bank_v2.py", "score_v2.py", "rubric-v2.yaml", "controls-v1.yaml", "lattice-v1.yaml")
+VENDORED_NOTES = {"SHA256SUMS", "SOURCE.md"}
+
+
 def vendored_verbatim(root: Path) -> Result:
     base = root / "packages/discovery-engine/prototypes/fork_c"
-    bad = []
-    for line in (base / "SHA256SUMS").read_text().splitlines():
-        want, name = line.split()
-        if not (base / name).exists() or hashlib.sha256((base / name).read_bytes()).hexdigest() != want:
-            bad.append(name)
+    sums: dict[str, str] = {}
+    for line in (base / "SHA256SUMS").read_text().splitlines() if (base / "SHA256SUMS").exists() else []:
+        parts = line.split()
+        if len(parts) != 2 or not re.fullmatch(r"[0-9a-f]{64}", parts[0]):
+            return Result(False, f"SHA256SUMS has a line that is not `<sha256>  <file>`: {line[:60]!r}")
+        sums[parts[1]] = parts[0]
+    unsummed = [n for n in VENDORED if n not in sums]
+    if unsummed:
+        return Result(False, f"SHA256SUMS has no checksum for: {', '.join(unsummed)} (parity no longer means parity with Fork C)")
+    on_disk = {p.name for p in base.iterdir() if p.is_file()} if base.is_dir() else set()
+    unpinned = sorted((set(sums) | on_disk) - set(VENDORED) - VENDORED_NOTES)
+    if unpinned:
+        return Result(False, f"in fork_c but not in doctor's pinned list of vendored files: {', '.join(unpinned)}")
+    bad = [n for n in VENDORED if not (base / n).exists() or hashlib.sha256((base / n).read_bytes()).hexdigest() != sums[n]]
     return Result(
         not bad,
-        "Fork C's vendored files are byte-identical to the import"
+        f"Fork C's {len(VENDORED)} vendored files are byte-identical to the import"
         if not bad
         else f"vendored file changed or missing (parity no longer means parity with Fork C): {', '.join(bad)}",
     )
@@ -432,11 +503,41 @@ def python_pin(root: Path, running: str | None = None) -> Result:
     return Result(running == want, f"CPython {running}" if running == want else f"running CPython {running}, the pin is {want}")
 
 
+IMPORT_PROBE = """
+import importlib, importlib.metadata as md, json
+unimportable, missing = [], []
+for name in sorted(n for n in md.packages_distributions() if not n.startswith("_")):
+    try:
+        importlib.import_module(name)
+    except Exception as e:
+        unimportable.append(f"{name} ({type(e).__name__})")
+for dist in md.distributions():
+    for f in dist.files or []:
+        if "__pycache__" not in f.parts and not f.locate().exists():
+            missing.append(f"{dist.metadata['Name']}: {f}")
+print(json.dumps({"unimportable": unimportable, "missing": missing}))
+"""
+
+
 def sync_frozen(root: Path) -> Result:
     if not shutil.which("uv"):
         return Result(False, "uv is not installed")
-    out = subprocess.run(["uv", "sync", "--frozen", "--check"], cwd=root, capture_output=True, text=True)
-    return Result(out.returncode == 0, "environment matches uv.lock" if out.returncode == 0 else "environment differs from uv.lock: run `uv sync --frozen`")
+    out = _uv(root, "sync", "--frozen", "--check")
+    if out.returncode != 0:
+        return Result(False, "environment differs from uv.lock: run `uv sync --frozen`")
+    # uv compares metadata. A package whose files are gone but whose metadata is left still "matches", so ask the
+    # environment's own interpreter, in a fresh isolated process, to import every installed module and find every file.
+    python = root / ".venv/bin/python"
+    if not python.exists():
+        return Result(False, "environment has no interpreter at .venv/bin/python: run `uv sync --frozen`")
+    probe = subprocess.run([str(python), "-I", "-c", IMPORT_PROBE], cwd=root, capture_output=True, text=True)
+    if probe.returncode != 0:
+        return Result(False, f"the environment's interpreter could not run the import probe: {probe.stderr.strip()[-160:]}")
+    report = json.loads(probe.stdout)
+    if report["unimportable"] or report["missing"]:
+        shown = [*report["unimportable"][:3], *(f"missing file {m}" for m in report["missing"][:2])]
+        return Result(False, "environment matches uv.lock on paper but is damaged (run `uv sync --frozen --reinstall`): " + "; ".join(shown))
+    return Result(True, "environment matches uv.lock, and every installed module imports")
 
 
 def hello_world_smoke(root: Path, hook: object | None = None) -> Result:
@@ -647,14 +748,25 @@ def console_on_fixtures(root: Path) -> Result:
 
 
 def ports_free(root: Path) -> Result:
+    ports = _ports(root)
+    unreal = [f"{name} {port!r}" for name, port in ports.items() if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535]
+    if unreal:
+        return Result(False, f"not a real port in contracts/ports.yaml (0 means any free port, so nothing would be checked): {', '.join(unreal)}")
     busy = []
-    for name, port in _ports(root).items():
-        with socket.socket() as s:
+    for name, port in ports.items():
+        # The console listens on every interface, so the port must be free on every interface. A plain bind to the
+        # wildcard address fails when any one address already holds the port; loopback alone would miss that.
+        for family, wildcard in ((socket.AF_INET, "0.0.0.0"), (socket.AF_INET6, "::")):
             try:
-                s.bind(("127.0.0.1", port))
-            except OSError:
-                busy.append(f"{name} {port}")
-    return Result(not busy, "default ports are free on this host" if not busy else f"already in use on this host: {', '.join(busy)}")
+                with socket.socket(family) as s:
+                    s.bind((wildcard, port))
+            except OSError as e:
+                if e.errno == errno.EADDRINUSE:
+                    busy.append(f"{name} {port}")
+                    break
+                if family == socket.AF_INET:  # no IPv6 on this host is fine; no IPv4 bind at all is not an answer
+                    return Result(False, f"could not test {name} {port}: {e}")
+    return Result(not busy, "default ports are free on every interface of this host" if not busy else f"already in use on this host: {', '.join(busy)}")
 
 
 # ------------------------------------------------------------------------------------------------ proofs
@@ -721,6 +833,73 @@ PORT_FILES = ["contracts/ports.yaml", "packages/discovery-engine/src/discovery_e
 CI_FILES = [".github/workflows/*.yml", ".github/rulesets/main.json"]
 REPO_FILES = "@repo"  # in `needs`: every file git would publish (tracked, or untracked and not ignored)
 PRE_COMMIT = ".pre-commit-config.yaml"
+
+
+def _other_ipv4() -> str:
+    """An address of this host that is not 127.0.0.1, for the proof that a port can be taken on another interface."""
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        try:
+            s.connect(("192.0.2.1", 9))  # a documentation address: picks the outbound interface, sends nothing
+            return s.getsockname()[0]
+        except OSError:
+            pass
+    with socket.socket() as s:
+        try:
+            s.bind(("127.0.0.2", 0))  # Linux answers on all of 127/8
+            return "127.0.0.2"
+        except OSError:
+            return "0.0.0.0"  # a host with one address: holding every interface is the nearest break
+
+
+def _hold_port(service: str, address: Callable[[], str]) -> Callable[[Path, Path], AbstractContextManager[None]]:
+    @contextmanager
+    def go(good: Path, bad: Path) -> Iterator[None]:
+        with socket.socket() as held:
+            held.bind((address(), _ports(bad)[service]))
+            held.listen()
+            yield
+
+    return go
+
+
+def _env(**values: str) -> Callable[[Path, Path], AbstractContextManager[None]]:
+    """Set environment variables while the check runs; `{good}` and `{bad}` are the two copies' paths."""
+
+    @contextmanager
+    def go(good: Path, bad: Path) -> Iterator[None]:
+        before = {k: os.environ.get(k) for k in values}
+        os.environ.update({k: v.format(good=good, bad=bad) for k, v in values.items()})
+        try:
+            yield
+        finally:
+            for k, v in before.items():
+                os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+
+    return go
+
+
+def _remove_installed(module: str) -> Callable[[Path], None]:
+    def go(root: Path) -> None:
+        found = list((root / ".venv").glob(f"lib/python*/site-packages/{module}"))
+        if not found:
+            raise FileNotFoundError(f"{module} is not installed in the working copy; the break cannot be planted")
+        for d in found:
+            shutil.rmtree(d)
+
+    return go
+
+
+def _drop_line(rel: str, containing: str) -> Callable[[Path], None]:
+    def go(root: Path) -> None:
+        lines = (root / rel).read_text().splitlines(keepends=True)
+        kept = [ln for ln in lines if containing not in ln]
+        if len(kept) == len(lines):
+            raise ValueError(f"{rel}: no line contains {containing!r}; the break cannot be planted")
+        (root / rel).write_text("".join(kept))
+
+    return go
+
+
 # The pre-commit file as the founding import shipped it: a remote ruff pinned off the lock, a kit command that
 # does not exist (#23) and a UI that does not exist. hooks_runnable must stay red on it.
 FOUNDING_PRE_COMMIT = """repos:
@@ -771,8 +950,14 @@ CHECKS: list[Check] = [
         1,
         lock_fresh,
         WORKSPACE,
-        [Proof("a dependency is added without re-locking", _rewrite("packages/kit-gate/pyproject.toml", '"pyyaml>=6"', '"pyyaml>=6", "segno>=1.6"'))],
-        hole="#38 [14]: UV_PROJECT makes it check a different project",
+        [
+            Proof("a dependency is added without re-locking", _rewrite("packages/kit-gate/pyproject.toml", '"pyyaml>=6"', '"pyyaml>=6", "segno>=1.6"')),
+            Proof(
+                "a stale lock, with UV_PROJECT pointing the check at another project",
+                _rewrite("packages/kit-gate/pyproject.toml", '"pyyaml>=6"', '"pyyaml>=6", "segno>=1.6"'),
+                around=_env(UV_PROJECT="{good}"),
+            ),
+        ],
     ),
     Check(
         "workspace_wired",
@@ -792,13 +977,24 @@ CHECKS: list[Check] = [
         "ports_agree",
         1,
         ports_agree,
-        PORT_FILES,
+        [*PORT_FILES, "apps/demo-console/console.example.json", "apps/demo-console/server/*.py", "packages/card-writer/**/*"],
         [
             Proof("the engine goes back to the console's port (the collision the audit found)", _rewrite(PORT_FILES[1], "default=8790", "default=8765")),
             Proof("the registry gives two services one port", _rewrite(PORT_FILES[0], "engine: 8790", "engine: 8765")),
             Proof("the console looks for the engine on the wrong port", _rewrite(PORT_FILES[2], "127.0.0.1:8790", "127.0.0.1:8799")),
+            Proof("the registry moves the model port and the code does not", _rewrite(PORT_FILES[0], "model: 8080", "model: 8099")),
+            Proof(
+                "the console's defaults look for the model on another port",
+                _rewrite(PORT_FILES[2], '"model_url": "http://127.0.0.1:8080"', '"model_url": "http://127.0.0.1:8081"'),
+            ),
+            Proof(
+                "the example config puts the poll bus on another port", _rewrite("apps/demo-console/console.example.json", "127.0.0.1:8791", "127.0.0.1:8792")
+            ),
+            Proof(
+                "the loaded config returns another port than the literal in the file",
+                _rewrite(PORT_FILES[2], "    return cfg\n\n\ndef main(", '    cfg["port"] += 1\n    return cfg\n\n\ndef main('),
+            ),
         ],
-        hole="#38 [12]: reads three literals; ignores the model and poll-bus ports",
     ),
     Check(
         "runners_hosted",
@@ -820,8 +1016,15 @@ CHECKS: list[Check] = [
         [
             Proof("the aggregate job is renamed", _rewrite(".github/workflows/ci.yml", "\n  ci:\n", "\n  ci-all:\n")),
             Proof("the ruleset requires a check nothing produces", _rewrite(".github/rulesets/main.json", '"context": "ci"', '"context": "cross-review"')),
+            Proof(
+                "the ci job is given another display name (GitHub reports that name, not the job id)",
+                _rewrite(".github/workflows/ci.yml", "\n  ci:\n", "\n  ci:\n    name: all checks\n"),
+            ),
+            Proof(
+                "the aggregate stops waiting for the tests",
+                _rewrite(".github/workflows/ci.yml", "needs: [lint, tests, contracts, doctor]", "needs: [lint, contracts, doctor]"),
+            ),
         ],
-        hole="#38 [11]: passes when the ci job is renamed by `name:` or drops a job from `needs`",
     ),
     Check(
         "no_forbidden_files",
@@ -870,8 +1073,15 @@ CHECKS: list[Check] = [
         [
             Proof("a vendored Fork C file is edited", _append("packages/discovery-engine/prototypes/fork_c/score_v2.py", "\n# local tweak\n")),
             Proof("a vendored Fork C file goes missing", _delete("packages/discovery-engine/prototypes/fork_c/rubric-v2.yaml")),
+            Proof("the checksum file is emptied", _write("packages/discovery-engine/prototypes/fork_c/SHA256SUMS", "")),
+            Proof(
+                "a file is edited and its line dropped from the checksum file",
+                lambda root: (
+                    _append("packages/discovery-engine/prototypes/fork_c/score_v2.py", "\n# local tweak\n")(root),
+                    _drop_line("packages/discovery-engine/prototypes/fork_c/SHA256SUMS", "score_v2.py")(root),
+                )[0],
+            ),
         ],
-        hole="#38 [16]: passes with an emptied checksum file",
     ),
     Check(
         "python_pin",
@@ -893,9 +1103,14 @@ CHECKS: list[Check] = [
                 "a dependency was added to the lock after the last sync",
                 _rewrite("uv.lock", '[[package]]\nname = "pyyaml"', '[[package]]\nname = "pyyaml-not-installed"'),
             ),
+            Proof("an installed package's files are removed and its metadata left", _remove_installed("yaml")),
+            Proof(
+                "never synced, with UV_PROJECT pointing the check at a synced project",
+                lambda root: shutil.rmtree(root / ".venv"),
+                around=_env(UV_PROJECT="{good}"),
+            ),
         ],
         host=True,
-        hole="#38 [15]: passes with an installed package's files removed",
     ),
     Check(
         "hello_world_smoke",
@@ -1076,9 +1291,12 @@ CHECKS: list[Check] = [
         2,
         ports_free,
         ["contracts/ports.yaml"],
-        [Proof("another process already holds a default port", lambda root: None)],
+        [
+            Proof("another process already holds a default port", lambda root: None, around=_hold_port("engine", lambda: "127.0.0.1")),
+            Proof("another process holds the console's port on another interface", lambda root: None, around=_hold_port("console", _other_ipv4)),
+            Proof("a default port is 0 (any free port, so nothing is checked)", _rewrite("contracts/ports.yaml", "console: 8765", "console: 0")),
+        ],
         host=True,
-        hole="#38 [13]: binds loopback only, and accepts port 0",
     ),
     Check(
         "review_recorded",
@@ -1132,30 +1350,33 @@ def prove(check: Check, root: Path = ROOT) -> list[tuple[str, bool, str]]:
                 check.proofs,
             )
         if check.id == "sync_frozen":  # a working setup is one that has been synced
-            subprocess.run(["uv", "sync", "--frozen", "-q"], cwd=good, check=True, capture_output=True)
-        held = None
+            _uv(good, "sync", "--frozen", "-q").check_returncode()
         res = check.fn(good) if check.id != "python_pin" else python_pin(good, running=(good / ".python-version").read_text().strip())
         rows.append(("working setup", res.ok, res.detail))
         for i, proof in enumerate(check.proofs):
             bad = Path(tmp) / f"broken-{i}"
-            shutil.copytree(good, bad, symlinks=True)
+            if check.id == "sync_frozen":
+                # An environment is tied to its path: a copied .venv reads "differs" before anything is broken, so
+                # every break would look caught. Sync each copy where it stands and see it green before breaking it.
+                shutil.copytree(good, bad, symlinks=True, ignore=shutil.ignore_patterns(".venv"))
+                _uv(bad, "sync", "--frozen", "-q").check_returncode()
+                before = check.fn(bad)
+                if not before.ok:
+                    rows.append((f"break: {proof.name}", False, f"the copy was not green before the break, so the proof shows nothing: {before.detail}"))
+                    continue
+            else:
+                shutil.copytree(good, bad, symlinks=True)
             proof.breaker(bad)
-            try:
-                if check.id == "ports_free":
-                    held = socket.socket()
-                    held.bind(("127.0.0.1", _ports(bad)["engine"]))
-                if proof.name.startswith("hook-fault:"):
-                    res = hello_world_smoke(bad, hook=_BrokenHook(proof.name.split(":")[1].split()[0]))
-                elif check.id == "python_pin":
-                    res = python_pin(bad, running="3.12.16")
-                else:
-                    res = check.fn(bad)
-            except Exception as e:  # a check that crashes on a broken setup is red, loudly
-                res = Result(False, f"check raised {type(e).__name__}: {e}")
-            finally:
-                if held:
-                    held.close()
-                    held = None
+            with proof.around(good, bad) if proof.around else nullcontext():
+                try:
+                    if proof.name.startswith("hook-fault:"):
+                        res = hello_world_smoke(bad, hook=_BrokenHook(proof.name.split(":")[1].split()[0]))
+                    elif check.id == "python_pin":
+                        res = python_pin(bad, running="3.12.16")
+                    else:
+                        res = check.fn(bad)
+                except Exception as e:  # a check that crashes on a broken setup is red, loudly
+                    res = Result(False, f"check raised {type(e).__name__}: {e}")
             rows.append((f"break: {proof.name}", not res.ok, res.detail))
     return rows
 
