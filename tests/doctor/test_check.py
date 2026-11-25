@@ -84,6 +84,8 @@ def test_the_standard_aggregate_is_recognised_and_a_bent_one_is_refused(repo: Pa
         ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ubuntu-24.04\n    env: {REF: '${{ github.ref }}'}\n"),
         ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ${{ vars.RUNNER }}\n"),
         ("""all(.value.result == "success")'\n""", """all(.value.result == "success")' || true\n"""),
+        ("  first:\n    runs-on: ubuntu-24.04\n", "  first:\n    needs: [first]\n    runs-on: ubuntu-24.04\n"),
+        ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ubuntu-24.04\n    continue-on-error: true\n"),
     ],
     ids=[
         "step-if",
@@ -97,6 +99,8 @@ def test_the_standard_aggregate_is_recognised_and_a_bent_one_is_refused(repo: Pa
         "job-env-expr",
         "runs-on-expr",
         "aggregate-extra",
+        "self-cycle",
+        "job-continue-on-error",
     ],
 )
 def test_what_kit_check_cannot_reproduce_is_refused(repo: Path, old: str, new: str) -> None:
@@ -114,3 +118,12 @@ def test_an_aggregate_listed_first_is_still_evaluated_after_its_needs(repo: Path
     assert [j.id for j in check.ordered(check.jobs(repo))] == ["first", "second", "ci"]
     assert check.run(repo) == 0
     assert "aggregate ok: first, second all passed" in capsys.readouterr().out
+
+
+def test_a_dependency_cycle_is_refused(repo: Path) -> None:
+    """Codex re-review 6064615719, 3: a cyclic workflow passed validation and returned 0 locally."""
+    wf = repo / ".github/workflows/ci.yml"
+    text = wf.read_text().replace("  first:\n    runs-on: ubuntu-24.04\n", "  first:\n    needs: [second]\n    runs-on: ubuntu-24.04\n")
+    wf.write_text(text.replace("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    needs: [first]\n    runs-on: ubuntu-24.04\n"))
+    assert any("dependency cycle" in p for p in check.runner_only(repo))
+    assert check.run(repo) == 1

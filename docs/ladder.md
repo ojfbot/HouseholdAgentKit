@@ -10,7 +10,7 @@ Three rules, from the handover:
 
 ## What is proven today (rungs 0 to 2)
 
-Every row is exercised by `kit doctor --self-test`: 19 checks, 78 planted breaks.
+Every row is exercised by `kit doctor --self-test`: 19 checks, 83 planted breaks.
 
 | Rung | Check | Green means | Planted breaks it goes red on |
 | --- | --- | --- | --- |

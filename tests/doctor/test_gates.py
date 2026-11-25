@@ -178,3 +178,38 @@ def test_github_unreachable_answers_no_query() -> None:
         raise OSError("network is unreachable")
 
     assert gates.run(ROOT, milestone=38, fetch=down, ungated=True) == 1
+
+
+def test_a_close_query_never_answers_from_the_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    """Codex re-review 6064615719, 1: a warm cache answered `--ungated` while GitHub was unreachable."""
+    monkeypatch.delenv("KIT_OFFLINE")
+    calls = {"n": 0}
+
+    def flaky(repo: str) -> dict[int, Issue]:
+        calls["n"] += 1
+        if calls["n"] > 1:
+            raise OSError("network is unreachable")
+        return _world()
+
+    monkeypatch.setattr(gates, "fetch_github", flaky)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / gates.GATES_FILE).write_text((ROOT / gates.GATES_FILE).read_text())
+    assert gates.run(tmp_path) == 0  # status run, every gate clear in this world: warms out/gates-cache.json
+    assert (tmp_path / gates.CACHE_FILE).exists()
+    capsys.readouterr()
+    assert gates.run(tmp_path, milestone=38, ungated=True) == 1  # the close query goes to GitHub, which is down
+    out = capsys.readouterr().out
+    assert "cannot read GitHub" in out and "Traceback" not in out
+
+
+def test_a_close_query_answers_from_one_snapshot(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = {"n": 0}
+
+    def once(repo: str) -> dict[int, Issue]:
+        calls["n"] += 1
+        if calls["n"] > 1:
+            raise AssertionError("a second read inside one query")
+        return _world()
+
+    assert gates.run(ROOT, milestone=38, fetch=once, ungated=True) == 0
+    assert calls["n"] == 1

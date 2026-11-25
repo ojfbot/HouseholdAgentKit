@@ -160,9 +160,12 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
     The register's `## Independent review` section must say `Status: recorded`, name the reviewer, give a real date,
     the reviewed commit, and link the review itself (`Review: https://github.com/<repo>/pull/<n>#pullrequestreview-<id>`).
     Doctor then reads that review from GitHub and requires: submitted (not pending or dismissed), on the recorded
-    commit, on the recorded date, its text naming the reviewer, and the commit an ancestor of HEAD. Whatever cannot be
-    checked (no network, no git) counts as not recorded. The one thing this cannot prove is that the reviewer was a
-    different model: the owner and the agents share one GitHub identity (Q-I-1)."""
+    commit, on the recorded date, on this repo, signed with a line `Reviewer: <the recorded name>`, and the commit an
+    ancestor of HEAD. Whatever cannot be checked (no network, no git, no repo in docs/gates.yaml) counts as not recorded.
+
+    What GitHub cannot show is that the reviewer was a different model: the owner and the agents share one GitHub
+    identity (Q-I-1). Until reviewers have their own identities, independence is the owner's attestation, recorded as
+    `Independence: attested by the owner on <date>`, and doctor reports it as attested, never as proven."""
     fetch, ancestry = fetch or fetch_review, ancestry or is_ancestor
     text = (root / REGISTER).read_text() if (root / REGISTER).exists() else ""
     m = re.search(r"^## Independent review\n(.*?)(?=^## |\Z)", text, re.S | re.M)
@@ -193,14 +196,17 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
     url = REVIEW_URL.search(field_("Review"))
     if not url:
         missing.append("no link to the review itself (`Review: https://github.com/<repo>/pull/<n>#pullrequestreview-<id>`)")
+    attested = re.match(r"attested by the owner on (\d{4}-\d\d-\d\d)\b", field_("Independence"))
+    if not attested:
+        missing.append("independence is not attested by the owner (`Independence: attested by the owner on <date>`; GitHub cannot show it, Q-I-1)")
     if missing:
         return Result(False, "independent review not recorded: " + "; ".join(missing))
     assert sha and url and when
     try:
         spec_repo = gates_mod.load_spec(root).repo
-    except gates_mod.SpecError:
-        spec_repo = None
-    if spec_repo and url["repo"].lower() != spec_repo.lower():
+    except gates_mod.SpecError as e:
+        return Result(False, f"independent review not verified: cannot tell which repo it must be on ({gates_mod.GATES_FILE}: {e})")
+    if url["repo"].lower() != spec_repo.lower():
         missing.append(f"the review is on {url['repo']}, not {spec_repo}")
     try:
         rv = fetch(url["repo"], int(url["pr"]), int(url["id"]))
@@ -212,8 +218,9 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
         missing.append(f"the review is of commit {str(rv.get('commit_id', ''))[:7] or '?'}, not {sha}")
     if str(rv.get("submitted_at", ""))[:10] != when.isoformat():
         missing.append(f"the review was submitted {str(rv.get('submitted_at', ''))[:10] or '?'}, not {when}")
-    if reviewer.lower() not in str(rv.get("body", "")).lower():
-        missing.append(f"the review's text does not name {reviewer!r}")
+    signed = re.search(rf"^[ \t>*_]*Reviewer[*_]*:[*_ \t]*{re.escape(reviewer)}[ \t*_.]*$", str(rv.get("body", "")), re.M | re.I)
+    if not signed:
+        missing.append(f"the review is not signed `Reviewer: {reviewer}` on a line of its own (a name in passing does not count)")
     anc = ancestry(root, sha)
     if anc is None:
         missing.append(f"cannot check that {sha} is in this branch's history (no git checkout)")
@@ -221,7 +228,10 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
         missing.append(f"reviewed commit {sha} is not an ancestor of HEAD")
     if missing:
         return Result(False, "independent review not verified: " + "; ".join(missing))
-    return Result(True, f"independent review recorded and verified on GitHub: {reviewer}, {when}, commit {sha}")
+    assert attested
+    return Result(
+        True, f"review verified on GitHub: {reviewer}, {when}, commit {sha}; independence attested by the owner on {attested.group(1)}, not proven (Q-I-1)"
+    )
 
 
 # ------------------------------------------------------------------------------------------------ rung 1
@@ -579,13 +589,14 @@ FOUNDING_PRE_COMMIT = """repos:
 REVIEWED = (
     "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n- Reviewed: commit e56218b\n"
     "- Review: https://github.com/ojfbot/HouseholdAgentKit/pull/1#pullrequestreview-1\n"
+    "- Independence: attested by the owner on 2026-11-21\n"
 )
 # What GitHub returns for that review in the proofs (no network there): submitted, on the commit, on the date, naming the reviewer.
 PROOF_REVIEW = {
     "state": "COMMENTED",
     "commit_id": "e56218b" + "0" * 33,
     "submitted_at": "2026-11-21T05:02:09Z",
-    "body": "Independent review by independent model.",
+    "body": "Independent review.\n\n1. A finding.\n\nReviewer: independent model\n",
 }
 
 CHECKS: list[Check] = [
@@ -800,6 +811,16 @@ CHECKS: list[Check] = [
                 _rewrite(".github/workflows/ci.yml", "\njobs:\n", "\ndefaults:\n  run:\n    working-directory: kit\n\njobs:\n"),
             ),
             Proof(
+                "two jobs need each other (GitHub cannot schedule them)",
+                _rewrite(".github/workflows/ci.yml", "  lint:\n    runs-on: ubuntu-24.04\n", "  lint:\n    needs: [ci]\n    runs-on: ubuntu-24.04\n"),
+            ),
+            Proof(
+                "a job tolerates its own failure",
+                _rewrite(
+                    ".github/workflows/ci.yml", "  doctor:\n    runs-on: ubuntu-24.04\n", "  doctor:\n    runs-on: ubuntu-24.04\n    continue-on-error: true\n"
+                ),
+            ),
+            Proof(
                 "a job's env reads a runner expression",
                 _rewrite(
                     ".github/workflows/ci.yml",
@@ -876,6 +897,9 @@ CHECKS: list[Check] = [
             Proof("the register's date is not the review's", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2026-11-20")),
             Proof("the reviewer named is not the one in the review", _rewrite(REGISTER, "- Reviewer: independent model", "- Reviewer: a different model")),
             Proof("the review is on another repository", _rewrite(REGISTER, "github.com/ojfbot/HouseholdAgentKit/pull/1", "github.com/someone/else/pull/1")),
+            Proof("the reviewer is only a word the review happens to contain", _rewrite(REGISTER, "- Reviewer: independent model", "- Reviewer: finding")),
+            Proof("independence is not attested by the owner", _rewrite(REGISTER, "- Independence: attested by the owner on 2026-11-21\n", "")),
+            Proof("the repo the review must be on cannot be resolved", _delete(gates_mod.GATES_FILE)),
         ],
     ),
 ]

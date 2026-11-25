@@ -52,9 +52,11 @@ def _commits(root: Path) -> int:
 
 
 def _refused(root: Path, *commit_args: str) -> bool:
+    """The commit failed, nothing was committed, and it failed for the privacy reason (not some other error)."""
     before = _commits(root)
     res = _git(root, "commit", "-q", "-m", "try", *commit_args, ok=False)
-    return res.returncode != 0 and _commits(root) == before
+    said = res.stdout + res.stderr
+    return res.returncode != 0 and _commits(root) == before and "privacy FAIL  key" in said
 
 
 def test_a_staged_key_is_refused(repo: Path) -> None:
@@ -104,7 +106,21 @@ def test_a_symlink_commits_only_its_target_path(repo: Path, tmp_path_factory: py
     assert KEY not in _git(repo, "show", "HEAD:link").stdout
 
 
-def test_a_submodule_gitlink_is_skipped_not_crashed_on(repo: Path) -> None:
+def test_a_submodule_gitlink_commits_as_a_pointer_through_the_real_hook(repo: Path) -> None:
     sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
     _git(repo, "update-index", "--add", "--cacheinfo", f"160000,{sha},vendor/sub")
     assert privacy.check(repo, staged=True) == ([], [])  # its contents live in another repo and are scanned there
+    _git(repo, "commit", "-q", "-m", "gitlink")  # the hook runs and passes; the commit holds a pointer, no blob
+    assert _git(repo, "ls-tree", "HEAD", "vendor/sub").stdout.split()[:2] == ["160000", "commit"]
+
+
+def test_the_on_disk_scan_reads_a_symlink_as_its_link_text_like_the_hook(repo: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
+    """Codex re-review 6064615719, 5: the working-tree scan followed live symlinks and dropped dangling ones."""
+    outside = tmp_path_factory.mktemp("outside") / "secret.txt"
+    outside.write_text(KEY)
+    os.symlink(outside, repo / "live")
+    os.symlink(repo / "nowhere" / ("x" + KEY), repo / "dangling")  # a key in the link text itself
+    _git(repo, "add", "live", "dangling")
+    on_disk, staged = privacy.check(repo), privacy.check(repo, staged=True)
+    assert on_disk == staged
+    assert [(f.rule, f.path) for f in staged[0]] == [("key", "dangling")]

@@ -58,3 +58,23 @@ def test_a_review_that_was_never_submitted_or_was_dismissed_does_not_count(root:
 def test_doctor_offline_never_reads_the_review_as_recorded(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(doctor, "is_ancestor", lambda r, sha: True)
     assert not doctor.review_recorded(root, TODAY).ok  # KIT_OFFLINE is set for every doctor test
+
+
+def test_a_name_mentioned_in_passing_is_not_a_signature(root: Path) -> None:
+    """Codex re-review 6064615719, 2: a reviewer name that appeared incidentally in the body read green."""
+    body = "Independent review. Compared with what the other model, Fable, said earlier...\n\nReviewer: independent model\n"
+    text = (root / doctor.REGISTER).read_text().replace("- Reviewer: independent model", "- Reviewer: Fable")
+    (root / doctor.REGISTER).write_text(text)
+    res = _verdict(root, review={**doctor.PROOF_REVIEW, "body": body})
+    assert not res.ok and "not signed" in res.detail
+
+
+def test_green_says_independence_is_attested_not_proven(root: Path) -> None:
+    res = _verdict(root)
+    assert res.ok and "attested by the owner" in res.detail and "not proven" in res.detail
+
+
+def test_an_unresolvable_repo_fails_closed(root: Path) -> None:
+    (root / gates.GATES_FILE).unlink()
+    res = _verdict(root)
+    assert not res.ok and "cannot tell which repo" in res.detail

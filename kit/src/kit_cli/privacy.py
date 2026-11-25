@@ -25,6 +25,7 @@ Exit codes: 0 clean; 1 a finding or a broken allowlist; 2 usage error.
 from __future__ import annotations
 
 import fnmatch
+import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -110,12 +111,15 @@ class Source:
         if self.staged:
             out = subprocess.run(["git", "cat-file", "-s", self._blobs[rel]], cwd=self.root, capture_output=True, text=True, check=True)
             return int(out.stdout.strip())
-        return (self.root / rel).stat().st_size
+        p = self.root / rel
+        return len(os.readlink(p).encode()) if p.is_symlink() else p.stat().st_size
 
     def read(self, rel: str) -> bytes:
         if self.staged:
             return subprocess.run(["git", "cat-file", "blob", self._blobs[rel]], cwd=self.root, capture_output=True, check=True).stdout
-        return (self.root / rel).read_bytes()
+        p = self.root / rel
+        # A symlink is read as its link text, as git commits it, so the on-disk scan and the staged scan agree.
+        return os.readlink(p).encode() if p.is_symlink() else p.read_bytes()
 
     def has(self, rel: str) -> bool:
         return rel in self._blobs if self.staged else (self.root / rel).exists()
@@ -125,10 +129,11 @@ def files(root: Path) -> list[str]:
     if (root / ".git").exists():
         out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True)
         if out.returncode == 0:
-            return sorted(
-                {n.decode("utf-8", "surrogateescape") for n in out.stdout.split(b"\0") if n and (root / n.decode("utf-8", "surrogateescape")).is_file()}
-            )
-    return sorted(p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file() and not (set(p.relative_to(root).parts) & SKIP_DIRS))
+            names = {n.decode("utf-8", "surrogateescape") for n in out.stdout.split(b"\0") if n}
+            return sorted(n for n in names if (root / n).is_symlink() or (root / n).is_file())
+    return sorted(
+        p.relative_to(root).as_posix() for p in root.rglob("*") if (p.is_symlink() or p.is_file()) and not (set(p.relative_to(root).parts) & SKIP_DIRS)
+    )
 
 
 def load_allow(root: Path, source: Source | None = None) -> list[Allow]:
