@@ -109,13 +109,16 @@ Three checks written for this ladder were wrong on the first attempt, and the se
 - `register_covers_packages` was red until this register had a row for every package, which is its purpose.
 
 ## Independent review
-- Status: findings recorded; fixes open (#38). `kit doctor` keeps this line red, and rung 3 does not start, until #38 is closed and this line reads `recorded`.
-- Reviewer: OpenAI Codex, independent of the model that wrote the checks
-- Date: 2026-11-20
-- Reviewed: PR #1 as first pushed; the full review is the review comment on that PR
-- Ran on: macOS with CPython 3.12.16. Frozen sync, fixture build, the doctor self-test (14 checks, 30 breaks) and the test run (235 passed, 5 skipped) all passed there. This is the first macOS result; it does not replace rung 2 on the stage host.
+- Status: recorded. This line is the review evidence only: rung 3 still does not start until its gate is clear (#38 and #41, `docs/gates.yaml`).
+- Reviewer: OpenAI Codex
+- Date: 2026-11-25
+- Reviewed: commit b9d35d7, the head of PR #1 after five review rounds. Verdict: OK to merge, with the P2 findings filed as follow-ups on #38 and #42
+- Review: https://github.com/ojfbot/HouseholdAgentKit/pull/1#pullrequestreview-6064820766
+- Independence: attested by the owner on 2026-11-25. The owner and the agents share one GitHub identity (Q-I-1), so GitHub cannot show who wrote a review
+- Rounds: 6002962131 (of 64ecd57, Nov 20; that commit left the branch's history in the R-20 scrub), 6062530122 and 6062619088 (of 3301c86), 6063238580 (of 67feaee), 6064615719 (of 5982d1f), 6064820766 (of b9d35d7)
+- Ran on: the stage host (Yuri), CPython 3.12.16. Frozen sync, fixture build, the doctor self-test (19 checks, 83 planted breaks), `kit check` (21 steps in 8 jobs; 334 tests passed, 5 skipped) and the staged privacy scan all passed. This does not replace rung 2's own run on the merged `main`.
 
-**What it found.** 28 items. None disputes a result in this register; several show that a safeguard listed above as done is narrower than its row claimed.
+**What the first round found (Nov 20, of 64ecd57).** 28 items. None disputes a result in this register; several show that a safeguard listed above as done is narrower than its row claimed.
 
 | Group | Findings | Where it goes |
 | --- | --- | --- |
