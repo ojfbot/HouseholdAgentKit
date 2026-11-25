@@ -14,8 +14,8 @@ jobs:
   privacy-guard:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
         with: {enable-cache: true}
       - run: uv sync --frozen
       # --staged reads the committed blobs (in a fresh checkout the index is the commit), the same semantics as the
