@@ -67,6 +67,7 @@ class Verdict:
     pending: list[int]
     unseen: list[int]
     detail: str
+    identity_ok: bool = True  # False: the milestone number does not name the issue the gate says it does
 
     @property
     def clear(self) -> bool:
@@ -242,7 +243,9 @@ def evaluate(spec: Spec, fetch: Fetcher) -> list[Verdict]:
         if ms is None or not ms.title.startswith(g.title):
             actual = f"it is {ms.title!r}" if ms else "GitHub has no such issue"
             verdicts.append(
-                Verdict(g, "unknown", [], [g.milestone], f"milestone #{g.milestone} should start {g.title!r}, but {actual}: check the number in {GATES_FILE}")
+                Verdict(
+                    g, "unknown", [], [g.milestone], f"milestone #{g.milestone} should start {g.title!r}, but {actual}: check the number in {GATES_FILE}", False
+                )
             )
             continue
         unseen = [n for n in g.blocked_by if n not in issues]
@@ -266,7 +269,7 @@ def describe(v: Verdict) -> str:
     return f"gate    {what:24} {word} {tail}"
 
 
-def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: Fetcher | None = None) -> int:
+def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: Fetcher | None = None, ungated: bool = False) -> int:
     try:
         spec = load_spec(root)
     except SpecError as e:
@@ -275,18 +278,32 @@ def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: 
     fetch = fetch or default_fetcher(root)
     verdicts = evaluate(spec, fetch)
     if milestone is not None:
+        # Before answering about one milestone, every gate must name the issue it says it does. Otherwise a gate
+        # mistyped onto another issue would vanish from the query for the issue it was meant to hold.
+        misnamed = [v for v in verdicts if not v.identity_ok]
+        if misnamed:
+            for v in misnamed:
+                print(describe(v))
+            print(f"gates   {len(misnamed)} gate(s) do not name the issue they claim, so no question about #{milestone} can be answered: fix {GATES_FILE}")
+            return 1
+        unreachable = [v for v in verdicts if v.status == "unknown" and v.detail.startswith("cannot read GitHub")]
+        if unreachable:
+            print(f"gates   {unreachable[0].detail}")
+            return 1
         verdicts = [v for v in verdicts if v.gate.milestone == milestone]
         if not verdicts:
-            # No gate names it. Say so only for an issue GitHub knows: a mistyped number must not read as "free to close".
-            try:
-                known = milestone in fetch(spec.repo)
-            except (OSError, urllib.error.URLError, ValueError) as e:
-                print(f"gates   cannot read GitHub ({e}), so #{milestone} is not known to be ungated")
-                return 1
-            if not known:
+            # No gate names it. That is only an answer if the caller says they expected it, and the issue exists.
+            title = (fetch(spec.repo).get(milestone) or Issue(milestone, "", "")).title
+            if not title:
                 print(f"gates   GitHub has no issue #{milestone}: check the number")
                 return 1
-            print(f"gates   no gate names #{milestone} as its milestone: nothing blocks it")
+            if not ungated:
+                print(
+                    f"gates   no gate names #{milestone} ({title!r}). If that is the issue you mean and it has no gate, "
+                    f"say so: kit gates --milestone {milestone} --ungated"
+                )
+                return 1
+            print(f"gates   #{milestone} {title!r}: no gate names it, so nothing blocks it")
             return 0
     if as_json:
         print(

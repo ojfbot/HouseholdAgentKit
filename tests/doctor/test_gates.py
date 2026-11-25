@@ -79,7 +79,8 @@ def test_github_unreachable_is_unknown_for_every_gate() -> None:
 def test_kit_gates_exit_code_follows_the_milestone(capsys: pytest.CaptureFixture[str]) -> None:
     assert gates.run(ROOT, milestone=20, fetch=_fetch(_world())) == 0
     assert gates.run(ROOT, milestone=20, fetch=_fetch(_world(n39=Issue(39, "poll", "open")))) == 1
-    assert gates.run(ROOT, milestone=38, fetch=_fetch(_world())) == 0  # a real issue that no gate names
+    assert gates.run(ROOT, milestone=38, fetch=_fetch(_world())) == 1  # no gate names it: not an answer by itself
+    assert gates.run(ROOT, milestone=38, fetch=_fetch(_world()), ungated=True) == 0  # ...until the caller says so
     capsys.readouterr()
 
 
@@ -160,3 +161,20 @@ def test_the_review_verdict_is_in_the_json(capsys: pytest.CaptureFixture[str], m
     doctor.run(upto=2, today=date(2026, 11, 26), as_json=True, fetch=_fetch(_world()))
     blob = json.loads(capsys.readouterr().out)
     assert blob["review"]["ok"] is False and "may not start" in blob["next"]
+
+
+def test_a_gate_mistyped_onto_another_issue_blocks_the_query_for_the_intended_one(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Codex re-review 1: the rung-3 gate typed as #30 vanished from a query for #3, which then exited 0."""
+    world = _world(n30=Issue(30, "[DX] A recording per beat, registered", "open"))
+    (tmp_path / "docs").mkdir()
+    (tmp_path / gates.GATES_FILE).write_text((ROOT / gates.GATES_FILE).read_text().replace("milestone: 3\n", "milestone: 30\n", 1))
+    assert gates.run(tmp_path, milestone=3, fetch=_fetch(world)) == 1
+    assert gates.run(tmp_path, milestone=3, fetch=_fetch(world), ungated=True) == 1
+    assert "do not name the issue they claim" in capsys.readouterr().out
+
+
+def test_github_unreachable_answers_no_query() -> None:
+    def down(repo: str) -> dict[int, Issue]:
+        raise OSError("network is unreachable")
+
+    assert gates.run(ROOT, milestone=38, fetch=down, ungated=True) == 1

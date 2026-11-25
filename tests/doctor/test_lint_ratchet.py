@@ -118,3 +118,25 @@ def test_lowering_a_floor_against_main_is_green(repo_on_main: Path) -> None:
 def test_a_missing_main_fails_closed(repo_on_main: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("KIT_LINT_BASE", "origin/does-not-exist")
     assert lint.run(repo_on_main) == 1
+
+
+def test_while_main_has_no_policy_the_founding_policy_is_the_base(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Codex re-review 2: on the real base (no policy on main) a raised floor read green."""
+    (repo / lint.POLICY_FILE).unlink()
+    _git(repo, "init", "-q", "-b", "main")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "main without a policy")
+    _git(repo, "switch", "-q", "-c", "work")
+    monkeypatch.setenv("KIT_LINT_BASE", "main")
+    monkeypatch.setattr(lint, "FOUNDING_POLICY", {"full": ["good"], "floor_ignore": [], "ratchet": {"old": {"lint": 1, "format": 0}}, "exempt": {}})
+    (repo / "old/c.py").write_text(ONE_VIOLATION)
+    (repo / lint.POLICY_FILE).write_text(json.dumps({"full": ["good"], "floor_ignore": [], "ratchet": {"old": {"lint": 2, "format": 0}}}))
+    assert lint.run(repo) == 1
+    base, problem, against = lint.base_policy(repo)
+    assert base is lint.FOUNDING_POLICY and problem is None and "founding policy" in against
+
+
+def test_the_founding_policy_matches_the_committed_policy() -> None:
+    """The pinned founding policy and kit/lint-policy.json agree today; a later lowered floor is fine, a raised one is not."""
+    policy = json.loads((doctor.ROOT / lint.POLICY_FILE).read_text())
+    assert lint.loosened(lint.FOUNDING_POLICY, policy, doctor.ROOT) == []

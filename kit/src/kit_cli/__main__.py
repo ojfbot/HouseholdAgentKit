@@ -154,7 +154,7 @@ def cmd_gates(a: argparse.Namespace) -> int:
     """kit gates [--milestone N]: which milestones may start or close, from docs/gates.yaml and live GitHub state."""
     from kit_cli import doctor, gates
 
-    return gates.run(doctor.ROOT, milestone=a.milestone, as_json=a.json)
+    return gates.run(doctor.ROOT, milestone=a.milestone, as_json=a.json, ungated=a.ungated)
 
 
 def cmd_check(a: argparse.Namespace) -> int:
@@ -208,6 +208,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     gt = sub.add_parser("gates", help="which milestones are blocked (docs/gates.yaml, read live from GitHub; fails closed offline)")
     gt.add_argument("--milestone", type=int, help="only the gate whose milestone is this issue; exit 1 unless it is clear")
+    gt.add_argument(
+        "--ungated", action="store_true", help="with --milestone: you expect no gate to name this issue (exit 0 only if it exists; its title is printed)"
+    )
     gt.add_argument("--json", action="store_true")
     gt.set_defaults(fn=cmd_gates)
 
