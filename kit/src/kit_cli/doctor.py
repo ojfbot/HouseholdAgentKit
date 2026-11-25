@@ -36,11 +36,12 @@ import yaml
 from kit_cli import check as check_mod
 from kit_cli import gates as gates_mod
 from kit_cli import lint as lint_mod
+from kit_cli import privacy as privacy_mod
 
 ROOT = Path(__file__).resolve().parents[3]
 REGISTER = "docs/integration-risk-register.md"
+FAKE_KEY = "sk-" + "ant-api03-" + "Q" * 32  # built at run time, so no key-shaped string is ever tracked
 HOSTED = re.compile(r"^(ubuntu|macos|windows)-[a-z0-9.\-]+$")
-FORBIDDEN = re.compile(r"(^|/)(holdout[-_]seed[^/]*|[^/]*\.safetensors|[^/]*\.gguf|\.env(\.[^/]*)?|adapters/.*|checkpoints/.*)$")
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", "out", ".pytest_cache", ".ruff_cache"}
 
 RUNG_TITLES = {
@@ -214,10 +215,18 @@ def required_checks_exist(root: Path) -> Result:
 
 
 def no_forbidden_files(root: Path) -> Result:
-    files = _files(root)
-    bad = [f for f in files if FORBIDDEN.search(f)]
-    bad += [f for f in files if f.startswith("data/") and not re.match(r"data/(seeds|research)/", f)]
+    """The path half of the privacy guard: the same rules and allowlist as `kit privacy scan` (one shared list)."""
+    left, _ = privacy_mod.check(root)
+    bad = sorted({f.path for f in left if f.rule in privacy_mod.PATH_RULES})
     return Result(not bad, "no weights, seeds, secrets or generated data in the tree" if not bad else f"must not be in the repo: {', '.join(bad[:5])}")
+
+
+def privacy_clean(root: Path) -> Result:
+    left, problems = privacy_mod.check(root)
+    if left or problems:
+        shown = [f.show() for f in left[:2]] + problems[:2]
+        return Result(False, f"{len(left)} findings, {len(problems)} allowlist problems: " + "; ".join(shown))
+    return Result(True, f"every rule on all {len(privacy_mod.files(root))} files; exceptions only from {privacy_mod.ALLOW_FILE}")
 
 
 def vendored_verbatim(root: Path) -> Result:
@@ -433,6 +442,14 @@ def _write(rel: str, text: str = "x") -> Callable[[Path], None]:
     return go
 
 
+def _write_bytes(rel: str, data: bytes) -> Callable[[Path], None]:
+    def go(root: Path) -> None:
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_bytes(data)
+
+    return go
+
+
 def _delete(rel: str) -> Callable[[Path], None]:
     return lambda root: (root / rel).unlink()
 
@@ -448,6 +465,7 @@ def _append(rel: str, text: str) -> Callable[[Path], None]:
 WORKSPACE = ["pyproject.toml", "uv.lock", ".python-version", "kit/pyproject.toml", "packages/*/pyproject.toml"]
 PORT_FILES = ["contracts/ports.yaml", "packages/discovery-engine/src/discovery_engine/cli.py", "apps/demo-console/server/host.py"]
 CI_FILES = [".github/workflows/*.yml", ".github/rulesets/main.json"]
+REPO_FILES = "@repo"  # in `needs`: every file git would publish (tracked, or untracked and not ignored)
 PRE_COMMIT = ".pre-commit-config.yaml"
 # The pre-commit file as the founding import shipped it: a remote ruff pinned off the lock, a kit command that
 # does not exist (#23) and a UI that does not exist. hooks_runnable must stay red on it.
@@ -538,12 +556,39 @@ CHECKS: list[Check] = [
         "no_forbidden_files",
         1,
         no_forbidden_files,
-        ["data/seeds/cases/*.yaml"],
+        ["data/seeds/cases/*.yaml", privacy_mod.ALLOW_FILE],
         [
             Proof("the holdout seed is added", _write("data/holdout-seed.txt")),
             Proof("generated data is added", _write("data/generated/cases.json")),
             Proof("weights are added", _write("packages/k01/model.safetensors")),
             Proof("an env file is added", _write(".env", "KEY=1")),
+            Proof("MLX weights are added (missing from the founding list)", _write("models/k01/adapter.mlx")),
+            Proof("a non-ASCII path under data/ (git quotes it unless paths are NUL-delimited)", _write("data/generated/\u00fcbersicht.json")),
+            Proof("generated run output lands outside data/", _write("packages/discovery-engine/runs/run-9/labels.csv", "id,label\n")),
+        ],
+    ),
+    Check(
+        "privacy_clean",
+        1,
+        privacy_clean,
+        [REPO_FILES],
+        [
+            Proof("a key in a new file in a directory no rule names", _write("notes/scratch.txt", f"token={FAKE_KEY}\n")),
+            Proof(
+                "a key inside a binary file",
+                _write_bytes("assets/blob.bin", b"\x00\x01" + FAKE_KEY.encode() + b"\x00"),
+            ),
+            Proof("a holdout case outside data/", _write("packages/verifier/tests/fixtures/case.yaml", "id: c1\nsplit: " + "holdout\n")),
+            Proof("a personal home path in a doc", _write("docs/setup-notes.md", "cd /Users/" + "someone/src\n")),
+            Proof("an exception with no reason", _rewrite(privacy_mod.ALLOW_FILE, "    why: The test writes", "    why: ''\n    note: The test writes")),
+            Proof(
+                "a stale exception that suppresses nothing",
+                _append(privacy_mod.ALLOW_FILE, "\n  - rule: key\n    path: nowhere/at/all.txt\n    why: left over\n"),
+            ),
+            Proof(
+                "an exception that switches a rule off everywhere", _append(privacy_mod.ALLOW_FILE, "\n  - rule: email\n    path: '*'\n    why: too noisy\n")
+            ),
+            Proof("the allowlist is deleted", _delete(privacy_mod.ALLOW_FILE)),
         ],
     ),
     Check(
@@ -688,7 +733,8 @@ CHECKS: list[Check] = [
 
 def _copy_needs(check: Check, src: Path, dst: Path) -> None:
     for pattern in check.needs:
-        for p in src.glob(pattern):
+        matches = [src / f for f in privacy_mod.files(src)] if pattern == REPO_FILES else src.glob(pattern)
+        for p in matches:
             if p.is_file() and not (set(p.relative_to(src).parts) & SKIP_DIRS):
                 (dst / p.relative_to(src)).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(p, dst / p.relative_to(src))

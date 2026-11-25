@@ -1,4 +1,4 @@
-"""kit doctor | kit gates | kit check | kit lint-ratchet | kit eval hello-world | kit conformance | kit mutate | kit bundle build|diff | kit gate |
+"""kit doctor | kit gates | kit check | kit lint | kit privacy scan | kit eval hello-world | kit conformance | kit mutate | kit bundle build|diff | kit gate |
 kit review status | kit merge-queue plan | kit digest
 
 Exit codes: 0 green / pass; 1 red / fail (with the reason printed); 2 usage error.
@@ -171,6 +171,13 @@ def cmd_lint(a: argparse.Namespace) -> int:
     return lint.run(doctor.ROOT, fix=a.fix, update_baseline=a.update_baseline)
 
 
+def cmd_privacy(a: argparse.Namespace) -> int:
+    """kit privacy scan: every rule on every file; exceptions only from kit/privacy-allow.yaml."""
+    from kit_cli import doctor, privacy
+
+    return privacy.run(doctor.ROOT)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="kit")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -193,6 +200,10 @@ def build_parser() -> argparse.ArgumentParser:
     li.add_argument("--fix", action="store_true", help="ruff --fix and ruff format on the full trees")
     li.add_argument("--update-baseline", action="store_true", help="lower the ratchet floor to today's counts (refuses to raise it)")
     li.set_defaults(fn=cmd_lint)
+
+    pv = sub.add_parser("privacy", help="privacy guard: every rule on every file, binaries included; exceptions only from kit/privacy-allow.yaml")
+    pv.add_argument("action", choices=["scan"])
+    pv.set_defaults(fn=cmd_privacy)
 
     gt = sub.add_parser("gates", help="which milestones are blocked (docs/gates.yaml, read live from GitHub; fails closed offline)")
     gt.add_argument("--milestone", type=int, help="only the gate whose milestone is this issue; exit 1 unless it is clear")
