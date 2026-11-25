@@ -129,7 +129,8 @@ PLACEHOLDER = re.compile(r"^(tbd|todo|tba|pending|none|n/?a|unknown|someone|revi
 
 
 ReviewFetcher = Callable[[str, int, int], dict]  # (repo, pull number, review id) -> the GitHub review object
-Ancestry = Callable[[Path, str], bool | None]  # (root, sha) -> True / False, or None when it cannot be checked
+Ancestry = Callable[[Path, str, str | None], bool | None]  # (root, sha, its tree) -> in this history? None: cannot tell
+TreeOf = Callable[[str, str], str]  # (repo, sha) -> the commit's tree hash, read from GitHub
 REVIEW_URL = re.compile(r"https://github\.com/(?P<repo>[\w.-]+/[\w.-]+)/pull/(?P<pr>\d+)#pullrequestreview-(?P<id>\d+)")
 
 
@@ -148,25 +149,50 @@ def fetch_review(repo: str, pr: int, review_id: int) -> dict:
         return json.loads(r.read().decode())
 
 
-def is_ancestor(root: Path, sha: str) -> bool | None:
+def fetch_tree(repo: str, sha: str) -> str:
+    """The tree of a commit, read from GitHub, so it is known even after the reviewed branch is deleted."""
+    if os.environ.get("KIT_OFFLINE"):
+        raise OSError("offline (KIT_OFFLINE is set)")
+    import urllib.request
+
+    req = urllib.request.Request(
+        f"{gates_mod.API}/repos/{repo}/git/commits/{sha}", headers={"Accept": "application/vnd.github+json", "User-Agent": "kit-doctor"}
+    )
+    if tok := os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"):
+        req.add_header("Authorization", f"Bearer {tok}")
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return str(json.loads(r.read().decode())["tree"]["sha"])
+
+
+def is_ancestor(root: Path, sha: str, tree: str | None = None) -> bool | None:
+    """Is the reviewed code in HEAD's history? The commit itself, or (after a rebase-merge, which rewrites every
+    commit) a commit with exactly the same tree. A rebase onto a moved base changes the tree, and then the merged
+    code is not the reviewed code, so it does not count."""
     if not (root / ".git").exists() or not shutil.which("git"):
         return None
-    return subprocess.run(["git", "merge-base", "--is-ancestor", sha, "HEAD"], cwd=root, capture_output=True).returncode == 0
+    if subprocess.run(["git", "merge-base", "--is-ancestor", sha, "HEAD"], cwd=root, capture_output=True).returncode == 0:
+        return True
+    if not tree:
+        return False
+    trees = subprocess.run(["git", "log", "--format=%T", "HEAD"], cwd=root, capture_output=True, text=True).stdout.split()
+    return tree in trees
 
 
-def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher | None = None, ancestry: Ancestry | None = None) -> Result:
+def review_recorded(
+    root: Path, today: date | None = None, fetch: ReviewFetcher | None = None, ancestry: Ancestry | None = None, tree_of: TreeOf | None = None
+) -> Result:
     """Rung 3 may start only on evidence that can be checked, not on text anyone can type.
 
     The register's `## Independent review` section must say `Status: recorded`, name the reviewer, give a real date,
     the reviewed commit, and link the review itself (`Review: https://github.com/<repo>/pull/<n>#pullrequestreview-<id>`).
     Doctor then reads that review from GitHub and requires: submitted (not pending or dismissed), on the recorded
-    commit, on the recorded date, on this repo, signed with a line `Reviewer: <the recorded name>`, and the commit an
-    ancestor of HEAD. Whatever cannot be checked (no network, no git, no repo in docs/gates.yaml) counts as not recorded.
+    commit, on the recorded date, on this repo, signed with a line `Reviewer: <the recorded name>`, and the reviewed
+    code in HEAD's history (the commit itself, or after a rebase-merge a commit with the identical tree). Whatever cannot be checked (no network, no git, no repo in docs/gates.yaml) counts as not recorded.
 
     What GitHub cannot show is that the reviewer was a different model: the owner and the agents share one GitHub
     identity (Q-I-1). Until reviewers have their own identities, independence is the owner's attestation, recorded as
     `Independence: attested by the owner on <date>`, and doctor reports it as attested, never as proven."""
-    fetch, ancestry = fetch or fetch_review, ancestry or is_ancestor
+    fetch, ancestry, tree_of = fetch or fetch_review, ancestry or is_ancestor, tree_of or fetch_tree
     text = (root / REGISTER).read_text() if (root / REGISTER).exists() else ""
     m = re.search(r"^## Independent review\n(.*?)(?=^## |\Z)", text, re.S | re.M)
     if not m:
@@ -221,11 +247,16 @@ def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher 
     signed = re.search(rf"^[ \t>*_]*Reviewer[*_]*:[*_ \t]*{re.escape(reviewer)}[ \t*_.]*$", str(rv.get("body", "")), re.M | re.I)
     if not signed:
         missing.append(f"the review is not signed `Reviewer: {reviewer}` on a line of its own (a name in passing does not count)")
-    anc = ancestry(root, sha)
+    try:
+        tree = tree_of(url["repo"], str(rv.get("commit_id") or sha))
+    except (OSError, ValueError, KeyError) as e:
+        tree = None
+        missing.append(f"cannot read the reviewed commit's tree on GitHub ({e})")
+    anc = ancestry(root, sha, tree)
     if anc is None:
         missing.append(f"cannot check that {sha} is in this branch's history (no git checkout)")
     elif not anc:
-        missing.append(f"reviewed commit {sha} is not an ancestor of HEAD")
+        missing.append(f"neither {sha} nor a commit with its tree is in HEAD's history, so the merged code is not the reviewed code")
     if missing:
         return Result(False, "independent review not verified: " + "; ".join(missing))
     assert attested
@@ -592,6 +623,7 @@ REVIEWED = (
     "- Independence: attested by the owner on 2026-11-21\n"
 )
 # What GitHub returns for that review in the proofs (no network there): submitted, on the commit, on the date, naming the reviewer.
+PROOF_TREE = "a" * 40  # the reviewed commit's tree in the proofs; the working setup has it in HEAD's history
 PROOF_REVIEW = {
     "state": "COMMENTED",
     "commit_id": "e56218b" + "0" * 33,
@@ -927,7 +959,13 @@ def prove(check: Check, root: Path = ROOT) -> list[tuple[str, bool, str]]:
             check = Check(
                 check.id,
                 check.rung,
-                lambda root: review_recorded(root, date(2026, 11, 25), fetch=lambda repo, pr, rid: PROOF_REVIEW, ancestry=lambda root, sha: True),
+                lambda root: review_recorded(
+                    root,
+                    date(2026, 11, 25),
+                    fetch=lambda repo, pr, rid: PROOF_REVIEW,
+                    ancestry=lambda root, sha, tree: tree == PROOF_TREE,
+                    tree_of=lambda repo, sha: PROOF_TREE,
+                ),
                 check.needs,
                 check.proofs,
             )

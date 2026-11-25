@@ -29,7 +29,7 @@ def _verdict(root: Path, review: dict | Exception = doctor.PROOF_REVIEW, ancesto
             raise review
         return review
 
-    return doctor.review_recorded(root, TODAY, fetch=fetch, ancestry=lambda r, sha: ancestor)
+    return doctor.review_recorded(root, TODAY, fetch=fetch, ancestry=lambda r, sha, tree: ancestor, tree_of=lambda repo, sha: "t" * 40)
 
 
 def test_a_matching_review_on_an_ancestor_commit_is_recorded(root: Path) -> None:
@@ -56,7 +56,7 @@ def test_a_review_that_was_never_submitted_or_was_dismissed_does_not_count(root:
 
 
 def test_doctor_offline_never_reads_the_review_as_recorded(root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(doctor, "is_ancestor", lambda r, sha: True)
+    monkeypatch.setattr(doctor, "is_ancestor", lambda r, sha, tree=None: True)
     assert not doctor.review_recorded(root, TODAY).ok  # KIT_OFFLINE is set for every doctor test
 
 
@@ -78,3 +78,43 @@ def test_an_unresolvable_repo_fails_closed(root: Path) -> None:
     (root / gates.GATES_FILE).unlink()
     res = _verdict(root)
     assert not res.ok and "cannot tell which repo" in res.detail
+
+
+def _git(root: Path, *args: str) -> str:
+    import subprocess
+
+    return subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args], cwd=root, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+
+def test_a_rebase_merged_review_still_counts_when_the_tree_is_identical(tmp_path: Path) -> None:
+    """#45: GitHub's rebase-merge rewrote b9d35d7 as 6220fce with the same tree, and doctor read the review as unverified."""
+    _git(tmp_path, "init", "-q", "-b", "main")
+    (tmp_path / "a.txt").write_text("reviewed code\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "reviewed")
+    reviewed, tree = _git(tmp_path, "rev-parse", "HEAD"), _git(tmp_path, "rev-parse", "HEAD^{tree}")
+    _git(tmp_path, "commit", "-q", "--amend", "-m", "the same code, rewritten by a rebase-merge")  # new hash, same tree
+    assert _git(tmp_path, "rev-parse", "HEAD") != reviewed
+    assert doctor.is_ancestor(tmp_path, reviewed[:7], tree) is True
+    assert doctor.is_ancestor(tmp_path, reviewed[:7], None) is False  # without the tree, the hash alone is not in history
+
+
+def test_a_rebase_that_changed_the_code_does_not_count(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-q", "-b", "main")
+    (tmp_path / "a.txt").write_text("reviewed code\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-q", "-m", "reviewed")
+    reviewed, tree = _git(tmp_path, "rev-parse", "HEAD"), _git(tmp_path, "rev-parse", "HEAD^{tree}")
+    (tmp_path / "a.txt").write_text("different code\n")
+    _git(tmp_path, "commit", "-q", "-a", "--amend", "-m", "rebased onto a moved base")
+    assert doctor.is_ancestor(tmp_path, reviewed[:7], tree) is False
+
+
+def test_the_reviewed_tree_unreadable_on_github_is_not_recorded(root: Path) -> None:
+    def no_tree(repo: str, sha: str) -> str:
+        raise OSError("network is unreachable")
+
+    res = doctor.review_recorded(root, TODAY, fetch=lambda r, p, i: doctor.PROOF_REVIEW, ancestry=lambda r, sha, tree: tree is not None, tree_of=no_tree)
+    assert not res.ok and "tree" in res.detail
