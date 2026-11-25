@@ -62,14 +62,21 @@ Each row becomes code in `kit/src/kit_cli/doctor.py`, with its proof, in the run
 
 ```
 rung 0  audit                    GREEN  1/1 checks
-rung 1  repo and CI              GREEN  12/12 checks
+rung 1  repo and CI              GREEN  12/12 checks, 2 unproven (pass a known broken setup, #38): ports_agree, runners_hosted
 rung 2  runs on this host        RED    python_pin: running CPython 3.12.3, the pin is 3.12.16
 review  independent review       RED    no independent review recorded in the risk register ...
 gate    rung-3 (#3)              BLOCKED may not start: #1 unmerged, #38 open, #41 open
 gate    beat-1-live (#20)        BLOCKED may not close: #12 open, #18 open, #36 open, #39 open
 gate    rung-10 (#10)            BLOCKED may not close: #27 open, #36 open, #39 open, #40 open
-date    2026-11-28               in 3 d  the parity-floor waiver in bundles/gate-config.yaml has expired ...
+date    2026-11-25               RED     1 d ago: the engine's stage 0 stops accepting `placement_only` ... Still red: ...
+date    2026-11-28               in 2 d  the parity_floors waiver in bundles/gate-config.yaml has expired ...
 next    fix rung 2 (runs on this host)
 ```
 
 One line per rung, the first red check named in plain words, then one line per gate, then the dates on which something turns red without a commit, then the one next step. `--rung N` checks rungs 0 to N (default 2), `--json` prints the same for a program, `--self-test` runs the proofs.
+
+**Unproven.** A check that is known to pass some broken setup carries a `hole` in `doctor.py`, naming the setup and its issue. Its rung line says how many of its checks are unproven and which, and `--self-test` ends with the same list, so `GREEN` never hides a known gap. Closing a hole means planting the setup as a break, watching the self-test go red, tightening the check, and deleting the `hole`. `--json` carries it per check as `unproven`.
+
+**Dates.** Doctor reads each date from the gate's own source (the engine's `PASS_REQUIRED_FROM`, each waiver's `until` in `bundles/gate-config.yaml`) and asks the gate itself: stage 0 with today's hello world from a `full` run, and `kit gate` with today's report. Before the date the line counts down. From the date on it reads `RED`, with the gate's own reason, and it stays until the gate passes; a gate that cannot be asked is red. A date line goes only when its gate passes.
+
+**Exit code.** 0 means every rung up to `--rung` is green and its gate clear. The review, gate and date lines are about what comes after and do not change it: CI runs `kit doctor --rung 2`, and a date must not turn CI red with no commit to blame (R-02). `kit doctor --rung 3` exits 1 while any of them stands in rung 3's way.

@@ -11,7 +11,14 @@ Rules this file enforces on itself:
 * Gates (docs/gates.yaml, kit_cli.gates) decide what may start or close. A rung whose gate is blocked or
   unknown never reads GREEN, and `next` never says "climb" a rung whose start gate is not clear.
 
+* A check that is known to pass some broken setup carries a `hole` naming it and its issue. Its rung line and
+  the self-test summary say "unproven" until the hole is closed, so a green never hides a known gap.
+
+* Date lines ask the gate behind the date. A date that has arrived stays on the page, red, until that gate passes.
+
 Exit codes: 0 every rung up to --rung is green and its gate clear; 1 a rung is red or gated; 2 usage error.
+The review, gate and date lines are about what comes after --rung and never change the exit code: CI runs
+`kit doctor --rung 2`, and a date must not turn it red with no commit to blame (R-02). `--rung 3` exits 1 on them.
 """
 
 from __future__ import annotations
@@ -28,7 +35,7 @@ import tempfile
 import tomllib
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import yaml
@@ -81,6 +88,7 @@ class Check:
     needs: list[str]
     proofs: list[Proof] = field(default_factory=list)
     host: bool = False  # true: the answer depends on the machine, so CI's green says nothing about a real host
+    hole: str = ""  # "#<issue> [n]: <a broken setup this check still passes>"; printed as unproven until closed
 
     def __post_init__(self) -> None:
         if not self.proofs:
@@ -609,6 +617,7 @@ CHECKS: list[Check] = [
             Proof("a package nobody audited appears", _write("packages/unaudited-thing/pyproject.toml", "[project]\nname='x'\n")),
             Proof("the register is deleted", _delete(REGISTER)),
         ],
+        hole="#38 [20]: passes when a package is named only in prose, not in the table",
     ),
     Check(
         "lock_fresh",
@@ -616,6 +625,7 @@ CHECKS: list[Check] = [
         lock_fresh,
         WORKSPACE,
         [Proof("a dependency is added without re-locking", _rewrite("packages/kit-gate/pyproject.toml", '"pyyaml>=6"', '"pyyaml>=6", "segno>=1.6"'))],
+        hole="#38 [14]: UV_PROJECT makes it check a different project",
     ),
     Check(
         "workspace_wired",
@@ -629,6 +639,7 @@ CHECKS: list[Check] = [
             ),
             Proof("a member is deleted from disk", _delete("packages/verifier/pyproject.toml")),
         ],
+        hole="#38 [19]: ignores a pyproject.toml under apps/",
     ),
     Check(
         "ports_agree",
@@ -640,6 +651,7 @@ CHECKS: list[Check] = [
             Proof("the registry gives two services one port", _rewrite(PORT_FILES[0], "engine: 8790", "engine: 8765")),
             Proof("the console looks for the engine on the wrong port", _rewrite(PORT_FILES[2], "127.0.0.1:8790", "127.0.0.1:8799")),
         ],
+        hole="#38 [12]: reads three literals; ignores the model and poll-bus ports",
     ),
     Check(
         "runners_hosted",
@@ -651,6 +663,7 @@ CHECKS: list[Check] = [
             Proof("a job hides its runner behind an expression", _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: ${{ vars.RUNNER }}")),
             Proof("a workflow runs fork code with secrets", _rewrite(".github/workflows/privacy-guard.yml", "pull_request:", "pull_request_target:")),
         ],
+        hole="#38 [18]: passes on an empty runs-on list and on invented ubuntu-* labels",
     ),
     Check(
         "required_checks_exist",
@@ -661,6 +674,7 @@ CHECKS: list[Check] = [
             Proof("the aggregate job is renamed", _rewrite(".github/workflows/ci.yml", "\n  ci:\n", "\n  ci-all:\n")),
             Proof("the ruleset requires a check nothing produces", _rewrite(".github/rulesets/main.json", '"context": "ci"', '"context": "cross-review"')),
         ],
+        hole="#38 [11]: passes when the ci job is renamed by `name:` or drops a job from `needs`",
     ),
     Check(
         "no_forbidden_files",
@@ -710,6 +724,7 @@ CHECKS: list[Check] = [
             Proof("a vendored Fork C file is edited", _append("packages/discovery-engine/prototypes/fork_c/score_v2.py", "\n# local tweak\n")),
             Proof("a vendored Fork C file goes missing", _delete("packages/discovery-engine/prototypes/fork_c/rubric-v2.yaml")),
         ],
+        hole="#38 [16]: passes with an emptied checksum file",
     ),
     Check(
         "python_pin",
@@ -718,6 +733,7 @@ CHECKS: list[Check] = [
         [".python-version"],
         [Proof("the interpreter is a different patch release", _write(".python-version", "3.12.99\n"))],
         host=True,
+        hole="#38 [21]: accepts a pre-release or another implementation with the same numbers",
     ),
     Check(
         "sync_frozen",
@@ -732,6 +748,7 @@ CHECKS: list[Check] = [
             ),
         ],
         host=True,
+        hole="#38 [15]: passes with an installed package's files removed",
     ),
     Check(
         "hello_world_smoke",
@@ -744,6 +761,7 @@ CHECKS: list[Check] = [
             Proof("hook-fault:reject (every episode ends in an unacceptable cart)", lambda root: None),
         ],
         host=True,
+        hole="#38 [3]: passes with zero episodes",
     ),
     Check(
         "console_on_fixtures",
@@ -755,6 +773,7 @@ CHECKS: list[Check] = [
             Proof("the stage page is missing", _delete("apps/demo-console/web/stage.html")),
         ],
         host=True,
+        hole="#38 [8]: passes with the pages' scripts deleted",
     ),
     Check(
         "ci_runs_locally",
@@ -879,7 +898,15 @@ CHECKS: list[Check] = [
             ),
         ],
     ),
-    Check("ports_free", 2, ports_free, ["contracts/ports.yaml"], [Proof("another process already holds a default port", lambda root: None)], host=True),
+    Check(
+        "ports_free",
+        2,
+        ports_free,
+        ["contracts/ports.yaml"],
+        [Proof("another process already holds a default port", lambda root: None)],
+        host=True,
+        hole="#38 [13]: binds loopback only, and accepts port 0",
+    ),
     Check(
         "review_recorded",
         3,
@@ -972,15 +999,114 @@ def self_test(root: Path = ROOT) -> int:
         f"\n{len(CHECKS)} checks, {proofs} planted breaks: "
         + ("every check went red on its breaks and green on a working setup" if not failed else f"{failed} did not behave; those checks must not gate")
     )
+    if summary := holes_summary():
+        print(summary)
     return 1 if failed else 0
+
+
+def holes_summary() -> str:
+    """One line naming every check that still passes a known broken setup; empty when there is none."""
+    holed = [c for c in CHECKS if c.hole]
+    if not holed:
+        return ""
+    issues = ", ".join(sorted({c.hole.split()[0] for c in holed}))
+    return f"{len(holed)} of these checks still pass a known broken setup that is not planted above ({issues}): {', '.join(c.id for c in holed)}"
 
 
 # ------------------------------------------------------------------------------------------------ report
 
-CALENDAR = [
-    (date(2026, 11, 25), "the engine's stage 0 stops accepting `placement_only`: `discovery_engine run` aborts unless hello world is `pass` from a `full` run"),
-    (date(2026, 11, 28), "the parity-floor waiver in bundles/gate-config.yaml has expired (last day Nov 27): `kit gate` goes red until K19 lands"),
-]
+
+@dataclass
+class Deadline:
+    """A date on which something turns red with no commit. `ask` puts the question to the gate itself, as of a day."""
+
+    when: date  # the first day the gate is red if nothing changes
+    what: str
+    ask: Callable[[Path, date], Result]
+
+
+def _ask_engine_stage0(root: Path, day: date) -> Result:
+    """Would `discovery_engine run` get past stage 0 on that day, with today's hello world from a `full` run?"""
+    from discovery_engine import pipeline
+    from kit_eval import hello_world
+
+    res = hello_world.run("full", "doctor", cases_dir=root / "data/seeds/cases")
+    with tempfile.TemporaryDirectory() as tmp:
+        result_file = Path(tmp) / "hello-world.json"
+        result_file.write_text(json.dumps(res))
+        cfg = pipeline.RunConfig(hello_world_result=str(result_file), as_of=day.isoformat())
+        try:
+            pipeline.stage0(cfg, pipeline.load_seeds()[1], pipeline.e06_ladder.load_cover())
+        except RuntimeError as e:
+            return Result(False, f"hello world is `{res.get('status')}` from a `{res.get('mode')}` run; {e}")
+    return Result(True, f"stage 0 accepts hello world `{res.get('status')}`")
+
+
+def _ask_kit_gate(root: Path, day: date) -> Result:
+    """Would `kit gate` be green on that day, for today's hello-world report against bundles/gate-config.yaml?"""
+    from kit_eval.cases import load_cases
+    from kit_eval.report import build_report, load_hook, run_hello_world
+    from kit_gate.gate import GateConfig, run_gate
+
+    cases, hook = load_cases(str(root / "data/seeds/cases")), load_hook(None)
+    report = build_report(run_hello_world(hook, cases, k=5, seed=0), cases, bundle_id="doctor", hook_name=hook.name, k=5)  # `kit eval` defaults
+    record = run_gate(report, None, None, GateConfig.load(root / "bundles/gate-config.yaml"), day)
+    return Result(record["verdict"] == "green", "`kit gate` is green" if record["verdict"] == "green" else "`kit gate` is red: " + "; ".join(record["reasons"]))
+
+
+def deadlines(root: Path) -> list[Deadline]:
+    """The dates are read from the gates' own sources, so moving a date or renewing a waiver moves the line."""
+    from discovery_engine import pipeline
+    from kit_gate.gate import GateConfig
+
+    out = [
+        Deadline(
+            date.fromisoformat(pipeline.PASS_REQUIRED_FROM),
+            "the engine's stage 0 stops accepting `placement_only`: `discovery_engine run` aborts unless hello world is `pass` from a `full` run",
+            _ask_engine_stage0,
+        )
+    ]
+    for w in GateConfig.load(root / "bundles/gate-config.yaml").waivers:
+        until = date.fromisoformat(str(w["until"]))
+        out.append(
+            Deadline(
+                until + timedelta(days=1),
+                f"the {w['metric']} waiver in bundles/gate-config.yaml has expired (last day {until.isoformat()}): `kit gate` goes red",
+                _ask_kit_gate,
+            )
+        )
+    return sorted(out, key=lambda d: d.when)
+
+
+def date_lines(root: Path, today: date) -> tuple[list[str], list[dict]]:
+    """One line per date whose gate is not passing: a countdown before the date, red from the date on.
+
+    A gate is asked as of its date, or as of today once the date has arrived. The line goes only when the gate
+    passes. A gate that cannot be asked, or a source that cannot be read, is red: silence is not a pass.
+    """
+    try:
+        found = deadlines(root)
+    except Exception as e:
+        return [f"dates   {'':24} RED     cannot read the dates ({type(e).__name__}: {e}); treat every dated gate as red"], [
+            {"date": None, "days": None, "status": "red", "what": "cannot read the dates", "detail": f"{type(e).__name__}: {e}"}
+        ]
+    lines, rows = [], []
+    for d in found:
+        days = (d.when - today).days
+        try:
+            verdict = d.ask(root, max(today, d.when))
+        except Exception as e:
+            verdict = Result(False, f"could not ask the gate ({type(e).__name__}: {e})")
+            days = min(days, 0)  # an unanswerable gate is red now, whatever the calendar says
+        if verdict.ok:
+            continue
+        if days > 0:
+            lines.append(f"date    {d.when.isoformat():24} in {days} d  {d.what}")
+        else:
+            since = "today" if days == 0 else f"{-days} d ago"
+            lines.append(f"date    {d.when.isoformat():24} RED     {since}: {d.what}. Still red: {verdict.detail}")
+        rows.append({"date": d.when.isoformat(), "days": days, "status": "upcoming" if days > 0 else "red", "what": d.what, "detail": verdict.detail})
+    return lines, rows
 
 
 def _gate_verdicts(root: Path, fetch: gates_mod.Fetcher | None) -> tuple[list[gates_mod.Verdict], str | None]:
@@ -1033,24 +1159,28 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
             first_red = first_red if first_red is not None else rung
             continue
         red = [(c, r) for c, r in rows if not r.ok]
+        holed = [c for c, _ in rows if c.hole]
+        unproven = (
+            f", {len(holed)} unproven (pass a known broken setup, {', '.join(sorted({c.hole.split()[0] for c in holed}))}): {', '.join(c.id for c in holed)}"
+            if holed
+            else ""
+        )
         if red:
             first_red = first_red if first_red is not None else rung
             lines.append(f"rung {rung:<2} {title:24} RED    {red[0][0].id}: {red[0][1].detail}" + (f" (+{len(red) - 1} more)" if len(red) > 1 else "") + gated)
         elif gated:
             first_red = first_red if first_red is not None else rung
-            lines.append(f"rung {rung:<2} {title:24} GATED  {len(rows)}/{len(rows)} checks green{gated} (docs/gates.yaml)")
+            lines.append(f"rung {rung:<2} {title:24} GATED  {len(rows)}/{len(rows)} checks green{unproven}{gated} (docs/gates.yaml)")
         else:
-            lines.append(f"rung {rung:<2} {title:24} GREEN  {len(rows)}/{len(rows)} checks")
+            lines.append(f"rung {rung:<2} {title:24} GREEN  {len(rows)}/{len(rows)} checks{unproven}")
     lines.append(
         f"review  {'independent review':24} {'GREEN ' if review.ok else 'RED   '} {review.detail}" + ("" if review.ok else "; rung 3 does not start without it")
     )
     if gates_broken:
         lines.append(f"gates   {gates_broken}")
     lines.extend(gates_mod.describe(v) for v in verdicts)
-    for when, what in CALENDAR:
-        days = (when - today).days
-        if days >= 0:
-            lines.append(f"date    {when.isoformat():24} in {days} d  {what}")
+    dated, dates = date_lines(root, today)
+    lines.extend(dated)
     if first_red is not None:
         nxt = f"fix rung {first_red} ({RUNG_TITLES[first_red]})"
     elif upto >= 10:
@@ -1064,13 +1194,17 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
         print(
             json.dumps(
                 {
-                    "rungs": {r: [{"check": c.id, "ok": x.ok, "detail": x.detail, "host": c.host} for c, x in v] for r, v in results.items()},
+                    "rungs": {
+                        r: [{"check": c.id, "ok": x.ok, "detail": x.detail, "host": c.host, "unproven": c.hole or None} for c, x in v]
+                        for r, v in results.items()
+                    },
                     "first_red": first_red,
                     "gates": [
                         {"id": v.gate.id, "milestone": v.gate.milestone, "kind": v.gate.kind, "status": v.status, "pending": v.pending} for v in verdicts
                     ],
                     "gates_broken": gates_broken,
                     "review": {"ok": review.ok, "detail": review.detail},
+                    "dates": dates,
                     "next": nxt,
                     "lines": lines,
                 },
