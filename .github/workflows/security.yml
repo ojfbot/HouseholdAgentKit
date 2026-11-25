@@ -12,8 +12,8 @@ jobs:
   deps:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       # pip-audit is pinned and runs on the project's own pinned interpreter (`uv run --with`), not a separate
       # uvx Python: on the stage host a uvx-chosen CPython crashed in ensurepip (review on PR #1). The export is
       # fully pinned, so --no-deps --disable-pip audits it without building a virtualenv at all.
