@@ -95,7 +95,7 @@ Freeze is Sun Nov 22. Batch 1 is pending, so none of these has the owner's ack; 
 | `kit contracts validate contracts/` | Parse check with a known-broken list | The command does not exist (R-13, R-14) |
 | stdout comparison of two decomposition runs | Canonical JSON against the committed output, two hash seeds | R-05 |
 | `ui` job (pnpm build of `apps/console`) | Removed | Nothing to build (R-18) |
-| `kit privacy scan` | Grep-based guard for forbidden files, key shapes, addresses and home paths | The command does not exist; porting the fleet's existing guard would mean reading another repo |
+| `kit privacy scan` | Built here (#43): every rule on every file git would publish, binaries included, exceptions only from `kit/privacy-allow.yaml` with a reason each; stale exceptions fail | Deny by default replaces the founding grep, which scoped some rules to `data/` and skipped binaries and unstaged files. The fleet's own guard can still replace it at rung 3 |
 | gitleaks action, pnpm audit | `pip-audit` only | Secret scanning is an owner setting; there is no Node manifest |
 | `nightly-gate`, `merge-queue`, `cross-review` | Not active | R-08 |
 | (none) | `doctor` job: `kit doctor --self-test` and `kit doctor --rung 2` | Every ladder check is proven before it gates |

@@ -1,0 +1,21 @@
+# Exceptions to `kit privacy scan`. Every rule runs on every file; an entry here is the only way out.
+#
+#   rule:  one of forbidden-file, generated-data, key, holdout-case, personal-path, email, too-large
+#   path:  a glob naming the files (never "*" alone: switching a rule off everywhere is not an exception)
+#   match: optional regex the matched text must also match
+#   why:   required. Why this is safe to keep in a public repo
+#
+# An entry that no longer suppresses anything fails the scan ("stale exception"): delete it.
+# Adding an entry is an owner merge (AGENTS.md), because it widens what can be published.
+version: 1
+allow:
+  - rule: holdout-case
+    path: packages/eval-harness/tests/test_harness.py
+    match: 'split:\s*holdout'
+    why: The test writes a holdout-marked case to a temp dir and asserts the loader rejects it. It holds no case content.
+
+  - rule: generated-data
+    path: packages/discovery-engine/runs/run-1/*
+    why: >-
+      Deterministic reference output of the documented engine quickstart (labels.csv, eval-report.json; no timestamps,
+      synthetic only). Review finding C5 in #41 decides whether they move to examples/ or leave the repo.

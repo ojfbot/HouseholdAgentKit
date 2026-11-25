@@ -1,4 +1,7 @@
-# Required check `privacy-guard`. A minimal guard until HP ports the fleet's guard (`kit privacy scan`, P07).
+# Required check `privacy-guard`. Deny by default: `kit privacy scan` runs every rule on every file in the
+# checkout, binaries included, whatever directory it is in. The only way out is an entry in
+# kit/privacy-allow.yaml with its reason; an entry that suppresses nothing fails the scan. The rules live in
+# kit/src/kit_cli/privacy.py, so this job, `kit check` and the pre-commit hook run the same code.
 name: privacy-guard
 on:
   pull_request:
@@ -12,13 +15,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: no holdout seed, no generated data, no weights, no env files
-        run: |
-          ! git ls-files | grep -E '(^|/)(holdout[-_]seed|.*\.safetensors|.*\.gguf|\.env(\..*)?$|adapters/|checkpoints/)' || { echo "forbidden file tracked"; exit 1; }
-          ! git ls-files data/ | grep -vE '^data/(seeds|research)/' || { echo "only seeds and research live under data/"; exit 1; }
-          ! git grep -nE '"split"\s*:\s*"holdout"|split:\s*holdout' -- data/ || { echo "holdout cases never live in the repo"; exit 1; }
-      - name: no key-shaped strings, e-mail addresses or home paths
-        run: |
-          ! git grep -nIE '(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|lsv2_[a-z]{2}_[a-f0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY)' || { echo "key-shaped string"; exit 1; }
-          ! git grep -nIE '/Users/[A-Za-z0-9_]+/|/home/[a-z][a-z0-9_]+/|(^|[^A-Za-z0-9._/-])~/[A-Za-z0-9._-]+' -- . ':!.github/workflows/privacy-guard.yml' || { echo "a personal path is tracked"; exit 1; }
-          ! git grep -nIE '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.(com|net|org|io|dev|ai)\b' -- . ':!uv.lock' | grep -vE 'noreply@|@example\.' || { echo "an e-mail address is tracked"; exit 1; }
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - run: uv sync --frozen
+      - name: every rule on every file; exceptions only from kit/privacy-allow.yaml
+        run: uv run kit privacy scan

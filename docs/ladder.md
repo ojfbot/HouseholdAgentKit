@@ -10,7 +10,7 @@ Three rules, from the handover:
 
 ## What is proven today (rungs 0 to 2)
 
-Every row is exercised by `kit doctor --self-test`: 18 checks, 50 planted breaks.
+Every row is exercised by `kit doctor --self-test`: 19 checks, 61 planted breaks.
 
 | Rung | Check | Green means | Planted breaks it goes red on |
 | --- | --- | --- | --- |
@@ -20,7 +20,8 @@ Every row is exercised by `kit doctor --self-test`: 18 checks, 50 planted breaks
 | 1 | `ports_agree` | Code defaults match `contracts/ports.yaml` and no two services share a port | The engine returns to 8765; the registry repeats a port; the console looks for the engine elsewhere |
 | 1 | `runners_hosted` | Every workflow job runs on a GitHub-hosted runner and none uses `pull_request_target` | A self-hosted label; a runner hidden behind an expression; `pull_request_target` |
 | 1 | `required_checks_exist` | Every status the ruleset requires is produced by a workflow job | The aggregate job is renamed; the ruleset requires `cross-review`, which nothing emits |
-| 1 | `no_forbidden_files` | No weights, holdout seed, env file or generated data in the tree | Each of those four is added |
+| 1 | `no_forbidden_files` | No weights, holdout seed, env file or generated data anywhere in the tree (the path rules of `kit privacy scan`, one shared list) | Each of those four is added; MLX weights; a non-ASCII path; run output outside `data/` |
+| 1 | `privacy_clean` | `kit privacy scan` is clean: every rule on every file git would publish, binaries included; exceptions only from `kit/privacy-allow.yaml` | A key in a new directory; a key inside a binary; a holdout case outside `data/`; a home path in a doc; an exception with no reason; a stale exception; an exception for every file; the allowlist deleted |
 | 1 | `vendored_verbatim` | Fork C's vendored files match their checksums | A file is edited; a file is removed |
 | 1 | `ci_runs_locally` | `kit check` can run every pull-request workflow step as CI does, so a local green means the same commands passed | A step reads a secret; a step needs a runner-only path; a job needs a service container; a job calls a reusable workflow |
 | 1 | `lint_policy_covers` | Every tracked `.py` file is under a lint tier in `kit/lint-policy.json` (full, ratchet or exempt) | New Python outside every tier; a tier names a missing tree; a tree in two tiers; a negative floor; the policy deleted |
@@ -61,7 +62,7 @@ Each row becomes code in `kit/src/kit_cli/doctor.py`, with its proof, in the run
 
 ```
 rung 0  audit                    GREEN  1/1 checks
-rung 1  repo and CI              GREEN  11/11 checks
+rung 1  repo and CI              GREEN  12/12 checks
 rung 2  runs on this host        RED    python_pin: running CPython 3.12.3, the pin is 3.12.16
 review  independent review       RED    no independent review recorded in the risk register ...
 gate    rung-3 (#3)              BLOCKED may not start: #1 unmerged, #38 open, #41 open
