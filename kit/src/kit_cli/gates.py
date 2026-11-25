@@ -50,6 +50,7 @@ class Gate:
     blocked_by: list[int]
     why: str = ""
     rung: int | None = None
+    title: str = ""
     waived: list[int] = field(default_factory=list)
 
 
@@ -131,12 +132,27 @@ def load_spec(root: Path) -> Spec:
             problems.append(f"{where} blocks on its own milestone #{ms}")
         if len(set(blockers)) != len(blockers):
             problems.append(f"{where}.blocked_by lists an issue twice")
+        title = g.get("title")
+        if not isinstance(title, str) or not title.strip():
+            problems.append(f"{where}.title must give the start of the milestone issue's title, so a mistyped number cannot gate the wrong issue")
+            title = ""
         waived = g.get("waived") or []
         if not isinstance(waived, list) or any(w not in blockers for w in waived):
             problems.append(f"{where}.waived may only name issues in blocked_by")
             waived = []
         if not bad and isinstance(gid, str) and isinstance(ms, int) and isinstance(kind, str):
-            gates.append(Gate(gid, ms, kind, list(blockers), str(g.get("why") or "").strip(), rung, list(waived)))
+            gates.append(
+                Gate(
+                    id=gid,
+                    milestone=ms,
+                    kind=kind,
+                    blocked_by=list(blockers),
+                    why=str(g.get("why") or "").strip(),
+                    rung=rung,
+                    waived=list(waived),
+                    title=title.strip(),
+                )
+            )
     if problems:
         raise SpecError("; ".join(problems))
     return Spec(str(repo), gates)
@@ -222,6 +238,13 @@ def evaluate(spec: Spec, fetch: Fetcher) -> list[Verdict]:
         if error:
             verdicts.append(Verdict(g, "unknown", [], list(g.blocked_by), error))
             continue
+        ms = issues.get(g.milestone)
+        if ms is None or not ms.title.startswith(g.title):
+            actual = f"it is {ms.title!r}" if ms else "GitHub has no such issue"
+            verdicts.append(
+                Verdict(g, "unknown", [], [g.milestone], f"milestone #{g.milestone} should start {g.title!r}, but {actual}: check the number in {GATES_FILE}")
+            )
+            continue
         unseen = [n for n in g.blocked_by if n not in issues]
         pending = [n for n in g.blocked_by if n in issues and not _done(issues[n], n in g.waived)]
         if unseen:
@@ -249,10 +272,20 @@ def run(root: Path, milestone: int | None = None, as_json: bool = False, fetch: 
     except SpecError as e:
         print(f"gates   {GATES_FILE} is broken: {e}")
         return 1
-    verdicts = evaluate(spec, fetch or default_fetcher(root))
+    fetch = fetch or default_fetcher(root)
+    verdicts = evaluate(spec, fetch)
     if milestone is not None:
         verdicts = [v for v in verdicts if v.gate.milestone == milestone]
         if not verdicts:
+            # No gate names it. Say so only for an issue GitHub knows: a mistyped number must not read as "free to close".
+            try:
+                known = milestone in fetch(spec.repo)
+            except (OSError, urllib.error.URLError, ValueError) as e:
+                print(f"gates   cannot read GitHub ({e}), so #{milestone} is not known to be ungated")
+                return 1
+            if not known:
+                print(f"gates   GitHub has no issue #{milestone}: check the number")
+                return 1
             print(f"gates   no gate names #{milestone} as its milestone: nothing blocks it")
             return 0
     if as_json:

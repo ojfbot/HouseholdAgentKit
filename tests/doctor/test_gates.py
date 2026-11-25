@@ -20,8 +20,9 @@ def _world(**overrides: Issue) -> dict[int, Issue]:
     spec = gates.load_spec(ROOT)
     issues: dict[int, Issue] = {}
     for g in spec.gates:
-        for n in [g.milestone, *g.blocked_by]:
+        for n in g.blocked_by:
             issues[n] = Issue(n, f"issue {n}", "closed", "completed")
+        issues[g.milestone] = Issue(g.milestone, f"{g.title} the milestone", "open")
     issues[1] = Issue(1, "repo init", "closed", None, is_pr=True, merged=True)
     for key, issue in overrides.items():
         issues[int(key.lstrip("n"))] = issue
@@ -78,15 +79,17 @@ def test_github_unreachable_is_unknown_for_every_gate() -> None:
 def test_kit_gates_exit_code_follows_the_milestone(capsys: pytest.CaptureFixture[str]) -> None:
     assert gates.run(ROOT, milestone=20, fetch=_fetch(_world())) == 0
     assert gates.run(ROOT, milestone=20, fetch=_fetch(_world(n39=Issue(39, "poll", "open")))) == 1
-    assert gates.run(ROOT, milestone=999, fetch=_fetch(_world())) == 0  # nothing gates an unlisted issue
+    assert gates.run(ROOT, milestone=38, fetch=_fetch(_world())) == 0  # a real issue that no gate names
     capsys.readouterr()
 
 
-def _doctor(capsys: pytest.CaptureFixture[str], issues: dict[int, Issue], upto: int, monkeypatch: pytest.MonkeyPatch) -> tuple[int, str]:
-    # Pretend rungs 0-2 are green so the test is about gates, not about this host.
+def _doctor(capsys: pytest.CaptureFixture[str], issues: dict[int, Issue], upto: int, monkeypatch: pytest.MonkeyPatch, reviewed: bool = True) -> tuple[int, str]:
+    # Pretend rungs 0-2 are green (and the review recorded, unless told otherwise) so the test is about gates, not this host.
     for c in doctor.CHECKS:
         if c.rung <= 2:
             monkeypatch.setattr(c, "fn", lambda root: doctor.Result(True, "stubbed green"))
+    review = doctor.Result(True, "stubbed review") if reviewed else doctor.Result(False, "independent review not recorded: stubbed")
+    monkeypatch.setattr(doctor, "review_recorded", lambda root, today=None: review)
     code = doctor.run(upto=upto, today=date(2026, 11, 26), fetch=_fetch(issues))
     return code, capsys.readouterr().out
 
@@ -120,3 +123,40 @@ def test_a_broken_gates_file_blocks_every_rung_above_two(tmp_path: Path, capsys:
     (tmp_path / "docs/gates.yaml").write_text("version: 1\nrepo: a/b\ngates: []\n")
     verdicts, broken = doctor._gate_verdicts(tmp_path, _fetch({}))
     assert verdicts == [] and broken and "no rung above 2 may start" in broken
+
+
+def test_a_mistyped_milestone_is_unknown_not_a_gate_on_the_wrong_issue() -> None:
+    spec = gates.load_spec(ROOT)
+    gate = next(g for g in spec.gates if g.id == "rung-3")
+    gate.milestone = 30  # one keystroke away from 3; #30 exists and is not rung 3
+    issues = _world(n30=Issue(30, "[DX] A recording per beat, registered", "open"))
+    v = next(v for v in gates.evaluate(spec, _fetch(issues)) if v.gate.id == "rung-3")
+    assert v.status == "unknown" and "should start 'Rung 3:'" in v.detail
+
+
+def test_a_milestone_github_does_not_have_is_unknown() -> None:
+    issues = _world()
+    del issues[10]
+    assert _verdict("rung-10", issues).status == "unknown"
+
+
+def test_asking_about_an_issue_github_does_not_have_exits_red(capsys: pytest.CaptureFixture[str]) -> None:
+    assert gates.run(ROOT, milestone=9999, fetch=_fetch(_world())) == 1
+    assert "no issue #9999" in capsys.readouterr().out
+
+
+def test_a_missing_review_stops_rung_3_even_when_every_gate_is_clear(capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    _, out = _doctor(capsys, _world(), 2, monkeypatch, reviewed=False)
+    nxt = next(ln for ln in out.splitlines() if ln.startswith("next"))
+    assert "climb" not in nxt and "review" in nxt
+
+
+def test_the_review_verdict_is_in_the_json(capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+
+    for c in doctor.CHECKS:
+        if c.rung <= 2:
+            monkeypatch.setattr(c, "fn", lambda root: doctor.Result(True, "stubbed green"))
+    doctor.run(upto=2, today=date(2026, 11, 26), as_json=True, fetch=_fetch(_world()))
+    blob = json.loads(capsys.readouterr().out)
+    assert blob["review"]["ok"] is False and "may not start" in blob["next"]

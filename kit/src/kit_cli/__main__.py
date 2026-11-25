@@ -161,7 +161,7 @@ def cmd_check(a: argparse.Namespace) -> int:
     """kit check [--fast] [--job J] [--fix] [--list]: run the pull-request workflows' steps on this machine."""
     from kit_cli import check, doctor
 
-    return check.run(doctor.ROOT, jobs=a.job, fast=a.fast, fix=a.fix, list_only=a.list)
+    return check.run(doctor.ROOT, jobs_=a.job, fast=a.fast, fix=a.fix, list_only=a.list)
 
 
 def cmd_lint(a: argparse.Namespace) -> int:
@@ -175,7 +175,7 @@ def cmd_privacy(a: argparse.Namespace) -> int:
     """kit privacy scan: every rule on every file; exceptions only from kit/privacy-allow.yaml."""
     from kit_cli import doctor, privacy
 
-    return privacy.run(doctor.ROOT)
+    return privacy.run(doctor.ROOT, staged=a.staged)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -203,6 +203,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pv = sub.add_parser("privacy", help="privacy guard: every rule on every file, binaries included; exceptions only from kit/privacy-allow.yaml")
     pv.add_argument("action", choices=["scan"])
+    pv.add_argument("--staged", action="store_true", help="scan what the next commit contains (the git index), not the files on disk")
     pv.set_defaults(fn=cmd_privacy)
 
     gt = sub.add_parser("gates", help="which milestones are blocked (docs/gates.yaml, read live from GitHub; fails closed offline)")

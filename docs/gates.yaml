@@ -7,6 +7,9 @@
 #   kind: start   the milestone may not start (doctor never says "climb" it) until every blocker is done
 #   kind: close   the milestone may start, but may not close (its rung never reads GREEN) until they are
 #
+#   title: the milestone issue's title starts with this. Doctor checks it against GitHub, so a mistyped
+#          milestone number reads UNKNOWN instead of quietly gating the wrong issue.
+#
 # "Done" means: an issue closed as completed, or a pull request merged. An issue closed as "not planned"
 # counts only if it is listed under `waived`, which is the owner's call. Anything doctor cannot see
 # (GitHub unreachable, an issue number it cannot find) counts as not done.
@@ -15,6 +18,7 @@ repo: ojfbot/HouseholdAgentKit
 gates:
   - id: rung-3
     milestone: 3
+    title: "Rung 3:"
     rung: 3
     kind: start
     blocked_by: [1, 38, 41]
@@ -24,6 +28,7 @@ gates:
 
   - id: beat-1-live
     milestone: 20
+    title: "[DX] Console beat 1"
     kind: close
     blocked_by: [12, 18, 36, 39]
     why: >-
@@ -32,6 +37,7 @@ gates:
 
   - id: rung-10
     milestone: 10
+    title: "Rung 10:"
     rung: 10
     kind: close
     blocked_by: [27, 36, 39, 40]

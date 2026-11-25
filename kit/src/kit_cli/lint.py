@@ -7,6 +7,11 @@
 * `--fix` applies `ruff check --fix` and `ruff format` to the full trees only; the ratchet trees change only
   inside the issue that owns them.
 
+* The policy itself is checked against `main` (the merge base with `origin/main`, or `KIT_LINT_BASE`): a raised
+  floor, a tree moved out of the full tier, a new exemption or a new ignored error code fails, even when the
+  PR's own counts match it. Loosening is the owner's call, made by overriding the required check, never by an
+  agent. If `main` cannot be found the check fails; `KIT_LINT_BASE=none` skips it, visibly.
+
 Ruff comes from uv.lock (`uv run`), so CI, `kit check` and the pre-commit hook all run the same version.
 Exit codes: 0 clean; 1 a tree fails; 2 usage error.
 """
@@ -14,6 +19,7 @@ Exit codes: 0 clean; 1 a tree fails; 2 usage error.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -33,6 +39,41 @@ def load_policy(root: Path) -> dict:
         if not (isinstance(floor, dict) and all(isinstance(floor.get(k), int) and floor[k] >= 0 for k in ("lint", "format"))):
             raise ValueError(f"{POLICY_FILE}: ratchet[{tree!r}] needs non-negative integer `lint` and `format` floors")
     return policy
+
+
+def base_policy(root: Path) -> tuple[dict | None, str | None]:
+    """The policy on main, to compare against. Returns (policy or None, problem or None)."""
+    ref = os.environ.get("KIT_LINT_BASE", "origin/main")
+    if ref == "none" or not (root / ".git").exists():
+        return None, None
+    git = ["git", "-C", str(root)]
+    if subprocess.run([*git, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], capture_output=True).returncode:
+        return None, f"cannot find {ref} to compare the floors against (fetch it, or set KIT_LINT_BASE=none to skip, visibly)"
+    mb = subprocess.run([*git, "merge-base", "HEAD", ref], capture_output=True, text=True)
+    base = mb.stdout.strip() if mb.returncode == 0 else ref
+    shown = subprocess.run([*git, "show", f"{base}:{POLICY_FILE}"], capture_output=True, text=True)
+    if shown.returncode:
+        return {}, None  # main has no policy yet: every floor is new
+    return json.loads(shown.stdout), None
+
+
+def loosened(base: dict, policy: dict, root: Path) -> list[str]:
+    """Every way `policy` is weaker than `base`."""
+    if not base:
+        return []
+    out = []
+    for tree, floor in policy["ratchet"].items():
+        before = (base.get("ratchet") or {}).get(tree)
+        if isinstance(before, dict):
+            out += [f"{tree} {k} floor raised from {before[k]} to {floor[k]}" for k in ("lint", "format") if k in before and floor[k] > before[k]]
+        elif tree in (base.get("full") or []):
+            out.append(f"{tree} moved from the full tier to the ratchet")
+    for tree in base.get("full") or []:
+        if tree not in policy["full"] and tree not in policy["ratchet"] and (root / tree).exists():
+            out.append(f"{tree} left the full tier")
+    out += [f"{t} newly exempt" for t in (policy.get("exempt") or {}) if t not in (base.get("exempt") or {})]
+    out += [f"error code {c} newly ignored" for c in policy.get("floor_ignore") or [] if c not in (base.get("floor_ignore") or [])]
+    return out
 
 
 def _ruff(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -61,6 +102,15 @@ def run(root: Path, fix: bool = False, update_baseline: bool = False) -> int:
         print(f"lint    FAIL  {POLICY_FILE} names trees that do not exist: {', '.join(missing)}")
         return 1
     failed = 0
+    base, problem = base_policy(root)
+    if problem:
+        failed += 1
+        print(f"policy  FAIL  {problem}")
+    elif base is not None and (weaker := loosened(base, policy, root)):
+        failed += 1
+        print("policy  FAIL  this change loosens the lint policy on main: " + "; ".join(weaker))
+    elif base is not None:
+        print("policy  ok    no floor raised and no tree loosened against main")
     if fix:
         _ruff(root, "check", "--fix", *full)
         _ruff(root, "format", *full)
