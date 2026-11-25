@@ -1,30 +1,19 @@
-# Pre-commit (punchlist block 3): ruff, gitleaks, privacy guard, lint-staged for the UI.
+# Pre-commit hooks. Local hooks only: every tool comes from uv.lock through `uv run`, so the hook, `kit check`
+# and CI run the same versions, and nothing is downloaded or compiled at commit time.
+# Doctor's `hooks_runnable` check goes red if a hook names a command, a kit subcommand or a path that does not exist.
+#
+# Installing them is the fleet-conventions rung's call (rung 3: the fleet may set its own hooks path).
+# Until then, run the same thing by hand: `uv run kit check --fast`.
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
-    hooks:
-      - id: gitleaks
   - repo: local
     hooks:
-      - id: privacy-guard
-        name: privacy guard (HP, P07)
-        entry: uv run kit privacy scan --staged
+      - id: kit-check-fast
+        name: kit check --fast (lint and format policy, types, privacy guard; the same steps as CI)
+        entry: uv run kit check --fast
         language: system
         pass_filenames: false
-      - id: no-holdout
-        name: holdout cases never live in the repo
-        entry: bash -c '! git diff --cached --name-only | xargs -r grep -lE "split:\s*holdout" 2>/dev/null'
+      - id: no-holdout-staged
+        name: holdout cases are never staged
+        entry: bash -c '! git diff --cached --name-only -z | xargs -0 -r grep -lE "split:\s*holdout" 2>/dev/null'
         language: system
-        pass_filenames: false
-      - id: ui-lint-staged
-        name: lint-staged (apps/console)
-        entry: pnpm -C apps/console exec lint-staged
-        language: system
-        files: ^apps/console/
         pass_filenames: false

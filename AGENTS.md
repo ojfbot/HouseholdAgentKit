@@ -5,14 +5,17 @@
 ## Before any write
 - **Verify the target.** This is `ojfbot/HouseholdAgentKit`. Confirm `git remote -v` and the branch before you write. Do not touch any other repo unless your issue names it.
 - **Work from an issue.** Read your issue, the files it names and the contract it names. Do not read planning documents outside the repo, and do not re-plan.
-- **Run `uv run kit doctor`.** Never work above a red rung.
+- **Run `uv run kit doctor`.** Never work above a red rung, and never start a rung whose gate is not clear (`docs/gates.yaml`).
 
 ## How work flows
 - Branch `<lane>/<slice>` (lanes: `hp`, `iq`, `pd`, `ed`, `mf`, `en`, `dx`), small commits, conventional commit messages with attribution trailers.
 - Rebase onto `main` before review. Merges are rebase-only; history stays linear.
 - Done means the issue's check is green and you can show it: the test output, the eval delta, or the doctor line.
+- **Before you push: `uv run kit check`.** It runs the pull-request workflows' own steps on your machine, so local green and CI green mean the same commands passed. `uv run kit check --fast` (lint, format, types, privacy guard) takes seconds; `uv run kit lint --fix` formats the trees held to the full standard.
+- **Lint has a floor that only goes down** (`kit/lint-policy.json`). In the older trees, touching a file must not add a violation or an unformatted file. If you fix some, run `uv run kit lint --update-baseline` and commit the lower floor in the same PR. Never raise a floor.
+- **Before you close an issue: `uv run kit gates --milestone <n>`.** If it exits 1, the issue may not close yet; the line names what is still open.
 - One agent writes, a different agent reviews.
-- **These wait for the owner and are never merged by an agent:** contract changes (`contracts/`, label `contract`), ADRs (`decisions/adr/`), CI and ruleset changes (`.github/`), gate configuration (`bundles/gate-config.yaml`), `kit/src/kit_cli/doctor.py` checks, anything irreversible, anything in another repo.
+- **These wait for the owner and are never merged by an agent:** contract changes (`contracts/`, label `contract`), ADRs (`decisions/adr/`), CI and ruleset changes (`.github/`), gate configuration (`bundles/gate-config.yaml`, `docs/gates.yaml`), the lint policy's tiers (`kit/lint-policy.json`, except lowering a floor), `kit/src/kit_cli/doctor.py` checks, anything irreversible, anything in another repo.
 - Agents and the owner currently share one GitHub identity, so GitHub cannot enforce the line above. Treat it as a hard rule: do not click merge on those paths.
 
 ## Stop rules

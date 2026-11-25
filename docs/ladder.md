@@ -10,7 +10,7 @@ Three rules, from the handover:
 
 ## What is proven today (rungs 0 to 2)
 
-Every row is exercised by `kit doctor --self-test`: 14 checks, 30 planted breaks.
+Every row is exercised by `kit doctor --self-test`: 18 checks, 50 planted breaks.
 
 | Rung | Check | Green means | Planted breaks it goes red on |
 | --- | --- | --- | --- |
@@ -22,6 +22,10 @@ Every row is exercised by `kit doctor --self-test`: 14 checks, 30 planted breaks
 | 1 | `required_checks_exist` | Every status the ruleset requires is produced by a workflow job | The aggregate job is renamed; the ruleset requires `cross-review`, which nothing emits |
 | 1 | `no_forbidden_files` | No weights, holdout seed, env file or generated data in the tree | Each of those four is added |
 | 1 | `vendored_verbatim` | Fork C's vendored files match their checksums | A file is edited; a file is removed |
+| 1 | `ci_runs_locally` | `kit check` can run every pull-request workflow step as CI does, so a local green means the same commands passed | A step reads a secret; a step needs a runner-only path; a job needs a service container; a job calls a reusable workflow |
+| 1 | `lint_policy_covers` | Every tracked `.py` file is under a lint tier in `kit/lint-policy.json` (full, ratchet or exempt) | New Python outside every tier; a tier names a missing tree; a tree in two tiers; a negative floor; the policy deleted |
+| 1 | `hooks_runnable` | Every pre-commit hook is local and its command exists | The pre-commit file as founded (remote ruff, `kit privacy scan`, a pnpm UI); an unknown kit command; an unknown flag; a hook on a path that does not exist; the file deleted |
+| 1 | `gates_wellformed` | `docs/gates.yaml` parses and every gate names real issue numbers | The file deleted; a gate with no blockers; a blocker that is not a number; two gates with one id; a waiver for a non-blocker; a gate blocking on its own milestone |
 | 2 | `python_pin` | The running CPython equals `.python-version` exactly | A different patch release |
 | 2 | `sync_frozen` | The environment matches `uv.lock` | Never synced; the lock changed after the last sync |
 | 2 | `hello_world_smoke` | Taco night smoke run returns `hello_world_result@1`, status `pass` or `placement_only`, no failed episodes, no zero-tolerance breach | Cases missing; the agent swaps a locked food; every episode ends in an unacceptable cart |
@@ -46,15 +50,25 @@ Each row becomes code in `kit/src/kit_cli/doctor.py`, with its proof, in the run
 | 9 local models | Model tiers work | The serving bake-off picks a server; the K01 baseline runs through the job runner on the same server version and model digest; JSON Schema decoding fails closed | A malformed reply is rejected, not repaired; valid JSON with a wrong field type is rejected | Download weights per host |
 | 10 demo bundle | Dec 2 is safe | On the stage host with the wide-area network off and its hotspot on: cold start under 2 minutes, a phone ballot round trip, each fallback recording decodes and plays, warm-up `--strict` green | A present but unplayable recording; a beat labeled live with its backend stopped; a beat still on fixtures in `--strict` | Rehearsal |
 
+## Gates
+
+`docs/gates.yaml` lists, for each milestone, the issues that must be done first. It is the single source; an issue's "Depends on" line may repeat it in words. `kit gates` reads the issues' live state from GitHub (two requests, cached ten minutes) and fails closed: GitHub unreachable, or an issue it cannot find, reads `UNKNOWN`, never `CLEAR`. An issue closed as "not planned" counts only when the owner lists it under `waived`.
+
+- `kind: start`: `kit doctor` never says "climb" the rung, and `kit doctor --rung N` exits 1, until the gate is clear.
+- `kind: close`: the rung (or issue) may be worked, but its rung never reads `GREEN`, and `kit gates --milestone N` exits 1, until the gate is clear. Run it before closing a gated issue.
+
 ## Reading `kit doctor`
 
 ```
 rung 0  audit                    GREEN  1/1 checks
-rung 1  repo and CI              GREEN  7/7 checks
+rung 1  repo and CI              GREEN  11/11 checks
 rung 2  runs on this host        RED    python_pin: running CPython 3.12.3, the pin is 3.12.16
 review  independent review       RED    no independent review recorded in the risk register ...
-date    2026-11-25               in 4 d  the engine's stage 0 stops accepting `placement_only` ...
+gate    rung-3 (#3)              BLOCKED may not start: #1 unmerged, #38 open, #41 open
+gate    beat-1-live (#20)        BLOCKED may not close: #12 open, #18 open, #36 open, #39 open
+gate    rung-10 (#10)            BLOCKED may not close: #27 open, #36 open, #39 open, #40 open
+date    2026-11-28               in 3 d  the parity-floor waiver in bundles/gate-config.yaml has expired ...
 next    fix rung 2 (runs on this host)
 ```
 
-One line per rung, the first red check named in plain words, then the dates on which something turns red without a commit, then the one next step. `--rung N` checks rungs 0 to N (default 2), `--json` prints the same for a program, `--self-test` runs the proofs.
+One line per rung, the first red check named in plain words, then one line per gate, then the dates on which something turns red without a commit, then the one next step. `--rung N` checks rungs 0 to N (default 2), `--json` prints the same for a program, `--self-test` runs the proofs.

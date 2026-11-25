@@ -24,12 +24,8 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with: {enable-cache: true}
       - run: uv sync --frozen
-      - name: IQ standard on the trees that meet it
-        run: |
-          uv run ruff check packages/contracts packages/mock-gateway packages/verifier packages/eval-harness packages/kit-gate kit tests
-          uv run ruff format --check packages/contracts packages/mock-gateway packages/verifier packages/eval-harness packages/kit-gate kit tests
-      - name: real errors only on the trees that do not meet it yet (engine, console, card writer, shopping-port reference)
-        run: uv run ruff check --isolated --select F --ignore F401,F541,F841 packages/discovery-engine/src packages/discovery-engine/tests packages/card-writer apps packages/shopping-port
+      - name: "lint and format policy (kit/lint-policy.json): full rule set, a ratchet floor for the older trees"
+        run: uv run kit lint
       - run: uv run pyright
 
   tests:

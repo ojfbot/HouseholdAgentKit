@@ -8,7 +8,10 @@ Rules this file enforces on itself:
 * Checks take the repo root as an argument and never assume a host, so a proof can point them at a broken copy.
 * Rungs 3-10 need the owner's machines. They have no check here yet, and doctor says so instead of guessing.
 
-Exit codes: 0 every rung up to --rung is green; 1 a rung is red; 2 usage error.
+* Gates (docs/gates.yaml, kit_cli.gates) decide what may start or close. A rung whose gate is blocked or
+  unknown never reads GREEN, and `next` never says "climb" a rung whose start gate is not clear.
+
+Exit codes: 0 every rung up to --rung is green and its gate clear; 1 a rung is red or gated; 2 usage error.
 """
 
 from __future__ import annotations
@@ -29,6 +32,10 @@ from datetime import date
 from pathlib import Path
 
 import yaml
+
+from kit_cli import check as check_mod
+from kit_cli import gates as gates_mod
+from kit_cli import lint as lint_mod
 
 ROOT = Path(__file__).resolve().parents[3]
 REGISTER = "docs/integration-risk-register.md"
@@ -228,6 +235,78 @@ def vendored_verbatim(root: Path) -> Result:
     )
 
 
+def ci_runs_locally(root: Path) -> Result:
+    plan = check_mod.steps(root)
+    if not plan:
+        return Result(False, "no pull-request workflow has a run step: `kit check` would run nothing")
+    bad = check_mod.runner_only(root)
+    return Result(not bad, f"`kit check` runs all {len(plan)} pull-request steps as CI does" if not bad else "; ".join(bad[:3]))
+
+
+def lint_policy_covers(root: Path) -> Result:
+    try:
+        policy = lint_mod.load_policy(root)
+    except (OSError, ValueError) as e:
+        return Result(False, f"{lint_mod.POLICY_FILE}: {e}")
+    trees = [*policy["full"], *policy["ratchet"], *(policy.get("exempt") or {})]
+    ghosts = [t for t in trees if not (root / t).exists()]
+    loose = [f for f in _files(root) if f.endswith(".py") and not any(f == t or f.startswith(t.rstrip("/") + "/") for t in trees)]
+    if ghosts or loose:
+        why = [
+            f"names trees that do not exist: {', '.join(ghosts)}" if ghosts else "",
+            f"Python files no lint tier covers: {', '.join(loose[:5])}" if loose else "",
+        ]
+        return Result(False, "; ".join(filter(None, why)))
+    return Result(True, f"every tracked .py file is under a lint tier ({len(policy['full'])} full, {len(policy['ratchet'])} ratchet)")
+
+
+def hooks_runnable(root: Path) -> Result:
+    import contextlib
+    import io
+
+    from kit_cli.__main__ import build_parser
+
+    path = root / ".pre-commit-config.yaml"
+    if not path.exists():
+        return Result(False, "no .pre-commit-config.yaml: nothing runs before a commit")
+    cfg = yaml.safe_load(path.read_text()) or {}
+    files, bad, hooks = _files(root), [], 0
+    for repo in cfg.get("repos") or []:
+        if repo.get("repo") != "local":
+            bad.append(f"{repo.get('repo')}: a remote hook downloads its own tool version, outside uv.lock")
+            continue
+        for h in repo.get("hooks") or []:
+            hooks += 1
+            hid, words = h.get("id", "?"), str(h.get("entry", "")).split()
+            if h.get("language") != "system":
+                bad.append(f"{hid}: language {h.get('language')!r} builds its own toolchain at commit time")
+            if words[:3] == ["uv", "run", "kit"]:
+                try:
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        build_parser().parse_args(words[3:])
+                except SystemExit:
+                    bad.append(f"{hid}: `kit {' '.join(words[3:])}` is not a kit command")
+            elif words[:2] == ["uv", "run"]:
+                if len(words) < 3 or not (Path(sys.executable).parent / words[2]).exists():
+                    bad.append(f"{hid}: `{' '.join(words[:3])}` is not installed by uv.lock")
+            elif not words or not shutil.which(words[0]):
+                bad.append(f"{hid}: `{words[0] if words else ''}` is not on PATH")
+            pattern = h.get("files")
+            if pattern and not any(re.search(pattern, f) for f in files):
+                bad.append(f"{hid}: files {pattern!r} matches no tracked file, so the hook never runs")
+    if not hooks:
+        bad.append("no hooks defined")
+    return Result(not bad, f"{hooks} pre-commit hooks, every command exists" if not bad else "; ".join(bad[:3]))
+
+
+def gates_wellformed(root: Path) -> Result:
+    try:
+        spec = gates_mod.load_spec(root)
+    except gates_mod.SpecError as e:
+        return Result(False, f"{gates_mod.GATES_FILE}: {e}")
+    return Result(True, f"{len(spec.gates)} gates, every blocker an issue number")
+
+
 # ------------------------------------------------------------------------------------------------ rung 2
 
 
@@ -369,6 +448,27 @@ def _append(rel: str, text: str) -> Callable[[Path], None]:
 WORKSPACE = ["pyproject.toml", "uv.lock", ".python-version", "kit/pyproject.toml", "packages/*/pyproject.toml"]
 PORT_FILES = ["contracts/ports.yaml", "packages/discovery-engine/src/discovery_engine/cli.py", "apps/demo-console/server/host.py"]
 CI_FILES = [".github/workflows/*.yml", ".github/rulesets/main.json"]
+PRE_COMMIT = ".pre-commit-config.yaml"
+# The pre-commit file as the founding import shipped it: a remote ruff pinned off the lock, a kit command that
+# does not exist (#23) and a UI that does not exist. hooks_runnable must stay red on it.
+FOUNDING_PRE_COMMIT = """repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: local
+    hooks:
+      - id: privacy-guard
+        entry: uv run kit privacy scan --staged
+        language: system
+        pass_filenames: false
+      - id: ui-lint-staged
+        entry: pnpm -C apps/console exec lint-staged
+        language: system
+        files: ^apps/console/
+        pass_filenames: false
+"""
 REVIEWED = "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n"
 
 CHECKS: list[Check] = [
@@ -501,6 +601,77 @@ CHECKS: list[Check] = [
         ],
         host=True,
     ),
+    Check(
+        "ci_runs_locally",
+        1,
+        ci_runs_locally,
+        CI_FILES,
+        [
+            Proof(
+                "a step reads a repository secret",
+                _rewrite(".github/workflows/ci.yml", "run: uv run pyright", "run: uv run pyright --token ${{ secrets.KIT_TOKEN }}"),
+            ),
+            Proof(
+                "a step depends on a runner-only path",
+                _rewrite(".github/workflows/ci.yml", "run: uv run pyright", "run: cd $GITHUB_WORKSPACE && uv run pyright"),
+            ),
+            Proof(
+                "a job needs a service container kit check does not start",
+                _rewrite(
+                    ".github/workflows/ci.yml",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n    services:\n      db: {image: postgres}\n",
+                ),
+            ),
+            Proof("a job calls a reusable workflow", _append(".github/workflows/ci.yml", "\n  shared:\n    uses: some-org/ci/.github/workflows/x.yml@v1\n")),
+        ],
+    ),
+    Check(
+        "lint_policy_covers",
+        1,
+        lint_policy_covers,
+        [lint_mod.POLICY_FILE, "**/*.py"],
+        [
+            Proof("a new tree with Python in it is in no lint tier", _write("packages/newthing/src/newthing/core.py", "x = 1\n")),
+            Proof("the policy names a tree that does not exist", _rewrite(lint_mod.POLICY_FILE, '"scripts"', '"scriptz"')),
+            Proof("a tree is in both tiers", _rewrite(lint_mod.POLICY_FILE, '"scripts"\n', '"scripts",\n    "apps"\n')),
+            Proof("a ratchet floor is negative", _rewrite(lint_mod.POLICY_FILE, '"lint": 13,', '"lint": -1,')),
+            Proof("the policy file is deleted", _delete(lint_mod.POLICY_FILE)),
+        ],
+    ),
+    Check(
+        "hooks_runnable",
+        1,
+        hooks_runnable,
+        [PRE_COMMIT, "kit/**/*", "apps/**/*.py"],
+        [
+            Proof("the pre-commit file as founded (remote ruff, `kit privacy scan`, a pnpm UI that does not exist)", _write(PRE_COMMIT, FOUNDING_PRE_COMMIT)),
+            Proof(
+                "a hook calls a kit command that does not exist",
+                _rewrite(PRE_COMMIT, "entry: uv run kit check --fast", "entry: uv run kit privacy scan --staged"),
+            ),
+            Proof("a hook passes a flag kit check does not take", _rewrite(PRE_COMMIT, "entry: uv run kit check --fast", "entry: uv run kit check --quick")),
+            Proof(
+                "a hook only fires on a path that does not exist",
+                _rewrite(PRE_COMMIT, "        pass_filenames: false\n", "        files: ^apps/console/\n        pass_filenames: false\n"),
+            ),
+            Proof("the pre-commit file is deleted", _delete(PRE_COMMIT)),
+        ],
+    ),
+    Check(
+        "gates_wellformed",
+        1,
+        gates_wellformed,
+        [gates_mod.GATES_FILE],
+        [
+            Proof("the gates file is deleted (every gate silently disappears)", _delete(gates_mod.GATES_FILE)),
+            Proof("a gate lists no blockers", _rewrite(gates_mod.GATES_FILE, "blocked_by: [1, 38, 41]", "blocked_by: []")),
+            Proof("a blocker is not an issue number", _rewrite(gates_mod.GATES_FILE, "blocked_by: [1, 38, 41]", 'blocked_by: [1, "#38", 41]')),
+            Proof("two gates share an id", _rewrite(gates_mod.GATES_FILE, "id: beat-1-live", "id: rung-3")),
+            Proof("a waiver names an issue that is not a blocker", _rewrite(gates_mod.GATES_FILE, "kind: start\n", "kind: start\n    waived: [99]\n")),
+            Proof("a gate blocks on its own milestone", _rewrite(gates_mod.GATES_FILE, "blocked_by: [1, 38, 41]", "blocked_by: [1, 3, 38, 41]")),
+        ],
+    ),
     Check("ports_free", 2, ports_free, ["contracts/ports.yaml"], [Proof("another process already holds a default port", lambda root: None)], host=True),
     Check(
         "review_recorded",
@@ -585,8 +756,18 @@ CALENDAR = [
 ]
 
 
-def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bool = False) -> int:
+def _gate_verdicts(root: Path, fetch: gates_mod.Fetcher | None) -> tuple[list[gates_mod.Verdict], str | None]:
+    try:
+        spec = gates_mod.load_spec(root)
+    except gates_mod.SpecError as e:
+        return [], f"{gates_mod.GATES_FILE} is broken ({e}); no rung above 2 may start"
+    return gates_mod.evaluate(spec, fetch or gates_mod.default_fetcher(root)), None
+
+
+def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bool = False, fetch: gates_mod.Fetcher | None = None) -> int:
     today = today or date.today()
+    verdicts, gates_broken = _gate_verdicts(root, fetch)
+    gate_for = {v.gate.rung: v for v in verdicts if v.gate.rung is not None}
     results: dict[int, list[tuple[Check, Result]]] = {}
     for check in CHECKS:
         if check.rung <= upto:
@@ -601,29 +782,45 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
         if rung > upto:
             continue
         rows = [(c, r) for c, r in results.get(rung, []) if c.id != "review_recorded"]
+        gate = gate_for.get(rung)
+        gated = f"; gate {gate.gate.id} {gate.status}: {gate.detail}" if gate and not gate.clear else ""
+        if rung > 2 and gates_broken:
+            gated = f"; {gates_broken}"
         if not rows:
-            lines.append(f"rung {rung:<2} {title:24} NOT CLIMBED  no proven check yet; see docs/ladder.md and the rung's issue")
+            lines.append(f"rung {rung:<2} {title:24} NOT CLIMBED  no proven check yet; see docs/ladder.md and the rung's issue{gated}")
             first_red = first_red if first_red is not None else rung
             continue
         red = [(c, r) for c, r in rows if not r.ok]
         if red:
             first_red = first_red if first_red is not None else rung
-            lines.append(f"rung {rung:<2} {title:24} RED    {red[0][0].id}: {red[0][1].detail}" + (f" (+{len(red) - 1} more)" if len(red) > 1 else ""))
+            lines.append(f"rung {rung:<2} {title:24} RED    {red[0][0].id}: {red[0][1].detail}" + (f" (+{len(red) - 1} more)" if len(red) > 1 else "") + gated)
+        elif gated:
+            first_red = first_red if first_red is not None else rung
+            lines.append(f"rung {rung:<2} {title:24} GATED  {len(rows)}/{len(rows)} checks green{gated} (docs/gates.yaml)")
         else:
             lines.append(f"rung {rung:<2} {title:24} GREEN  {len(rows)}/{len(rows)} checks")
     review = review_recorded(root)
     lines.append(
         f"review  {'independent review':24} {'GREEN ' if review.ok else 'RED   '} {review.detail}" + ("" if review.ok else "; rung 3 does not start without it")
     )
+    if gates_broken:
+        lines.append(f"gates   {gates_broken}")
+    lines.extend(gates_mod.describe(v) for v in verdicts)
     for when, what in CALENDAR:
         days = (when - today).days
         if days >= 0:
             lines.append(f"date    {when.isoformat():24} in {days} d  {what}")
-    nxt = (
-        f"fix rung {first_red} ({RUNG_TITLES[first_red]})"
-        if first_red is not None
-        else (f"climb rung {upto + 1} ({RUNG_TITLES[upto + 1]})" if upto < 10 else "nothing; the ladder is climbed")
-    )
+    start_gate = gate_for.get(upto + 1)
+    if first_red is not None:
+        nxt = f"fix rung {first_red} ({RUNG_TITLES[first_red]})"
+    elif upto >= 10:
+        nxt = "nothing; the ladder is climbed"
+    elif gates_broken:
+        nxt = f"rung {upto + 1} may not start: {gates_broken}"
+    elif start_gate and start_gate.gate.kind == "start" and not start_gate.clear:
+        nxt = f"rung {upto + 1} ({RUNG_TITLES[upto + 1]}) may not start: {start_gate.detail} (docs/gates.yaml)"
+    else:
+        nxt = f"climb rung {upto + 1} ({RUNG_TITLES[upto + 1]})"
     lines.append(f"next    {nxt}")
     if as_json:
         print(
@@ -631,6 +828,10 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
                 {
                     "rungs": {r: [{"check": c.id, "ok": x.ok, "detail": x.detail, "host": c.host} for c, x in v] for r, v in results.items()},
                     "first_red": first_red,
+                    "gates": [
+                        {"id": v.gate.id, "milestone": v.gate.milestone, "kind": v.gate.kind, "status": v.status, "pending": v.pending} for v in verdicts
+                    ],
+                    "gates_broken": gates_broken,
                     "lines": lines,
                 },
                 indent=2,

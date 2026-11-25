@@ -1,0 +1,41 @@
+# Gates: the issues that must be finished before a milestone. Read by `kit gates` and `kit doctor`.
+#
+# This file is the single source. An issue's "Depends on" line may repeat a gate in words; when the two
+# disagree, this file wins. Changing a gate is an owner merge, like a doctor check, because it decides
+# what may start or close.
+#
+#   kind: start   the milestone may not start (doctor never says "climb" it) until every blocker is done
+#   kind: close   the milestone may start, but may not close (its rung never reads GREEN) until they are
+#
+# "Done" means: an issue closed as completed, or a pull request merged. An issue closed as "not planned"
+# counts only if it is listed under `waived`, which is the owner's call. Anything doctor cannot see
+# (GitHub unreachable, an issue number it cannot find) counts as not done.
+version: 1
+repo: ojfbot/HouseholdAgentKit
+gates:
+  - id: rung-3
+    milestone: 3
+    rung: 3
+    kind: start
+    blocked_by: [1, 38, 41]
+    why: >-
+      PR #1 merged; the doctor checks the independent review broke are fixed (#38); the privacy guard
+      and the settings script that rung 3's owner step relies on are fixed (#41, items C1 and C2).
+
+  - id: beat-1-live
+    milestone: 20
+    kind: close
+    blocked_by: [12, 18, 36, 39]
+    why: >-
+      Taco night's live beat needs the oracle so `full` mode can say pass (#12), the real poll bus (#18),
+      beats that say live only after a real round trip (#36), and one vote per member with checked picks (#39).
+
+  - id: rung-10
+    milestone: 10
+    rung: 10
+    kind: close
+    blocked_by: [27, 36, 39, 40]
+    why: >-
+      The stage is safe for the room: control routes refuse phones (#27), warm-up --strict cannot pass a
+      broken show (#36), the poll counts one vote per member (#39), and other web pages cannot drive the
+      stage (#40). Add #35 here if the engine beat goes live on Dec 2.

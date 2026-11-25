@@ -18,6 +18,7 @@ uv run python apps/demo-console/fixtures/build_engine_fixtures.py   # generated 
 uv run kit doctor                       # one line per rung: green, red, or not climbed
 uv run kit hello-world --mode smoke     # taco night at tier none
 uv run pytest -q -m "not slow and not mutation"
+uv run kit check --fast                 # lint, format, types, privacy guard: the same steps as CI (drop --fast for all of CI)
 uv run python apps/demo-console/server/host.py   # stage at http://127.0.0.1:8765/
 ```
 

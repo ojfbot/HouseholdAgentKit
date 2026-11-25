@@ -1,0 +1,44 @@
+{
+  "_about": "Read by `kit lint` (CI's lint job runs it). `full`: trees held to the whole ruff rule set in pyproject.toml and fully formatted. `ratchet`: trees not there yet (R-15, #26). Each must have zero real errors (ruff F, minus the `floor_ignore` codes), and may not exceed its count of full-rule-set violations (`lint`) or of unformatted files (`format`). A count below its floor also fails, until `kit lint --update-baseline` lowers it in the same PR. Never raise a floor by hand. Every tracked .py file must sit under a full, ratchet or exempt tree (doctor: lint_policy_covers), so new code cannot land unlinted.",
+  "full": [
+    "packages/contracts",
+    "packages/mock-gateway",
+    "packages/verifier",
+    "packages/eval-harness",
+    "packages/kit-gate",
+    "kit",
+    "tests",
+    "scripts"
+  ],
+  "floor_ignore": [
+    "F401",
+    "F541",
+    "F841"
+  ],
+  "ratchet": {
+    "packages/discovery-engine/src": {
+      "lint": 113,
+      "format": 19
+    },
+    "packages/discovery-engine/tests": {
+      "lint": 17,
+      "format": 6
+    },
+    "packages/card-writer": {
+      "lint": 20,
+      "format": 7
+    },
+    "apps": {
+      "lint": 13,
+      "format": 12
+    },
+    "packages/shopping-port": {
+      "lint": 32,
+      "format": 6
+    }
+  },
+  "exempt": {
+    "packages/discovery-engine/prototypes": "vendored verbatim from Fork C and Fork E; doctor's vendored_verbatim keeps it byte-identical",
+    "docs/iq/staged-config": "staged configuration kept for reference, never imported or run"
+  }
+}
