@@ -117,12 +117,20 @@ def replay_run0(adoption: float = 0.10) -> dict:
 
 
 PASS_REQUIRED_FROM = "2026-11-25"   # fork-a/hello-world-spec.md: placement_only accepted through Nov 24
+HELLO_WORLD_RESULT_VERSION = "hello_world_result@1"   # the only hook result shape stage 0 knows how to read
+
+
+def zero_tolerance_breaches(zero_tolerance: dict | None) -> list[str]:
+    """The zero-tolerance counters that are over their limit: none may be above 0, except one order per mandate."""
+    return sorted(name for name, value in (zero_tolerance or {}).items()
+                  if (value > 1 if name == "orders_per_mandate_max" else value))
 
 
 def stage0(cfg: RunConfig, refs, cover) -> dict:
     """Hello world gate (fork-a/hello-world-spec.md, HelloWorldResult@1). The placement self-test always runs.
     Through Nov 24 a missing hook result or `status: placement_only` is accepted; from Nov 25 the run needs
-    `status: pass` from a `full` run (D: engine-run requires it). `fail` or `not_run` aborts at any date."""
+    `status: pass` from a `full` run (D: engine-run requires it). `fail` or `not_run` aborts at any date, and so
+    does a hook result of another `result_version` or one with a zero-tolerance breach, whatever its `status` says."""
     seeds = {s["id"]: s for s in load_seeds()[0]}
     anch = {}
     for aid in ANCHORS:
@@ -137,6 +145,12 @@ def stage0(cfg: RunConfig, refs, cover) -> dict:
                                               "adapter_id", "capability_mode", "highest_tier", "tiers", "zero_tolerance")}
         out["status"] = hw.get("status", "not_run")
     problems = []
+    if cfg.hello_world_result:
+        if hw.get("result_version") != HELLO_WORLD_RESULT_VERSION:
+            problems.append(f"hook result_version is {hw.get('result_version')!r}, stage 0 reads {HELLO_WORLD_RESULT_VERSION}")
+        breaches = zero_tolerance_breaches(hw.get("zero_tolerance"))
+        if breaches:
+            problems.append(f"hook result has zero-tolerance breaches: {', '.join(breaches)}")
     if not placement["placement_pass"]:
         problems.append("placement self-test failed")
     if out["status"] in ("fail", "not_run"):
