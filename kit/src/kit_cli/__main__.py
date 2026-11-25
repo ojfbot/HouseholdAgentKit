@@ -1,4 +1,4 @@
-"""kit doctor | kit eval hello-world | kit conformance | kit mutate | kit bundle build|diff | kit gate |
+"""kit doctor | kit gates | kit check | kit lint-ratchet | kit eval hello-world | kit conformance | kit mutate | kit bundle build|diff | kit gate |
 kit review status | kit merge-queue plan | kit digest
 
 Exit codes: 0 green / pass; 1 red / fail (with the reason printed); 2 usage error.
@@ -150,7 +150,28 @@ def cmd_doctor(a: argparse.Namespace) -> int:
     return doctor.run(upto=a.rung, today=date.fromisoformat(a.today) if a.today else None, as_json=a.json)
 
 
-def main(argv: list[str] | None = None) -> int:
+def cmd_gates(a: argparse.Namespace) -> int:
+    """kit gates [--milestone N]: which milestones may start or close, from docs/gates.yaml and live GitHub state."""
+    from kit_cli import doctor, gates
+
+    return gates.run(doctor.ROOT, milestone=a.milestone, as_json=a.json)
+
+
+def cmd_check(a: argparse.Namespace) -> int:
+    """kit check [--fast] [--job J] [--fix] [--list]: run the pull-request workflows' steps on this machine."""
+    from kit_cli import check, doctor
+
+    return check.run(doctor.ROOT, jobs=a.job, fast=a.fast, fix=a.fix, list_only=a.list)
+
+
+def cmd_lint(a: argparse.Namespace) -> int:
+    """kit lint [--fix] [--update-baseline]: the lint and format policy in kit/lint-policy.json."""
+    from kit_cli import doctor, lint
+
+    return lint.run(doctor.ROOT, fix=a.fix, update_baseline=a.update_baseline)
+
+
+def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="kit")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -160,6 +181,23 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--today", help="ISO date, for the date lines")
     dr.add_argument("--json", action="store_true")
     dr.set_defaults(fn=cmd_doctor)
+
+    ck = sub.add_parser("check", help="run what CI runs, from the workflow files, on this machine")
+    ck.add_argument("--job", action="append", help="only this job (repeatable): lint, tests, contracts, doctor, privacy-guard, deps")
+    ck.add_argument("--fast", action="store_true", help="the lint job and the privacy guard only (what the pre-commit hook runs)")
+    ck.add_argument("--fix", action="store_true", help="apply `kit lint --fix` before checking")
+    ck.add_argument("--list", action="store_true", help="print the steps without running them")
+    ck.set_defaults(fn=cmd_check)
+
+    li = sub.add_parser("lint", help="lint and format policy: full trees, ratchet floor for older trees, formatting everywhere")
+    li.add_argument("--fix", action="store_true", help="ruff --fix and ruff format on the full trees")
+    li.add_argument("--update-baseline", action="store_true", help="lower the ratchet floor to today's counts (refuses to raise it)")
+    li.set_defaults(fn=cmd_lint)
+
+    gt = sub.add_parser("gates", help="which milestones are blocked (docs/gates.yaml, read live from GitHub; fails closed offline)")
+    gt.add_argument("--milestone", type=int, help="only the gate whose milestone is this issue; exit 1 unless it is clear")
+    gt.add_argument("--json", action="store_true")
+    gt.set_defaults(fn=cmd_gates)
 
     e = sub.add_parser("eval")
     e.add_argument("suite", choices=["hello-world"])
@@ -222,7 +260,19 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--out")
     d.set_defaults(fn=cmd_digest)
 
-    a = p.parse_args(argv)
+    return p
+
+
+def subcommands() -> set[str]:
+    parser = build_parser()
+    for action in parser._actions:  # argparse has no public accessor for its subparsers
+        if isinstance(action, argparse._SubParsersAction):
+            return set(action.choices)
+    return set()
+
+
+def main(argv: list[str] | None = None) -> int:
+    a = build_parser().parse_args(argv)
     return int(a.fn(a))
 
 

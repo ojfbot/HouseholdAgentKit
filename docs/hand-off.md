@@ -25,6 +25,8 @@ uv run kit doctor --self-test          # every check red on its breaks, green on
 uv run kit doctor                      # rungs 0 to 2
 uv run kit hello-world --mode smoke
 uv run pytest -q -m "not slow and not mutation"
+uv run kit check                       # every pull-request workflow step, as CI runs it (pip-audit needs the network)
+uv run kit gates                       # which milestones are blocked, read live from GitHub
 uv run python apps/demo-console/server/host.py    # open http://127.0.0.1:8765/ and http://127.0.0.1:8765/?hud=1
 ```
 
@@ -64,6 +66,9 @@ Climb rungs 3 to 10 in order. Each has an issue labeled `rung` (#3 to #10; rung 
 After rung 4, work the build backlog (issues labeled `build`, #11 to #34) in the order of their `P0`, `P1`, `P2` labels, and within a label in issue-number order unless an issue's "Depends on" line says otherwise. Issues labeled `blocked` wait for the decision they name. P0 is the taco-night critical path (#11 to #21) plus the review's findings (#35 to #38). Taco night first: it is the one live beat on Dec 2, and it is the engine's first gate. Dispatch each issue to a worker at the tier it names; a worker reads only its issue, its files and its contract.
 
 ## Things that will bite
+
+- **Gates are code.** `docs/gates.yaml` says what must be done before rung 3 starts, before #20 (live beat 1) closes, and before rung 10 closes. `kit doctor` prints them and never says "climb" a gated rung; `kit gates --milestone <n>` exits 1 while one is open. Offline, every gate reads `UNKNOWN`, which is not clear.
+- **`kit check` is CI.** It reads the workflow files, so there is no second list to keep in step. The first `uv run pyright` on a new machine downloads its Node runtime into the uv cache; that is the only download besides pip-audit's.
 
 - **Nov 25:** `discovery_engine run` aborts unless hello world returns `pass` from a `full` run. **Nov 28:** `kit gate` goes red when the parity waiver lapses. `kit doctor` counts down both. See R-02 and Q-BS-3.
 - **`kit hello-world --mode smoke` exits 0 even when every episode fails** (R-04, #13). Trust `kit doctor`'s `hello_world_smoke` line, not that exit code, until the issue is closed.
