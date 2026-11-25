@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with: {fetch-depth: 0}  # kit lint compares the policy's floors with main's (merge base with origin/main)
       - uses: astral-sh/setup-uv@v6
         with: {enable-cache: true}
       - run: uv sync --frozen

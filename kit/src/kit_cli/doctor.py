@@ -125,14 +125,40 @@ def register_covers_packages(root: Path) -> Result:
     return Result(not missing, "every package has a row" if not missing else f"no risk-register row for: {', '.join(missing)}")
 
 
-def review_recorded(root: Path) -> Result:
+PLACEHOLDER = re.compile(r"^(tbd|todo|tba|pending|none|n/?a|unknown|someone|reviewer|-+|\?+)\.?$", re.I)
+
+
+def review_recorded(root: Path, today: date | None = None) -> Result:
+    """Rung 3 may start only on evidence: status recorded, a named reviewer, a real date, and the commit reviewed."""
     text = (root / REGISTER).read_text() if (root / REGISTER).exists() else ""
     m = re.search(r"^## Independent review\n(.*?)(?=^## |\Z)", text, re.S | re.M)
-    body = m.group(1) if m else ""
-    ok = bool(
-        re.search(r"^- Status: recorded\b", body, re.M) and re.search(r"^- Reviewer: \S", body, re.M) and re.search(r"^- Date: \d{4}-\d\d-\d\d", body, re.M)
-    )
-    return Result(ok, "independent review recorded" if ok else "no independent review recorded in the risk register (send docs/ladder-review-request.md)")
+    if not m:
+        return Result(False, "no independent review section in the risk register (send docs/ladder-review-request.md)")
+    body, missing = m.group(1), []
+
+    def field_(name: str) -> str:
+        f = re.search(rf"^- {name}: *(.*)$", body, re.M)
+        return f.group(1).strip() if f else ""
+
+    if not re.match(r"recorded\b", field_("Status")):
+        missing.append(f"status is {field_('Status')[:40] or 'missing'!r}, not 'recorded'")
+    reviewer = field_("Reviewer")
+    if len(reviewer) < 3 or PLACEHOLDER.match(reviewer):
+        missing.append(f"reviewer {reviewer or 'missing'!r} names nobody")
+    try:
+        when = date.fromisoformat(field_("Date")[:10])
+        if when > (today or date.today()):
+            missing.append(f"date {when} is in the future")
+    except ValueError:
+        missing.append(f"date {field_('Date')[:20] or 'missing'!r} is not a real date")
+    sha = re.search(r"\b[0-9a-f]{7,40}\b", field_("Reviewed"))
+    if not sha:
+        missing.append("no reviewed commit (a 7 to 40 character hash on the `Reviewed:` line)")
+    elif (root / ".git").exists() and subprocess.run(["git", "cat-file", "-e", f"{sha.group(0)}^{{commit}}"], cwd=root, capture_output=True).returncode:
+        missing.append(f"reviewed commit {sha.group(0)} is not in this repo's history")
+    if missing:
+        return Result(False, "independent review not recorded: " + "; ".join(missing))
+    return Result(True, f"independent review recorded: {reviewer}, {field_('Date')[:10]}, commit {sha.group(0) if sha else ''}")
 
 
 # ------------------------------------------------------------------------------------------------ rung 1
@@ -487,7 +513,7 @@ FOUNDING_PRE_COMMIT = """repos:
         files: ^apps/console/
         pass_filenames: false
 """
-REVIEWED = "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n"
+REVIEWED = "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n- Reviewed: commit e56218b\n"
 
 CHECKS: list[Check] = [
     Check(
@@ -669,6 +695,25 @@ CHECKS: list[Check] = [
                 ),
             ),
             Proof("a job calls a reusable workflow", _append(".github/workflows/ci.yml", "\n  shared:\n    uses: some-org/ci/.github/workflows/x.yml@v1\n")),
+            Proof(
+                "a run step is conditional (kit check would run it unconditionally)",
+                _rewrite(".github/workflows/ci.yml", "      - run: uv run pyright\n", "      - run: uv run pyright\n        if: github.event_name == 'push'\n"),
+            ),
+            Proof(
+                "a job runs a matrix (kit check would run it once)",
+                _rewrite(
+                    ".github/workflows/ci.yml",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n    strategy: {matrix: {py: ['3.12', '3.13']}}\n",
+                ),
+            ),
+            Proof(
+                "a step swallows its own failure",
+                _rewrite(".github/workflows/ci.yml", "      - run: uv run pyright\n", "      - run: uv run pyright\n        continue-on-error: true\n"),
+            ),
+            Proof(
+                "the aggregate stops checking its needs", _rewrite(".github/workflows/ci.yml", "jq -e 'to_entries | all(.value.result == \"success\")'", "true")
+            ),
         ],
     ),
     Check(
@@ -693,7 +738,7 @@ CHECKS: list[Check] = [
             Proof("the pre-commit file as founded (remote ruff, `kit privacy scan`, a pnpm UI that does not exist)", _write(PRE_COMMIT, FOUNDING_PRE_COMMIT)),
             Proof(
                 "a hook calls a kit command that does not exist",
-                _rewrite(PRE_COMMIT, "entry: uv run kit check --fast", "entry: uv run kit privacy scan --staged"),
+                _rewrite(PRE_COMMIT, "entry: uv run kit check --fast", "entry: uv run kit audit --everything"),
             ),
             Proof("a hook passes a flag kit check does not take", _rewrite(PRE_COMMIT, "entry: uv run kit check --fast", "entry: uv run kit check --quick")),
             Proof(
@@ -715,6 +760,9 @@ CHECKS: list[Check] = [
             Proof("two gates share an id", _rewrite(gates_mod.GATES_FILE, "id: beat-1-live", "id: rung-3")),
             Proof("a waiver names an issue that is not a blocker", _rewrite(gates_mod.GATES_FILE, "kind: start\n", "kind: start\n    waived: [99]\n")),
             Proof("a gate blocks on its own milestone", _rewrite(gates_mod.GATES_FILE, "blocked_by: [1, 38, 41]", "blocked_by: [1, 3, 38, 41]")),
+            Proof(
+                "a gate does not say which issue its milestone is (so a typo gates the wrong one)", _rewrite(gates_mod.GATES_FILE, '    title: "Rung 3:"\n', "")
+            ),
         ],
     ),
     Check("ports_free", 2, ports_free, ["contracts/ports.yaml"], [Proof("another process already holds a default port", lambda root: None)], host=True),
@@ -726,6 +774,10 @@ CHECKS: list[Check] = [
         [
             Proof("the review section says pending", _rewrite(REGISTER, "- Status: recorded", "- Status: pending")),
             Proof("there is no review section", _write(REGISTER, "# Integration risk register\n")),
+            Proof("the reviewer is a placeholder", _rewrite(REGISTER, "- Reviewer: independent model", "- Reviewer: TBD")),
+            Proof("the date is impossible", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2026-99-99")),
+            Proof("the date is in the future", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2099-01-01")),
+            Proof("no reviewed commit is named", _rewrite(REGISTER, "- Reviewed: commit e56218b", "- Reviewed: the PR as first pushed")),
         ],
     ),
 ]
@@ -814,6 +866,20 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
     today = today or date.today()
     verdicts, gates_broken = _gate_verdicts(root, fetch)
     gate_for = {v.gate.rung: v for v in verdicts if v.gate.rung is not None}
+    review = review_recorded(root, today)
+
+    def start_blockers(rung: int) -> list[str]:
+        """Everything that stops a rung from starting: its start gate, and for rung 3 the independent review."""
+        out = []
+        g = gate_for.get(rung)
+        if g and g.gate.kind == "start" and not g.clear:
+            out.append(f"gate {g.gate.id} {g.status}: {g.detail}")
+        if rung == 3 and not review.ok:
+            out.append(review.detail)
+        if rung > 2 and gates_broken:
+            out.append(gates_broken)
+        return out
+
     results: dict[int, list[tuple[Check, Result]]] = {}
     for check in CHECKS:
         if check.rung <= upto:
@@ -829,9 +895,10 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
             continue
         rows = [(c, r) for c, r in results.get(rung, []) if c.id != "review_recorded"]
         gate = gate_for.get(rung)
-        gated = f"; gate {gate.gate.id} {gate.status}: {gate.detail}" if gate and not gate.clear else ""
-        if rung > 2 and gates_broken:
-            gated = f"; {gates_broken}"
+        held = start_blockers(rung)
+        if gate and gate.gate.kind == "close" and not gate.clear:
+            held.append(f"gate {gate.gate.id} {gate.status}: {gate.detail}")
+        gated = "".join(f"; {h}" for h in held)
         if not rows:
             lines.append(f"rung {rung:<2} {title:24} NOT CLIMBED  no proven check yet; see docs/ladder.md and the rung's issue{gated}")
             first_red = first_red if first_red is not None else rung
@@ -845,7 +912,6 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
             lines.append(f"rung {rung:<2} {title:24} GATED  {len(rows)}/{len(rows)} checks green{gated} (docs/gates.yaml)")
         else:
             lines.append(f"rung {rung:<2} {title:24} GREEN  {len(rows)}/{len(rows)} checks")
-    review = review_recorded(root)
     lines.append(
         f"review  {'independent review':24} {'GREEN ' if review.ok else 'RED   '} {review.detail}" + ("" if review.ok else "; rung 3 does not start without it")
     )
@@ -856,15 +922,12 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
         days = (when - today).days
         if days >= 0:
             lines.append(f"date    {when.isoformat():24} in {days} d  {what}")
-    start_gate = gate_for.get(upto + 1)
     if first_red is not None:
         nxt = f"fix rung {first_red} ({RUNG_TITLES[first_red]})"
     elif upto >= 10:
         nxt = "nothing; the ladder is climbed"
-    elif gates_broken:
-        nxt = f"rung {upto + 1} may not start: {gates_broken}"
-    elif start_gate and start_gate.gate.kind == "start" and not start_gate.clear:
-        nxt = f"rung {upto + 1} ({RUNG_TITLES[upto + 1]}) may not start: {start_gate.detail} (docs/gates.yaml)"
+    elif blockers := start_blockers(upto + 1):
+        nxt = f"rung {upto + 1} ({RUNG_TITLES[upto + 1]}) may not start: " + "; ".join(blockers)
     else:
         nxt = f"climb rung {upto + 1} ({RUNG_TITLES[upto + 1]})"
     lines.append(f"next    {nxt}")
@@ -878,6 +941,8 @@ def run(root: Path = ROOT, upto: int = 2, today: date | None = None, as_json: bo
                         {"id": v.gate.id, "milestone": v.gate.milestone, "kind": v.gate.kind, "status": v.status, "pending": v.pending} for v in verdicts
                     ],
                     "gates_broken": gates_broken,
+                    "review": {"ok": review.ok, "detail": review.detail},
+                    "next": nxt,
                     "lines": lines,
                 },
                 indent=2,

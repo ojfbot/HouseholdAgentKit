@@ -11,7 +11,7 @@
 - Branch `<lane>/<slice>` (lanes: `hp`, `iq`, `pd`, `ed`, `mf`, `en`, `dx`), small commits, conventional commit messages with attribution trailers.
 - Rebase onto `main` before review. Merges are rebase-only; history stays linear.
 - Done means the issue's check is green and you can show it: the test output, the eval delta, or the doctor line.
-- **Before you push: `uv run kit check`.** It runs the pull-request workflows' own steps on your machine, so local green and CI green mean the same commands passed. `uv run kit check --fast` (lint, format, types, privacy guard) takes seconds; `uv run kit lint --fix` formats the trees held to the full standard.
+- **Before you push: `uv run kit check`.** It runs the pull-request workflows' own steps on your machine, each job in its own clean checkout of your changes, so local green and CI green mean the same commands passed. `uv run kit check --fast` (lint, format, types, privacy guard) takes seconds; `uv run kit lint --fix` formats the trees held to the full standard.
 - **Lint has a floor that only goes down** (`kit/lint-policy.json`). In the older trees, touching a file must not add a violation or an unformatted file. If you fix some, run `uv run kit lint --update-baseline` and commit the lower floor in the same PR. Never raise a floor.
 - **Before you close an issue: `uv run kit gates --milestone <n>`.** If it exits 1, the issue may not close yet; the line names what is still open.
 - One agent writes, a different agent reviews.

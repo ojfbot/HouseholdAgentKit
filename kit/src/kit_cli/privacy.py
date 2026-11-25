@@ -2,9 +2,13 @@
 
 Deny by default:
 
-* Every file is scanned: tracked and untracked-but-not-ignored (`git ls-files -co --exclude-standard -z`, so
-  non-ASCII names survive), binaries included (rules match bytes), whatever directory it is in. Without git,
-  every file under the root except tool caches.
+* Every file is scanned, binaries included (rules match bytes), whatever directory it is in. Two sources:
+  - `worktree` (the default; what CI's checkout holds): tracked and untracked-but-not-ignored files as they
+    are on disk (`git ls-files -co --exclude-standard -z`, so non-ASCII names survive). Without git, every
+    file under the root except tool caches.
+  - `index` (`--staged`; what the pre-commit hook runs): the blobs git will commit, read from the index, so a
+    file edited after `git add` is judged by what is staged, not by what is on disk. The allowlist is read
+    from the index too.
 * A rule has no built-in scope. An exception is an entry in kit/privacy-allow.yaml naming the rule, a path
   glob, optionally the matched text, and why. An entry with no `why` is refused. An entry that no longer
   suppresses anything is a failure too ("stale exception"), so the allowlist cannot quietly outgrow the repo.
@@ -78,6 +82,42 @@ class Allow:
         return self.rule == f.rule and fnmatch.fnmatchcase(f.path, self.path) and (self.match is None or bool(self.match.search(f.text)))
 
 
+class Source:
+    """Where the scan reads from: the working tree, or the index (what the next commit will contain)."""
+
+    def __init__(self, root: Path, staged: bool = False) -> None:
+        self.root, self.staged = root, staged
+        self._blobs: dict[str, str] = {}
+        if staged:
+            out = subprocess.run(["git", "ls-files", "-s", "-z"], cwd=root, capture_output=True)
+            if out.returncode != 0:
+                raise OSError(f"cannot read the git index: {out.stderr.decode(errors='replace').strip()}")
+            for entry in out.stdout.split(b"\0"):
+                if not entry:
+                    continue
+                meta, name = entry.split(b"\t", 1)
+                mode, sha, _stage = meta.split()
+                if mode != b"160000":  # submodules have no blob
+                    self._blobs[name.decode("utf-8", "surrogateescape")] = sha.decode()
+
+    def files(self) -> list[str]:
+        return sorted(self._blobs) if self.staged else files(self.root)
+
+    def size(self, rel: str) -> int:
+        if self.staged:
+            out = subprocess.run(["git", "cat-file", "-s", self._blobs[rel]], cwd=self.root, capture_output=True, text=True, check=True)
+            return int(out.stdout.strip())
+        return (self.root / rel).stat().st_size
+
+    def read(self, rel: str) -> bytes:
+        if self.staged:
+            return subprocess.run(["git", "cat-file", "blob", self._blobs[rel]], cwd=self.root, capture_output=True, check=True).stdout
+        return (self.root / rel).read_bytes()
+
+    def has(self, rel: str) -> bool:
+        return rel in self._blobs if self.staged else (self.root / rel).exists()
+
+
 def files(root: Path) -> list[str]:
     if (root / ".git").exists():
         out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True)
@@ -88,11 +128,11 @@ def files(root: Path) -> list[str]:
     return sorted(p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file() and not (set(p.relative_to(root).parts) & SKIP_DIRS))
 
 
-def load_allow(root: Path) -> list[Allow]:
-    path = root / ALLOW_FILE
-    if not path.exists():
+def load_allow(root: Path, source: Source | None = None) -> list[Allow]:
+    source = source or Source(root)
+    if not source.has(ALLOW_FILE):
         raise ValueError(f"{ALLOW_FILE} is missing (an empty `allow: []` is fine; a missing file is not)")
-    raw = yaml.safe_load(path.read_text()) or {}
+    raw = yaml.safe_load(source.read(ALLOW_FILE).decode()) or {}
     if raw.get("version") != 1 or not isinstance(raw.get("allow"), list):
         raise ValueError(f"{ALLOW_FILE} needs `version: 1` and an `allow` list")
     out, problems = [], []
@@ -118,19 +158,20 @@ def load_allow(root: Path) -> list[Allow]:
     return out
 
 
-def scan(root: Path) -> list[Finding]:
+def scan(root: Path, source: Source | None = None) -> list[Finding]:
+    source = source or Source(root)
     found: list[Finding] = []
-    for rel in files(root):
+    for rel in source.files():
         for rule, pat in PATH_RULES.items():
             if pat.search(rel):
                 found.append(Finding(rule, rel, 0, rel))
-        p = root / rel
         try:
-            if p.stat().st_size > MAX_BYTES:
-                found.append(Finding("too-large", rel, 0, f"{p.stat().st_size} bytes; too large to scan, so it is not known to be clean"))
+            size = source.size(rel)
+            if size > MAX_BYTES:
+                found.append(Finding("too-large", rel, 0, f"{size} bytes; too large to scan, so it is not known to be clean"))
                 continue
-            data = p.read_bytes()
-        except OSError as e:
+            data = source.read(rel)
+        except (OSError, subprocess.CalledProcessError) as e:
             found.append(Finding("too-large", rel, 0, f"unreadable: {e}"))
             continue
         for rule, pat in CONTENT_RULES.items():
@@ -142,14 +183,15 @@ def scan(root: Path) -> list[Finding]:
     return found
 
 
-def check(root: Path) -> tuple[list[Finding], list[str]]:
+def check(root: Path, staged: bool = False) -> tuple[list[Finding], list[str]]:
     """Findings no exception covers, and problems with the allowlist itself (broken or stale entries)."""
     try:
-        allow = load_allow(root)
+        source = Source(root, staged=staged)
+        allow = load_allow(root, source)
     except (OSError, ValueError, yaml.YAMLError) as e:
         return [], [str(e)]
     left = []
-    for f in scan(root):
+    for f in scan(root, source):
         hit = next((a for a in allow if a.covers(f)), None)
         if hit:
             hit.used += 1
@@ -159,8 +201,8 @@ def check(root: Path) -> tuple[list[Finding], list[str]]:
     return left, stale
 
 
-def run(root: Path) -> int:
-    left, problems = check(root)
+def run(root: Path, staged: bool = False) -> int:
+    left, problems = check(root, staged=staged)
     for f in left:
         print(f"privacy FAIL  {f.show()}")
     for p in problems:
@@ -170,5 +212,6 @@ def run(root: Path) -> int:
             f"privacy FAIL  {len(left)} findings, {len(problems)} allowlist problems. Remove the content, or add an exception with its reason to {ALLOW_FILE}"
         )
         return 1
-    print(f"privacy ok    {len(files(root))} files scanned, every rule on every file; exceptions only from {ALLOW_FILE}")
+    what = "staged files (the next commit)" if staged else "files"
+    print(f"privacy ok    {len(Source(root, staged).files())} {what} scanned, every rule on every file; exceptions only from {ALLOW_FILE}")
     return 0

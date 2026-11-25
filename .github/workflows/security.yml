@@ -14,7 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: uv export --frozen --no-hashes --no-emit-workspace -o "$RUNNER_TEMP/req.txt" && uvx pip-audit -r "$RUNNER_TEMP/req.txt" --strict
+      # pip-audit is pinned and runs on the project's own pinned interpreter (`uv run --with`), not a separate
+      # uvx Python: on the stage host a uvx-chosen CPython crashed in ensurepip (review on PR #1). The export is
+      # fully pinned, so --no-deps --disable-pip audits it without building a virtualenv at all.
+      - name: audit every locked dependency (pip-audit 2.10.1; whether a new advisory blocks merges is Q-RV-1)
+        run: uv export --frozen --no-hashes --no-emit-workspace -o "$RUNNER_TEMP/req.txt" && uv run --frozen --with pip-audit==2.10.1 pip-audit -r "$RUNNER_TEMP/req.txt" --no-deps --disable-pip --strict
 
   security:
     if: always()

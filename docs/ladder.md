@@ -10,7 +10,7 @@ Three rules, from the handover:
 
 ## What is proven today (rungs 0 to 2)
 
-Every row is exercised by `kit doctor --self-test`: 19 checks, 61 planted breaks.
+Every row is exercised by `kit doctor --self-test`: 19 checks, 70 planted breaks.
 
 | Rung | Check | Green means | Planted breaks it goes red on |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ Every row is exercised by `kit doctor --self-test`: 19 checks, 61 planted breaks
 | 1 | `no_forbidden_files` | No weights, holdout seed, env file or generated data anywhere in the tree (the path rules of `kit privacy scan`, one shared list) | Each of those four is added; MLX weights; a non-ASCII path; run output outside `data/` |
 | 1 | `privacy_clean` | `kit privacy scan` is clean: every rule on every file git would publish, binaries included; exceptions only from `kit/privacy-allow.yaml` | A key in a new directory; a key inside a binary; a holdout case outside `data/`; a home path in a doc; an exception with no reason; a stale exception; an exception for every file; the allowlist deleted |
 | 1 | `vendored_verbatim` | Fork C's vendored files match their checksums | A file is edited; a file is removed |
-| 1 | `ci_runs_locally` | `kit check` can run every pull-request workflow step as CI does, so a local green means the same commands passed | A step reads a secret; a step needs a runner-only path; a job needs a service container; a job calls a reusable workflow |
+| 1 | `ci_runs_locally` | `kit check` can run every pull-request workflow as GitHub does: each job in its own clean checkout, aggregates evaluated, nothing it cannot reproduce | A step reads a secret; a runner-only path; a service container; a reusable workflow; a step `if:`; a matrix; `continue-on-error`; an aggregate that stops checking its needs |
 | 1 | `lint_policy_covers` | Every tracked `.py` file is under a lint tier in `kit/lint-policy.json` (full, ratchet or exempt) | New Python outside every tier; a tier names a missing tree; a tree in two tiers; a negative floor; the policy deleted |
 | 1 | `hooks_runnable` | Every pre-commit hook is local and its command exists | The pre-commit file as founded (remote ruff, `kit privacy scan`, a pnpm UI); an unknown kit command; an unknown flag; a hook on a path that does not exist; the file deleted |
 | 1 | `gates_wellformed` | `docs/gates.yaml` parses and every gate names real issue numbers | The file deleted; a gate with no blockers; a blocker that is not a number; two gates with one id; a waiver for a non-blocker; a gate blocking on its own milestone |
@@ -32,7 +32,7 @@ Every row is exercised by `kit doctor --self-test`: 19 checks, 61 planted breaks
 | 2 | `hello_world_smoke` | Taco night smoke run returns `hello_world_result@1`, status `pass` or `placement_only`, no failed episodes, no zero-tolerance breach | Cases missing; the agent swaps a locked food; every episode ends in an unacceptable cart |
 | 2 | `console_on_fixtures` | The console starts on a free port and serves its health and stage pages from fixtures | Engine fixtures never built; the stage page is missing |
 | 2 | `ports_free` | The four default ports are free on this host | Another process holds one |
-| before 3 | `review_recorded` | The risk register records an independent review | Status is pending; the section is missing |
+| before 3 | `review_recorded` | The risk register records an independent review: status `recorded`, a named reviewer, a real date not in the future, and a reviewed commit that is in the repo's history. Rung 3 may not start without it, whatever the gates say | Status is pending; the section is missing; a placeholder reviewer; an impossible date; a future date; no reviewed commit |
 
 **Limits of these proofs.** The rung-2 checks were proven in a Linux container on CPython 3.12.3 and on GitHub's Ubuntu runners. Green there says the repo is coherent; it says nothing about macOS, either host until `kit doctor` runs there. `hello_world_smoke` proves the stand-in agent, not the real one (risk R-01). `console_on_fixtures` checks two pages, not a browser.
 

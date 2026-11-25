@@ -86,3 +86,35 @@ def test_the_repo_is_clean() -> None:
     from kit_cli import doctor
 
     assert privacy.check(doctor.ROOT) == ([], [])
+
+
+def _git(root: Path, *args: str) -> None:
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args], cwd=root, check=True, capture_output=True)
+
+
+def test_staged_scan_judges_what_is_committed_not_what_is_on_disk(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "notes.txt").write_text(f"value = {KEYS['anthropic']}\n")
+    _git(root, "add", "-A")
+    (root / "notes.txt").write_text("value = redacted\n")  # cleaned on disk, but the key is still staged
+    assert privacy.check(root) == ([], [])
+    left, _ = privacy.check(root, staged=True)
+    assert [(f.rule, f.path) for f in left] == [("key", "notes.txt")]
+
+
+def test_staged_scan_ignores_a_key_that_is_only_on_disk(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "notes.txt").write_text("value = redacted\n")
+    _git(root, "add", "-A")
+    (root / "notes.txt").write_text(f"value = {KEYS['github classic']}\n")  # not staged: not in this commit
+    assert privacy.check(root, staged=True) == ([], [])
+    assert [f.rule for f in privacy.check(root)[0]] == ["key"]
+
+
+def test_staged_scan_reads_the_staged_allowlist(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / "fixture.yaml").write_text("split: " + "holdout\n")
+    (root / privacy.ALLOW_FILE).write_text("version: 1\nallow:\n  - {rule: holdout-case, path: fixture.yaml, why: a test fixture}\n")
+    _git(root, "add", "-A")
+    (root / privacy.ALLOW_FILE).write_text("version: 1\nallow: []\n")  # loosened on disk only
+    assert privacy.check(root, staged=True) == ([], [])

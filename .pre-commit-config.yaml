@@ -12,8 +12,8 @@ repos:
         entry: uv run kit check --fast
         language: system
         pass_filenames: false
-      - id: no-holdout-staged
-        name: holdout cases are never staged
-        entry: bash -c '! git diff --cached --name-only -z | xargs -0 -r grep -lE "split:\s*holdout" 2>/dev/null'
+      - id: privacy-staged
+        name: kit privacy scan --staged (every rule on exactly what this commit contains)
+        entry: uv run kit privacy scan --staged
         language: system
         pass_filenames: false
