@@ -128,8 +128,42 @@ def register_covers_packages(root: Path) -> Result:
 PLACEHOLDER = re.compile(r"^(tbd|todo|tba|pending|none|n/?a|unknown|someone|reviewer|-+|\?+)\.?$", re.I)
 
 
-def review_recorded(root: Path, today: date | None = None) -> Result:
-    """Rung 3 may start only on evidence: status recorded, a named reviewer, a real date, and the commit reviewed."""
+ReviewFetcher = Callable[[str, int, int], dict]  # (repo, pull number, review id) -> the GitHub review object
+Ancestry = Callable[[Path, str], bool | None]  # (root, sha) -> True / False, or None when it cannot be checked
+REVIEW_URL = re.compile(r"https://github\.com/(?P<repo>[\w.-]+/[\w.-]+)/pull/(?P<pr>\d+)#pullrequestreview-(?P<id>\d+)")
+
+
+def fetch_review(repo: str, pr: int, review_id: int) -> dict:
+    """One GitHub review, read live. Raises OSError when GitHub cannot be read (or KIT_OFFLINE is set)."""
+    if os.environ.get("KIT_OFFLINE"):
+        raise OSError("offline (KIT_OFFLINE is set)")
+    import urllib.request
+
+    req = urllib.request.Request(
+        f"{gates_mod.API}/repos/{repo}/pulls/{pr}/reviews/{review_id}", headers={"Accept": "application/vnd.github+json", "User-Agent": "kit-doctor"}
+    )
+    if tok := os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"):
+        req.add_header("Authorization", f"Bearer {tok}")
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return json.loads(r.read().decode())
+
+
+def is_ancestor(root: Path, sha: str) -> bool | None:
+    if not (root / ".git").exists() or not shutil.which("git"):
+        return None
+    return subprocess.run(["git", "merge-base", "--is-ancestor", sha, "HEAD"], cwd=root, capture_output=True).returncode == 0
+
+
+def review_recorded(root: Path, today: date | None = None, fetch: ReviewFetcher | None = None, ancestry: Ancestry | None = None) -> Result:
+    """Rung 3 may start only on evidence that can be checked, not on text anyone can type.
+
+    The register's `## Independent review` section must say `Status: recorded`, name the reviewer, give a real date,
+    the reviewed commit, and link the review itself (`Review: https://github.com/<repo>/pull/<n>#pullrequestreview-<id>`).
+    Doctor then reads that review from GitHub and requires: submitted (not pending or dismissed), on the recorded
+    commit, on the recorded date, its text naming the reviewer, and the commit an ancestor of HEAD. Whatever cannot be
+    checked (no network, no git) counts as not recorded. The one thing this cannot prove is that the reviewer was a
+    different model: the owner and the agents share one GitHub identity (Q-I-1)."""
+    fetch, ancestry = fetch or fetch_review, ancestry or is_ancestor
     text = (root / REGISTER).read_text() if (root / REGISTER).exists() else ""
     m = re.search(r"^## Independent review\n(.*?)(?=^## |\Z)", text, re.S | re.M)
     if not m:
@@ -145,20 +179,49 @@ def review_recorded(root: Path, today: date | None = None) -> Result:
     reviewer = field_("Reviewer")
     if len(reviewer) < 3 or PLACEHOLDER.match(reviewer):
         missing.append(f"reviewer {reviewer or 'missing'!r} names nobody")
+    when = None
     try:
         when = date.fromisoformat(field_("Date")[:10])
         if when > (today or date.today()):
             missing.append(f"date {when} is in the future")
     except ValueError:
         missing.append(f"date {field_('Date')[:20] or 'missing'!r} is not a real date")
-    sha = re.search(r"\b[0-9a-f]{7,40}\b", field_("Reviewed"))
+    sha_m = re.search(r"\b[0-9a-f]{7,40}\b", field_("Reviewed"))
+    sha = sha_m.group(0) if sha_m else None
     if not sha:
         missing.append("no reviewed commit (a 7 to 40 character hash on the `Reviewed:` line)")
-    elif (root / ".git").exists() and subprocess.run(["git", "cat-file", "-e", f"{sha.group(0)}^{{commit}}"], cwd=root, capture_output=True).returncode:
-        missing.append(f"reviewed commit {sha.group(0)} is not in this repo's history")
+    url = REVIEW_URL.search(field_("Review"))
+    if not url:
+        missing.append("no link to the review itself (`Review: https://github.com/<repo>/pull/<n>#pullrequestreview-<id>`)")
     if missing:
         return Result(False, "independent review not recorded: " + "; ".join(missing))
-    return Result(True, f"independent review recorded: {reviewer}, {field_('Date')[:10]}, commit {sha.group(0) if sha else ''}")
+    assert sha and url and when
+    try:
+        spec_repo = gates_mod.load_spec(root).repo
+    except gates_mod.SpecError:
+        spec_repo = None
+    if spec_repo and url["repo"].lower() != spec_repo.lower():
+        missing.append(f"the review is on {url['repo']}, not {spec_repo}")
+    try:
+        rv = fetch(url["repo"], int(url["pr"]), int(url["id"]))
+    except (OSError, ValueError) as e:
+        return Result(False, f"independent review not verified: cannot read it on GitHub ({e}); a review nobody can see is not recorded")
+    if rv.get("state") not in ("COMMENTED", "APPROVED", "CHANGES_REQUESTED"):
+        missing.append(f"the review's state is {rv.get('state')!r}, not submitted")
+    if not str(rv.get("commit_id", "")).startswith(sha):
+        missing.append(f"the review is of commit {str(rv.get('commit_id', ''))[:7] or '?'}, not {sha}")
+    if str(rv.get("submitted_at", ""))[:10] != when.isoformat():
+        missing.append(f"the review was submitted {str(rv.get('submitted_at', ''))[:10] or '?'}, not {when}")
+    if reviewer.lower() not in str(rv.get("body", "")).lower():
+        missing.append(f"the review's text does not name {reviewer!r}")
+    anc = ancestry(root, sha)
+    if anc is None:
+        missing.append(f"cannot check that {sha} is in this branch's history (no git checkout)")
+    elif not anc:
+        missing.append(f"reviewed commit {sha} is not an ancestor of HEAD")
+    if missing:
+        return Result(False, "independent review not verified: " + "; ".join(missing))
+    return Result(True, f"independent review recorded and verified on GitHub: {reviewer}, {when}, commit {sha}")
 
 
 # ------------------------------------------------------------------------------------------------ rung 1
@@ -513,7 +576,17 @@ FOUNDING_PRE_COMMIT = """repos:
         files: ^apps/console/
         pass_filenames: false
 """
-REVIEWED = "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n- Reviewed: commit e56218b\n"
+REVIEWED = (
+    "\n## Independent review\n- Status: recorded\n- Reviewer: independent model\n- Date: 2026-11-21\n- Reviewed: commit e56218b\n"
+    "- Review: https://github.com/ojfbot/HouseholdAgentKit/pull/1#pullrequestreview-1\n"
+)
+# What GitHub returns for that review in the proofs (no network there): submitted, on the commit, on the date, naming the reviewer.
+PROOF_REVIEW = {
+    "state": "COMMENTED",
+    "commit_id": "e56218b" + "0" * 33,
+    "submitted_at": "2026-11-21T05:02:09Z",
+    "body": "Independent review by independent model.",
+}
 
 CHECKS: list[Check] = [
     Check(
@@ -714,6 +787,26 @@ CHECKS: list[Check] = [
             Proof(
                 "the aggregate stops checking its needs", _rewrite(".github/workflows/ci.yml", "jq -e 'to_entries | all(.value.result == \"success\")'", "true")
             ),
+            Proof(
+                "the aggregate adds its own logic after the needs check",
+                _rewrite(
+                    ".github/workflows/ci.yml",
+                    "jq -e 'to_entries | all(.value.result == \"success\")'\n",
+                    "jq -e 'to_entries | all(.value.result == \"success\")' || true\n",
+                ),
+            ),
+            Proof(
+                "the workflow sets defaults kit check would ignore",
+                _rewrite(".github/workflows/ci.yml", "\njobs:\n", "\ndefaults:\n  run:\n    working-directory: kit\n\njobs:\n"),
+            ),
+            Proof(
+                "a job's env reads a runner expression",
+                _rewrite(
+                    ".github/workflows/ci.yml",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n",
+                    "  doctor:\n    runs-on: ubuntu-24.04\n    env:\n      REF: ${{ github.ref }}\n",
+                ),
+            ),
         ],
     ),
     Check(
@@ -770,7 +863,7 @@ CHECKS: list[Check] = [
         "review_recorded",
         3,
         review_recorded,
-        [REGISTER],
+        [REGISTER, gates_mod.GATES_FILE],
         [
             Proof("the review section says pending", _rewrite(REGISTER, "- Status: recorded", "- Status: pending")),
             Proof("there is no review section", _write(REGISTER, "# Integration risk register\n")),
@@ -778,6 +871,11 @@ CHECKS: list[Check] = [
             Proof("the date is impossible", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2026-99-99")),
             Proof("the date is in the future", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2099-01-01")),
             Proof("no reviewed commit is named", _rewrite(REGISTER, "- Reviewed: commit e56218b", "- Reviewed: the PR as first pushed")),
+            Proof("no link to the review itself", _rewrite(REGISTER, "- Review: https://github.com/ojfbot/HouseholdAgentKit/pull/1#pullrequestreview-1\n", "")),
+            Proof("the register names a commit the review was not of", _rewrite(REGISTER, "- Reviewed: commit e56218b", "- Reviewed: commit 0447464")),
+            Proof("the register's date is not the review's", _rewrite(REGISTER, "- Date: 2026-11-21", "- Date: 2026-11-20")),
+            Proof("the reviewer named is not the one in the review", _rewrite(REGISTER, "- Reviewer: independent model", "- Reviewer: a different model")),
+            Proof("the review is on another repository", _rewrite(REGISTER, "github.com/ojfbot/HouseholdAgentKit/pull/1", "github.com/someone/else/pull/1")),
         ],
     ),
 ]
@@ -802,6 +900,13 @@ def prove(check: Check, root: Path = ROOT) -> list[tuple[str, bool, str]]:
         if check.id == "review_recorded":  # a working setup is a register whose review section is filled in
             text = (good / REGISTER).read_text()
             (good / REGISTER).write_text(re.sub(r"^## Independent review\n.*?(?=^## |\Z)", "", text, flags=re.S | re.M) + REVIEWED)
+            check = Check(
+                check.id,
+                check.rung,
+                lambda root: review_recorded(root, date(2026, 11, 25), fetch=lambda repo, pr, rid: PROOF_REVIEW, ancestry=lambda root, sha: True),
+                check.needs,
+                check.proofs,
+            )
         if check.id == "sync_frozen":  # a working setup is one that has been synced
             subprocess.run(["uv", "sync", "--frozen", "-q"], cwd=good, check=True, capture_output=True)
         held = None

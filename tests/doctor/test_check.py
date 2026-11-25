@@ -80,11 +80,37 @@ def test_the_standard_aggregate_is_recognised_and_a_bent_one_is_refused(repo: Pa
         ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ubuntu-24.04\n    defaults: {run: {working-directory: sub}}\n"),
         ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    if: github.event_name == 'push'\n    runs-on: ubuntu-24.04\n"),
         ("needs: [first, second]", "needs: [first, third]"),
+        ("on:\n  pull_request:\n", "on:\n  pull_request:\ndefaults:\n  run:\n    working-directory: sub\n"),
+        ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ubuntu-24.04\n    env: {REF: '${{ github.ref }}'}\n"),
+        ("  second:\n    runs-on: ubuntu-24.04\n", "  second:\n    runs-on: ${{ vars.RUNNER }}\n"),
+        ("""all(.value.result == "success")'\n""", """all(.value.result == "success")' || true\n"""),
     ],
-    ids=["step-if", "shell", "continue-on-error", "matrix", "defaults", "job-if", "unknown-need"],
+    ids=[
+        "step-if",
+        "shell",
+        "continue-on-error",
+        "matrix",
+        "defaults",
+        "job-if",
+        "unknown-need",
+        "workflow-defaults",
+        "job-env-expr",
+        "runs-on-expr",
+        "aggregate-extra",
+    ],
 )
 def test_what_kit_check_cannot_reproduce_is_refused(repo: Path, old: str, new: str) -> None:
     wf = repo / ".github/workflows/ci.yml"
     wf.write_text(WORKFLOW.replace(old, new, 1))
     assert check.runner_only(repo), f"not refused: {new!r}"
     assert check.run(repo) == 1
+
+
+def test_an_aggregate_listed_first_is_still_evaluated_after_its_needs(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    wf = repo / ".github/workflows/ci.yml"
+    head, body = wf.read_text().split("jobs:\n", 1)
+    first_two, aggregate = body.split("  ci:\n", 1)
+    wf.write_text(head + "jobs:\n  ci:\n" + aggregate + first_two)
+    assert [j.id for j in check.ordered(check.jobs(repo))] == ["first", "second", "ci"]
+    assert check.run(repo) == 0
+    assert "aggregate ok: first, second all passed" in capsys.readouterr().out

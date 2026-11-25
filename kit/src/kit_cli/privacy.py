@@ -13,6 +13,9 @@ Deny by default:
   glob, optionally the matched text, and why. An entry with no `why` is refused. An entry that no longer
   suppresses anything is a failure too ("stale exception"), so the allowlist cannot quietly outgrow the repo.
 * A file too large to read is a finding, not a skip.
+* Boundaries, by design: a symlink is committed as its link text, and that text is what is scanned (the file it
+  points at is not published). A submodule is committed as a pointer (a gitlink) and skipped; its contents are
+  another repository's and must be scanned there. tests/doctor/test_privacy_hook.py proves both, end to end.
 
 The key shapes are a denylist and will always be one release behind; GitHub's secret scanning with push
 protection (an owner setting, docs/hand-off.md) is the second net.

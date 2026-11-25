@@ -27,6 +27,25 @@ from pathlib import Path
 
 POLICY_FILE = "kit/lint-policy.json"
 
+# The policy as the owner approved it in the founding PR (#1). Until main carries kit/lint-policy.json, this is the
+# base every change is compared with, so the founding PR itself cannot absorb a regression by raising a floor.
+# Once main has the file, main wins and this constant is unused. Changing it is a doctor-level owner change.
+FOUNDING_POLICY: dict = {
+    "full": ["packages/contracts", "packages/mock-gateway", "packages/verifier", "packages/eval-harness", "packages/kit-gate", "kit", "tests", "scripts"],
+    "floor_ignore": ["F401", "F541", "F841"],
+    "ratchet": {
+        "packages/discovery-engine/src": {"lint": 113, "format": 19},
+        "packages/discovery-engine/tests": {"lint": 17, "format": 6},
+        "packages/card-writer": {"lint": 20, "format": 7},
+        "apps": {"lint": 13, "format": 12},
+        "packages/shopping-port": {"lint": 32, "format": 6},
+    },
+    "exempt": {
+        "packages/discovery-engine/prototypes": "vendored verbatim from Fork C and Fork E; doctor's vendored_verbatim keeps it byte-identical",
+        "docs/iq/staged-config": "staged configuration kept for reference, never imported or run",
+    },
+}
+
 
 def load_policy(root: Path) -> dict:
     policy = json.loads((root / POLICY_FILE).read_text())
@@ -41,26 +60,30 @@ def load_policy(root: Path) -> dict:
     return policy
 
 
-def base_policy(root: Path) -> tuple[dict | None, str | None]:
-    """The policy on main, to compare against. Returns (policy or None, problem or None)."""
+def base_policy(root: Path) -> tuple[dict | None, str | None, str]:
+    """The policy to compare against: main's at the merge base, or the founding policy while main has none.
+
+    Returns (policy or None, problem or None, a description of what was compared)."""
     ref = os.environ.get("KIT_LINT_BASE", "origin/main")
-    if ref == "none" or not (root / ".git").exists():
-        return None, None
+    if ref == "none":
+        return None, None, "not compared (KIT_LINT_BASE=none)"
+    if not (root / ".git").exists():
+        return None, None, "not compared (no git checkout)"
     git = ["git", "-C", str(root)]
     if subprocess.run([*git, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], capture_output=True).returncode:
-        return None, f"cannot find {ref} to compare the floors against (fetch it, or set KIT_LINT_BASE=none to skip, visibly)"
+        return None, f"cannot find {ref} to compare the floors against (fetch it, or set KIT_LINT_BASE=none to skip, visibly)", ""
     mb = subprocess.run([*git, "merge-base", "HEAD", ref], capture_output=True, text=True)
-    base = mb.stdout.strip() if mb.returncode == 0 else ref
+    if mb.returncode:
+        return None, f"HEAD and {ref} share no history, so the floors cannot be compared", ""
+    base = mb.stdout.strip()
     shown = subprocess.run([*git, "show", f"{base}:{POLICY_FILE}"], capture_output=True, text=True)
     if shown.returncode:
-        return {}, None  # main has no policy yet: every floor is new
-    return json.loads(shown.stdout), None
+        return FOUNDING_POLICY, None, f"the founding policy pinned in kit_cli/lint.py ({ref} at {base[:7]} has no {POLICY_FILE} yet)"
+    return json.loads(shown.stdout), None, f"{POLICY_FILE} on {ref} at {base[:7]}"
 
 
 def loosened(base: dict, policy: dict, root: Path) -> list[str]:
     """Every way `policy` is weaker than `base`."""
-    if not base:
-        return []
     out = []
     for tree, floor in policy["ratchet"].items():
         before = (base.get("ratchet") or {}).get(tree)
@@ -102,15 +125,17 @@ def run(root: Path, fix: bool = False, update_baseline: bool = False) -> int:
         print(f"lint    FAIL  {POLICY_FILE} names trees that do not exist: {', '.join(missing)}")
         return 1
     failed = 0
-    base, problem = base_policy(root)
+    base, problem, against = base_policy(root)
     if problem:
         failed += 1
         print(f"policy  FAIL  {problem}")
     elif base is not None and (weaker := loosened(base, policy, root)):
         failed += 1
-        print("policy  FAIL  this change loosens the lint policy on main: " + "; ".join(weaker))
+        print(f"policy  FAIL  compared with {against}, this change loosens it: " + "; ".join(weaker))
     elif base is not None:
-        print("policy  ok    no floor raised and no tree loosened against main")
+        print(f"policy  ok    no floor raised and no tree loosened, compared with {against}")
+    else:
+        print(f"policy  --    {against}")
     if fix:
         _ruff(root, "check", "--fix", *full)
         _ruff(root, "format", *full)
