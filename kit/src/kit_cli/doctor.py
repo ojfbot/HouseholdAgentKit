@@ -50,7 +50,15 @@ from kit_cli import privacy as privacy_mod
 ROOT = Path(__file__).resolve().parents[3]
 REGISTER = "docs/integration-risk-register.md"
 FAKE_KEY = "sk-" + "ant-api03-" + "Q" * 32  # built at run time, so no key-shaped string is ever tracked
-HOSTED = re.compile(r"^(ubuntu|macos|windows)-[a-z0-9.\-]+$")
+# GitHub-hosted runner labels, listed one by one. A pattern such as `ubuntu-*` also matches any label someone gives a
+# self-hosted runner, so a new label is added here, by the owner, when GitHub ships it.
+HOSTED = frozenset(
+    {
+        "ubuntu-latest", "ubuntu-24.04", "ubuntu-22.04", "ubuntu-24.04-arm", "ubuntu-22.04-arm",
+        "macos-latest", "macos-15", "macos-14", "macos-13",
+        "windows-latest", "windows-2025", "windows-2022",
+    }
+)  # fmt: skip
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", "out", ".pytest_cache", ".ruff_cache"}
 
 RUNG_TITLES = {
@@ -83,6 +91,8 @@ class Proof:
     # Something outside the files that the break needs while the check runs (a held port, an environment
     # variable): a context manager given the working copy and the broken copy.
     around: Callable[[Path, Path], AbstractContextManager[None]] | None = None
+    # A break that is in the host, not in the files (another interpreter): run this on the copy instead of the check.
+    fn: Callable[[Path], Result] | None = None
 
 
 @dataclass
@@ -105,9 +115,10 @@ class Check:
 
 def _files(root: Path) -> list[str]:
     if (root / ".git").exists():
-        out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=root, capture_output=True, text=True)
+        # NUL-delimited: in newline output git quotes a path with non-ASCII bytes, and the quoted form names no file.
+        out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True)
         if out.returncode == 0:
-            return [f for f in out.stdout.splitlines() if (root / f).exists()]
+            return [f for f in out.stdout.decode("utf-8", "surrogateescape").split("\0") if f and (root / f).exists()]
     found = []
     for p in root.rglob("*"):
         if p.is_file() and not (set(p.relative_to(root).parts) & SKIP_DIRS):
@@ -130,12 +141,26 @@ def _ports(root: Path) -> dict[str, int]:
 # ------------------------------------------------------------------------------------------------ rung 0
 
 
+def _register_rows(text: str, heading: str) -> list[str]:
+    """The first cell of each data row of the first table under a heading, without its backticks."""
+    section = re.search(rf"^## {re.escape(heading)}\n(.*?)(?=^## |\Z)", text, flags=re.S | re.M)
+    if not section:
+        return []
+    cells = [ln.split("|")[1].strip() for ln in section.group(1).splitlines() if ln.startswith("|") and ln.count("|") >= 3]
+    return [c.strip("`") for c in cells[2:]]  # the first two table lines are the header and its rule
+
+
 def register_covers_packages(root: Path) -> Result:
     text = (root / REGISTER).read_text() if (root / REGISTER).exists() else ""
     units = [*_members(root), *(p.parent.relative_to(root).as_posix() for p in root.glob("apps/*/server"))]
     units += [p.relative_to(root).as_posix() for p in root.glob("packages/*") if p.is_dir() and p.relative_to(root).as_posix() not in units]
-    missing = [u for u in sorted(set(units)) if f"`{u}`" not in text]
-    return Result(not missing, "every package has a row" if not missing else f"no risk-register row for: {', '.join(missing)}")
+    # A row in the assumptions table is what "audited" means. The name turning up elsewhere on the page is not a row.
+    rows = set(_register_rows(text, "Per-package assumptions"))
+    missing = [u for u in sorted(set(units)) if u not in rows]
+    return Result(
+        not missing,
+        f"every package has a row in the assumptions table ({len(set(units))})" if not missing else f"no risk-register row for: {', '.join(missing)}",
+    )
 
 
 PLACEHOLDER = re.compile(r"^(tbd|todo|tba|pending|none|n/?a|unknown|someone|reviewer|-+|\?+)\.?$", re.I)
@@ -278,7 +303,8 @@ def lock_fresh(root: Path) -> Result:
 
 def workspace_wired(root: Path) -> Result:
     members = set(_members(root))
-    on_disk = {p.parent.relative_to(root).as_posix() for p in [*root.glob("packages/*/pyproject.toml"), *root.glob("kit/pyproject.toml")]}
+    # Every pyproject.toml in the repo, wherever it sits, is a project CI must install and test; the root is the workspace.
+    on_disk = {Path(f).parent.as_posix() for f in _files(root) if Path(f).name == "pyproject.toml" and Path(f).parent != Path(".")}
     unwired, ghosts = sorted(on_disk - members), sorted(m for m in members if not (root / m / "pyproject.toml").exists())
     if unwired or ghosts:
         return Result(
@@ -289,7 +315,7 @@ def workspace_wired(root: Path) -> Result:
                 )
             ),
         )
-    return Result(True, f"{len(members)} workspace members wired")
+    return Result(True, f"{len(members)} workspace members wired, and no other pyproject.toml in the repo")
 
 
 CONSOLE_CONFIG_PROBE = """
@@ -348,7 +374,8 @@ def runners_hosted(root: Path) -> Result:
         for job_id, job in (wf.get("jobs") or {}).items():
             runs_on = job.get("runs-on")
             labels = runs_on if isinstance(runs_on, list) else [runs_on]
-            if not all(isinstance(x, str) and HOSTED.match(x) for x in labels):
+            # Exactly one hosted image: a runner must carry every label listed, and no hosted runner carries two images.
+            if len(labels) != 1 or not isinstance(labels[0], str) or labels[0] not in HOSTED:
                 bad.append(f"{name}:{job_id} runs-on {runs_on!r} is not provably a GitHub-hosted runner")
     if not _workflows(root):
         return Result(False, "no workflows found")
@@ -513,10 +540,37 @@ def gates_wellformed(root: Path) -> Result:
 # ------------------------------------------------------------------------------------------------ rung 2
 
 
-def python_pin(root: Path, running: str | None = None) -> Result:
+@dataclass(frozen=True)
+class Interpreter:
+    """What `sys` says about a Python: enough to tell a release of CPython from anything else with the same numbers."""
+
+    implementation: str  # sys.implementation.name
+    version: tuple[int, int, int]
+    releaselevel: str  # "final" for a release; "alpha", "beta" or "candidate" otherwise
+
+    @classmethod
+    def this(cls) -> Interpreter:
+        return cls(sys.implementation.name, (sys.version_info.major, sys.version_info.minor, sys.version_info.micro), sys.version_info.releaselevel)
+
+    @classmethod
+    def release(cls, numbers: str) -> Interpreter:
+        major, minor, micro = (int(x) for x in numbers.split("."))
+        return cls("cpython", (major, minor, micro), "final")
+
+    def show(self) -> str:
+        name = {"cpython": "CPython", "pypy": "PyPy"}.get(self.implementation, self.implementation)
+        return f"{name} {'.'.join(map(str, self.version))}" + ("" if self.releaselevel == "final" else f" ({self.releaselevel})")
+
+
+def python_pin(root: Path, running: Interpreter | None = None) -> Result:
     want = (root / ".python-version").read_text().strip()
-    running = running or ".".join(map(str, sys.version_info[:3]))
-    return Result(running == want, f"CPython {running}" if running == want else f"running CPython {running}, the pin is {want}")
+    running = running or Interpreter.this()
+    try:
+        pinned = Interpreter.release(want)
+    except ValueError:
+        return Result(False, f".python-version is {want!r}, not a full version like 3.12.16")
+    # The pin means a release of CPython. A release candidate or another implementation carries the same three numbers.
+    return Result(running == pinned, running.show() if running == pinned else f"running {running.show()}, the pin is {pinned.show()}")
 
 
 IMPORT_PROBE = """
@@ -1024,8 +1078,11 @@ CHECKS: list[Check] = [
         [
             Proof("a package nobody audited appears", _write("packages/unaudited-thing/pyproject.toml", "[project]\nname='x'\n")),
             Proof("the register is deleted", _delete(REGISTER)),
+            Proof(
+                "a package's row is removed and its name left in prose",
+                lambda root: (_drop_line(REGISTER, "| `kit` |")(root), _append(REGISTER, "\nThe `kit` package is mentioned here, in prose only.\n")(root))[0],
+            ),
         ],
-        hole="#38 [20]: passes when a package is named only in prose, not in the table",
     ),
     Check(
         "lock_fresh",
@@ -1052,8 +1109,11 @@ CHECKS: list[Check] = [
                 _write("packages/orphan/pyproject.toml", "[project]\nname='orphan'\n"),
             ),
             Proof("a member is deleted from disk", _delete("packages/verifier/pyproject.toml")),
+            Proof(
+                "a project appears under apps/ and is never added to the workspace", _write("apps/demo-console/pyproject.toml", "[project]\nname='console'\n")
+            ),
+            Proof("a project appears somewhere no pattern looks", _write("tools/helper/pyproject.toml", "[project]\nname='helper'\n")),
         ],
-        hole="#38 [19]: ignores a pyproject.toml under apps/",
     ),
     Check(
         "ports_agree",
@@ -1087,8 +1147,17 @@ CHECKS: list[Check] = [
             Proof("a job moves to a self-hosted runner", _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: [self-hosted, stage-host]")),
             Proof("a job hides its runner behind an expression", _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: ${{ vars.RUNNER }}")),
             Proof("a workflow runs fork code with secrets", _rewrite(".github/workflows/privacy-guard.yml", "pull_request:", "pull_request_target:")),
+            Proof("a job's runs-on is an empty list", _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: []")),
+            Proof(
+                "a self-hosted runner given a label that looks hosted",
+                _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: ubuntu-stage-host"),
+            ),
+            Proof("a job has no runs-on at all", _rewrite(".github/workflows/privacy-guard.yml", "    runs-on: ubuntu-24.04\n", "")),
+            Proof(
+                "a job asks for two hosted images at once (no hosted runner carries both labels)",
+                _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: [ubuntu-24.04, windows-2022]"),
+            ),
         ],
-        hole="#38 [18]: passes on an empty runs-on list and on invented ubuntu-* labels",
     ),
     Check(
         "required_checks_exist",
@@ -1184,9 +1253,20 @@ CHECKS: list[Check] = [
         2,
         python_pin,
         [".python-version"],
-        [Proof("the interpreter is a different patch release", _write(".python-version", "3.12.99\n"))],
+        [
+            Proof("the interpreter is a different patch release", _write(".python-version", "3.12.99\n")),
+            Proof(
+                "a release candidate of the pinned version",
+                lambda root: None,
+                fn=lambda root: python_pin(root, running=Interpreter("cpython", (3, 12, 16), "candidate")),
+            ),
+            Proof(
+                "another implementation with the same version numbers",
+                lambda root: None,
+                fn=lambda root: python_pin(root, running=Interpreter("pypy", (3, 12, 16), "final")),
+            ),
+        ],
         host=True,
-        hole="#38 [21]: accepts a pre-release or another implementation with the same numbers",
     ),
     Check(
         "sync_frozen",
@@ -1445,7 +1525,7 @@ def prove(check: Check, root: Path = ROOT) -> list[tuple[str, bool, str]]:
             )
         if check.id == "sync_frozen":  # a working setup is one that has been synced
             _uv(good, "sync", "--frozen", "-q").check_returncode()
-        res = check.fn(good) if check.id != "python_pin" else python_pin(good, running=(good / ".python-version").read_text().strip())
+        res = check.fn(good) if check.id != "python_pin" else python_pin(good, running=Interpreter.release((good / ".python-version").read_text().strip()))
         rows.append(("working setup", res.ok, res.detail))
         for i, proof in enumerate(check.proofs):
             bad = Path(tmp) / f"broken-{i}"
@@ -1463,10 +1543,12 @@ def prove(check: Check, root: Path = ROOT) -> list[tuple[str, bool, str]]:
             proof.breaker(bad)
             with proof.around(good, bad) if proof.around else nullcontext():
                 try:
-                    if proof.name.startswith("hook-fault:"):
+                    if proof.fn:
+                        res = proof.fn(bad)
+                    elif proof.name.startswith("hook-fault:"):
                         res = hello_world_smoke(bad, hook=_BrokenHook(proof.name.split(":")[1].split()[0]))
                     elif check.id == "python_pin":
-                        res = python_pin(bad, running="3.12.16")
+                        res = python_pin(bad, running=Interpreter.release("3.12.16"))
                     else:
                         res = check.fn(bad)
                 except Exception as e:  # a check that crashes on a broken setup is red, loudly
