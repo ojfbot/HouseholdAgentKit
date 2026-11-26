@@ -115,9 +115,10 @@ class Check:
 
 def _files(root: Path) -> list[str]:
     if (root / ".git").exists():
-        out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=root, capture_output=True, text=True)
+        # NUL-delimited: in newline output git quotes a path with non-ASCII bytes, and the quoted form names no file.
+        out = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root, capture_output=True)
         if out.returncode == 0:
-            return [f for f in out.stdout.splitlines() if (root / f).exists()]
+            return [f for f in out.stdout.decode("utf-8", "surrogateescape").split("\0") if f and (root / f).exists()]
     found = []
     for p in root.rglob("*"):
         if p.is_file() and not (set(p.relative_to(root).parts) & SKIP_DIRS):
@@ -373,7 +374,8 @@ def runners_hosted(root: Path) -> Result:
         for job_id, job in (wf.get("jobs") or {}).items():
             runs_on = job.get("runs-on")
             labels = runs_on if isinstance(runs_on, list) else [runs_on]
-            if not labels or not all(isinstance(x, str) and x in HOSTED for x in labels):  # an empty list names no runner
+            # Exactly one hosted image: a runner must carry every label listed, and no hosted runner carries two images.
+            if len(labels) != 1 or not isinstance(labels[0], str) or labels[0] not in HOSTED:
                 bad.append(f"{name}:{job_id} runs-on {runs_on!r} is not provably a GitHub-hosted runner")
     if not _workflows(root):
         return Result(False, "no workflows found")
@@ -1151,6 +1153,10 @@ CHECKS: list[Check] = [
                 _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: ubuntu-stage-host"),
             ),
             Proof("a job has no runs-on at all", _rewrite(".github/workflows/privacy-guard.yml", "    runs-on: ubuntu-24.04\n", "")),
+            Proof(
+                "a job asks for two hosted images at once (no hosted runner carries both labels)",
+                _rewrite(".github/workflows/ci.yml", "runs-on: ubuntu-24.04", "runs-on: [ubuntu-24.04, windows-2022]"),
+            ),
         ],
     ),
     Check(
