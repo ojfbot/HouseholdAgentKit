@@ -55,3 +55,31 @@ def test_a_zero_tolerance_breach_aborts_even_when_the_status_says_pass(tmp_path,
 def test_one_order_per_mandate_is_the_rule_not_a_breach(tmp_path):
     clean = {"locks_violated": 0, "unverified_numbers": 0, "orders_per_mandate_max": 1}
     assert _gate(as_of="2026-11-25", hello_world_result=_hook(tmp_path, zero_tolerance=clean))["status"] == "pass"
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    [
+        pytest.param(None, id="zero_tolerance-null"),
+        pytest.param({}, id="zero_tolerance-empty"),
+        pytest.param({"unverified_numbers": 0}, id="locks_violated-missing"),
+        pytest.param({"locks_violated": 0}, id="unverified_numbers-missing"),
+        pytest.param({"locks_violated": None, "unverified_numbers": 0}, id="locks_violated-null"),
+        pytest.param({"locks_violated": False, "unverified_numbers": 0}, id="locks_violated-bool"),
+        pytest.param({"locks_violated": -1, "unverified_numbers": 0}, id="locks_violated-negative"),
+        pytest.param({"locks_violated": "0", "unverified_numbers": 0}, id="locks_violated-string"),
+        pytest.param({"locks_violated": 0, "unverified_numbers": 0.0}, id="unverified_numbers-float"),
+    ],
+)
+def test_missing_or_malformed_zero_tolerance_evidence_aborts(tmp_path, evidence):
+    """Review of #52 (Codex): absent or null evidence read as clean. Missing evidence is not a pass."""
+    with pytest.raises(RuntimeError, match="zero-tolerance"):
+        _gate(as_of="2026-11-25", hello_world_result=_hook(tmp_path, zero_tolerance=evidence))
+
+
+def test_a_result_with_no_zero_tolerance_key_aborts(tmp_path):
+    res = json.loads((tmp_path / "hw.json").read_text()) if _hook(tmp_path) else None
+    del res["zero_tolerance"]
+    (tmp_path / "hw.json").write_text(json.dumps(res))
+    with pytest.raises(RuntimeError, match="zero-tolerance"):
+        _gate(as_of="2026-11-25", hello_world_result=str(tmp_path / "hw.json"))

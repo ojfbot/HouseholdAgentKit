@@ -118,19 +118,32 @@ def replay_run0(adoption: float = 0.10) -> dict:
 
 PASS_REQUIRED_FROM = "2026-11-25"   # fork-a/hello-world-spec.md: placement_only accepted through Nov 24
 HELLO_WORLD_RESULT_VERSION = "hello_world_result@1"   # the only hook result shape stage 0 knows how to read
+ZERO_TOLERANCE_REQUIRED = ("locks_violated", "unverified_numbers")   # the counters HelloWorldResult@1 always carries
 
 
 def zero_tolerance_breaches(zero_tolerance: dict | None) -> list[str]:
-    """The zero-tolerance counters that are over their limit: none may be above 0, except one order per mandate."""
-    return sorted(name for name, value in (zero_tolerance or {}).items()
-                  if (value > 1 if name == "orders_per_mandate_max" else value))
+    """What is wrong with a result's zero-tolerance evidence. Empty only when the evidence is there and clean.
+
+    Missing evidence is not clean evidence: the block must be present, name at least the counters the spec's
+    HelloWorldResult@1 carries, and hold counts (non-negative integers, not booleans). Then no counter may be
+    above 0, except one order per mandate."""
+    if not isinstance(zero_tolerance, dict) or not zero_tolerance:
+        return [f"no zero-tolerance counters (got {zero_tolerance!r})"]
+    problems = [f"{name} missing" for name in ZERO_TOLERANCE_REQUIRED if name not in zero_tolerance]
+    for name, value in sorted(zero_tolerance.items()):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            problems.append(f"{name} is {value!r}, not a count")
+        elif value > (1 if name == "orders_per_mandate_max" else 0):
+            problems.append(f"{name}={value}")
+    return problems
 
 
 def stage0(cfg: RunConfig, refs, cover) -> dict:
     """Hello world gate (fork-a/hello-world-spec.md, HelloWorldResult@1). The placement self-test always runs.
     Through Nov 24 a missing hook result or `status: placement_only` is accepted; from Nov 25 the run needs
     `status: pass` from a `full` run (D: engine-run requires it). `fail` or `not_run` aborts at any date, and so
-    does a hook result of another `result_version` or one with a zero-tolerance breach, whatever its `status` says."""
+    does a hook result of another `result_version`, or one whose zero-tolerance evidence is missing, malformed or
+    breached, whatever its `status` says."""
     seeds = {s["id"]: s for s in load_seeds()[0]}
     anch = {}
     for aid in ANCHORS:
@@ -150,7 +163,7 @@ def stage0(cfg: RunConfig, refs, cover) -> dict:
             problems.append(f"hook result_version is {hw.get('result_version')!r}, stage 0 reads {HELLO_WORLD_RESULT_VERSION}")
         breaches = zero_tolerance_breaches(hw.get("zero_tolerance"))
         if breaches:
-            problems.append(f"hook result has zero-tolerance breaches: {', '.join(breaches)}")
+            problems.append(f"hook result fails its zero-tolerance evidence: {', '.join(breaches)}")
     if not placement["placement_pass"]:
         problems.append("placement self-test failed")
     if out["status"] in ("fail", "not_run"):
