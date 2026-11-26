@@ -468,11 +468,84 @@ def hello_world_smoke(root: Path, hook: object | None = None) -> Result:
     return Result(ok, f"taco night smoke run: {why}" + (f" ({unmeasured} zero-tolerance metrics not measured yet)" if unmeasured else ""))
 
 
-ASSET_REF = re.compile(r"""<(?:script|link|img|source|video|audio)\b[^>]*?\b(?:src|href)=["']([^"'#]+)["']""", re.I)
+# Which attributes of which elements make a browser fetch something while the page loads. `a href` is not one.
+LOADED_ATTRS = {
+    "script": ("src",),
+    "link": ("href",),
+    "img": ("src", "srcset"),
+    "source": ("src", "srcset"),
+    "video": ("src", "poster"),
+    "audio": ("src",),
+    "track": ("src",),
+    "iframe": ("src",),
+    "embed": ("src",),
+    "object": ("data",),
+    "input": ("src",),
+}
 JS_IMPORT = re.compile(
-    r"""(?:^|[;\n])\s*(?:import|export)\b[^;'"]*?\bfrom\s*["']([^"']+)["']|(?:^|[;\n])\s*import\s*["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)"""
+    r"""(?:^|[;\n])\s*(?:import|export)\b[^;'"`]*?\bfrom\s*(["'])(.+?)\1"""  # import x from "m"; export {x} from "m"
+    r"""|(?:^|[;\n])\s*import\s*(["'])(.+?)\3"""  # import "m"
+    r"""|\bimport\(\s*(["'])(.+?)\5\s*\)"""  # import("m")
+    r"""|\bimport\(\s*`([^`$]*)`\s*\)"""  # import(`m`), a template literal with no ${...} in it
 )
-CSS_REF = re.compile(r"""@import\s+["']([^"']+)["']|url\(\s*["']?([^"')]+?)["']?\s*\)""")
+SRCSET_URL = re.compile(r"\s*(\S+)(?:\s+[^,]*)?,?")
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+CSS_REF = re.compile(r"""@import\s+(["'])(.+?)\1|url\(\s*(["'])(.*?)\3\s*\)|url\(\s*([^"')\s][^)\s]*)\s*\)""")
+
+
+def urlpath(url: str) -> str:
+    from urllib.parse import urlsplit
+
+    return urlsplit(url).path
+
+
+def html_refs(html: str, page_url: str) -> list[str]:
+    """Absolute URLs of what a browser fetches while loading this page, resolved against the first `<base href>`.
+
+    An HTML parser, not a pattern: it skips comments, takes any spacing or quoting around `=`, and reads `srcset`.
+    """
+    from html.parser import HTMLParser
+    from urllib.parse import urljoin
+
+    found: list[tuple[str, str]] = []  # (tag, raw reference)
+    base: list[str] = []
+
+    class Collect(HTMLParser):
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            values = {k: v for k, v in attrs if v is not None}
+            if tag == "base" and "href" in values and not base:
+                base.append(values["href"])
+            for attr in LOADED_ATTRS.get(tag, ()):
+                value = values.get(attr, "").strip()
+                if not value:
+                    continue
+                if attr == "srcset":  # "url [descriptor], ...": the URL runs to whitespace and may itself hold commas
+                    found.extend((tag, m.group(1).rstrip(",")) for m in SRCSET_URL.finditer(value))
+                else:
+                    found.append((tag, value))
+
+        handle_startendtag = handle_starttag
+
+    Collect(convert_charrefs=True).feed(html)
+    root = urljoin(page_url, base[0]) if base else page_url
+    return [urljoin(root, ref) for _, ref in found if not ref.startswith(("data:", "#", "javascript:"))]
+
+
+def js_refs(js: str) -> list[str]:
+    """Module specifiers a script imports. An import whose specifier is built at run time is out of scope."""
+    return [m.group(2) or m.group(4) or m.group(6) or m.group(7) for m in JS_IMPORT.finditer(js)]
+
+
+def css_refs(css: str) -> list[str]:
+    """What a stylesheet fetches: each `@import` and `url()`, outside comments. A quoted URL may hold parentheses."""
+    out = []
+    for m in CSS_REF.finditer(CSS_COMMENT.sub("", css)):
+        ref = (m.group(2) or m.group(4) or m.group(5) or "").strip()
+        if ref and not ref.startswith(("data:", "#")):
+            out.append(ref)
+    return out
+
+
 CONSOLE_PAGES = ("/", "/p")  # the stage and the phone join page
 
 
@@ -480,8 +553,9 @@ def _console_crawl(base: str) -> tuple[list[str], int]:
     """Fetch the console's pages and, transitively, every same-origin asset they reference. Returns (problems, fetched).
 
     A page that loads while its script, stylesheet or an imported module answers 404 is a blank screen on stage,
-    so every reference in the HTML, every static import in the JavaScript and every `@import` or `url()` in the
-    CSS is fetched too. URLs a script builds at run time (the QR image, the recordings) are not seen here.
+    so every reference in the HTML (parsed, `<base href>` honoured), every import in the JavaScript and every
+    `@import` or `url()` in the CSS is fetched too. URLs a script builds at run time (the QR image, the
+    recordings, an import whose specifier is computed) are not seen here.
     """
     import urllib.error
     import urllib.parse
@@ -508,11 +582,11 @@ def _console_crawl(base: str) -> tuple[list[str], int]:
             if "<html" not in body.lower():
                 problems.append(f"{path} is not an HTML page")
                 continue
-            refs = ASSET_REF.findall(body)
+            refs = html_refs(body, base + path)  # already resolved, against the page's <base href> if it has one
         elif path.endswith((".js", ".mjs")) or "javascript" in kind:
-            refs = [next(g for g in m if g) for m in JS_IMPORT.findall(body)]
+            refs = js_refs(body)  # a module resolves against its own URL
         elif path.endswith(".css") or "text/css" in kind:
-            refs = [r for r in (next(g for g in m if g) for m in CSS_REF.findall(body)) if not r.startswith("data:")]
+            refs = css_refs(body)  # so does a stylesheet
         else:
             refs = []
         for ref in refs:
@@ -849,6 +923,28 @@ CHECKS: list[Check] = [
             Proof("the phone page's stylesheet is deleted", _delete("apps/demo-console/web/css/phone.css")),
             Proof("a module the page scripts import is deleted", _delete("apps/demo-console/web/js/dom.js")),
             Proof("a stylesheet the page stylesheets import is deleted", _delete("apps/demo-console/web/css/cards.css")),
+            Proof(
+                "the stage page names a responsive image that is missing (srcset)",
+                _rewrite("apps/demo-console/web/stage.html", "</body>", '<img srcset="/static/img/missing.svg 1x" alt="">\n</body>'),
+            ),
+            Proof(
+                "the stage page names a missing script with spaces around `=`",
+                _rewrite("apps/demo-console/web/stage.html", "</body>", '<script type="module" src = "/static/js/missing.js"></script>\n</body>'),
+            ),
+            Proof(
+                "a script imports a missing module through a template literal",
+                _append("apps/demo-console/web/js/stage.js", "\nimport(`./missing-lazy.js`);\n"),
+            ),
+            Proof(
+                # Without the <base>, "static/js/phone.js" from /p is the real script, so only a crawl that honours
+                # <base href> goes red here.
+                "the page's <base href> sends a relative reference to a folder that lacks it",
+                _rewrite(
+                    "apps/demo-console/web/phone.html",
+                    "<head>",
+                    '<head>\n<base href="/static/nowhere/">\n<script type="module" src="static/js/phone.js"></script>',
+                ),
+            ),
         ],
         host=True,
     ),
