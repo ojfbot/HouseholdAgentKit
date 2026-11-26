@@ -448,14 +448,152 @@ def hello_world_smoke(root: Path, hook: object | None = None) -> Result:
     res = hello_world.run("smoke", "doctor", hook=hook, cases_dir=cases)  # type: ignore[arg-type]
     zt = res.get("zero_tolerance") or {}
     broken = sorted(k for k, v in zt.items() if (v > 1 if k == "orders_per_mandate_max" else v))
-    ok = res.get("result_version") == "hello_world_result@1" and res.get("status") in ("pass", "placement_only") and not broken and not res.get("failures")
+    # A run with no cases passes every tier vacuously (0 of 0), so count what actually ran.
+    ran = int(((res.get("tiers") or {}).get("0") or {}).get("cases") or 0)
+    episodes = ran * int(res.get("k") or 0)
+    ok = (
+        res.get("result_version") == "hello_world_result@1"
+        and res.get("status") in ("pass", "placement_only")
+        and not broken
+        and not res.get("failures")
+        and episodes > 0
+    )
     why = (
-        f"status={res.get('status')}"
+        f"status={res.get('status')}, {episodes} episodes over {ran} cases"
+        + ("" if episodes else " (nothing ran, so nothing was checked)")
         + (f", zero-tolerance breaches: {', '.join(broken)}" if broken else "")
         + (f", {len(res['failures'])} failed episodes" if res.get("failures") else "")
     )
     unmeasured = len(res.get("zero_tolerance_not_measured") or [])
     return Result(ok, f"taco night smoke run: {why}" + (f" ({unmeasured} zero-tolerance metrics not measured yet)" if unmeasured else ""))
+
+
+# Which attributes of which elements make a browser fetch something while the page loads. `a href` is not one.
+LOADED_ATTRS = {
+    "script": ("src",),
+    "link": ("href",),
+    "img": ("src", "srcset"),
+    "source": ("src", "srcset"),
+    "video": ("src", "poster"),
+    "audio": ("src",),
+    "track": ("src",),
+    "iframe": ("src",),
+    "embed": ("src",),
+    "object": ("data",),
+    "input": ("src",),
+}
+JS_IMPORT = re.compile(
+    r"""(?:^|[;\n])\s*(?:import|export)\b[^;'"`]*?\bfrom\s*(["'])(.+?)\1"""  # import x from "m"; export {x} from "m"
+    r"""|(?:^|[;\n])\s*import\s*(["'])(.+?)\3"""  # import "m"
+    r"""|\bimport\(\s*(["'])(.+?)\5\s*\)"""  # import("m")
+    r"""|\bimport\(\s*`([^`$]*)`\s*\)"""  # import(`m`), a template literal with no ${...} in it
+)
+SRCSET_URL = re.compile(r"\s*(\S+)(?:\s+[^,]*)?,?")
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+CSS_REF = re.compile(r"""@import\s+(["'])(.+?)\1|url\(\s*(["'])(.*?)\3\s*\)|url\(\s*([^"')\s][^)\s]*)\s*\)""")
+
+
+def urlpath(url: str) -> str:
+    from urllib.parse import urlsplit
+
+    return urlsplit(url).path
+
+
+def html_refs(html: str, page_url: str) -> list[str]:
+    """Absolute URLs of what a browser fetches while loading this page, resolved against the first `<base href>`.
+
+    An HTML parser, not a pattern: it skips comments, takes any spacing or quoting around `=`, and reads `srcset`.
+    """
+    from html.parser import HTMLParser
+    from urllib.parse import urljoin
+
+    found: list[tuple[str, str]] = []  # (tag, raw reference)
+    base: list[str] = []
+
+    class Collect(HTMLParser):
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            values = {k: v for k, v in attrs if v is not None}
+            if tag == "base" and "href" in values and not base:
+                base.append(values["href"])
+            for attr in LOADED_ATTRS.get(tag, ()):
+                value = values.get(attr, "").strip()
+                if not value:
+                    continue
+                if attr == "srcset":  # "url [descriptor], ...": the URL runs to whitespace and may itself hold commas
+                    found.extend((tag, m.group(1).rstrip(",")) for m in SRCSET_URL.finditer(value))
+                else:
+                    found.append((tag, value))
+
+        handle_startendtag = handle_starttag
+
+    Collect(convert_charrefs=True).feed(html)
+    root = urljoin(page_url, base[0]) if base else page_url
+    return [urljoin(root, ref) for _, ref in found if not ref.startswith(("data:", "#", "javascript:"))]
+
+
+def js_refs(js: str) -> list[str]:
+    """Module specifiers a script imports. An import whose specifier is built at run time is out of scope."""
+    return [m.group(2) or m.group(4) or m.group(6) or m.group(7) for m in JS_IMPORT.finditer(js)]
+
+
+def css_refs(css: str) -> list[str]:
+    """What a stylesheet fetches: each `@import` and `url()`, outside comments. A quoted URL may hold parentheses."""
+    out = []
+    for m in CSS_REF.finditer(CSS_COMMENT.sub("", css)):
+        ref = (m.group(2) or m.group(4) or m.group(5) or "").strip()
+        if ref and not ref.startswith(("data:", "#")):
+            out.append(ref)
+    return out
+
+
+CONSOLE_PAGES = ("/", "/p")  # the stage and the phone join page
+
+
+def _console_crawl(base: str) -> tuple[list[str], int]:
+    """Fetch the console's pages and, transitively, every same-origin asset they reference. Returns (problems, fetched).
+
+    A page that loads while its script, stylesheet or an imported module answers 404 is a blank screen on stage,
+    so every reference in the HTML (parsed, `<base href>` honoured), every import in the JavaScript and every
+    `@import` or `url()` in the CSS is fetched too. URLs a script builds at run time (the QR image, the
+    recordings, an import whose specifier is computed) are not seen here.
+    """
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    problems: list[str] = []
+    seen: dict[str, str] = {}  # path -> what referenced it
+    queue = [(page, "the console") for page in CONSOLE_PAGES]
+    while queue:
+        path, referrer = queue.pop(0)
+        if path in seen:
+            continue
+        seen[path] = referrer
+        try:
+            with urllib.request.urlopen(base + path, timeout=2) as r:
+                body, kind = r.read().decode(errors="replace"), r.headers.get("Content-Type", "")
+        except urllib.error.HTTPError as e:
+            problems.append(f"{path} (referenced by {referrer}) answered HTTP {e.code}")
+            continue
+        except OSError as e:
+            problems.append(f"{path} (referenced by {referrer}) could not be fetched: {e}")
+            continue
+        if path in CONSOLE_PAGES:
+            if "<html" not in body.lower():
+                problems.append(f"{path} is not an HTML page")
+                continue
+            refs = html_refs(body, base + path)  # already resolved, against the page's <base href> if it has one
+        elif path.endswith((".js", ".mjs")) or "javascript" in kind:
+            refs = js_refs(body)  # a module resolves against its own URL
+        elif path.endswith(".css") or "text/css" in kind:
+            refs = css_refs(body)  # so does a stylesheet
+        else:
+            refs = []
+        for ref in refs:
+            target = urllib.parse.urlsplit(urllib.parse.urljoin(base + path, ref))
+            if f"{target.scheme}://{target.netloc}" == base:  # same origin only: the console runs offline
+                queue.append((target.path, path))
+    return problems, len(seen)
 
 
 def console_on_fixtures(root: Path) -> Result:
@@ -466,6 +604,7 @@ def console_on_fixtures(root: Path) -> Result:
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
+    base = f"http://127.0.0.1:{port}"
     with tempfile.TemporaryDirectory() as tmp:
         cfg = Path(tmp) / "console.json"
         cfg.write_text(json.dumps({"bind": "127.0.0.1", "log_dir": str(Path(tmp) / "logs")}))
@@ -482,18 +621,26 @@ def console_on_fixtures(root: Path) -> Result:
                 if proc.poll() is not None:
                     return Result(False, f"console exited at start: {(proc.stderr.read() if proc.stderr else b'').decode()[-200:].strip()}")
                 try:
-                    with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health", timeout=1) as r:
-                        health = r.status
-                    with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=1) as r:
-                        page = r.read().decode(errors="replace")
-                    ok = health == 200 and "<html" in page.lower()
-                    return Result(ok, "console serves its stage page on fixtures" if ok else "console answered but the stage page is not HTML")
+                    with urllib.request.urlopen(f"{base}/api/health", timeout=1) as r:
+                        if r.status != 200:
+                            return Result(False, f"console answered HTTP {r.status} for its health check")
+                    break
                 except urllib.error.HTTPError as e:
-                    return Result(False, f"console answered HTTP {e.code} for its health or stage page")
+                    return Result(False, f"console answered HTTP {e.code} for its health check")
                 except OSError as e:
                     last = str(e)
                     time.sleep(0.25)
-            return Result(False, f"console did not answer in 10 s ({last})")
+            else:
+                return Result(False, f"console did not answer in 10 s ({last})")
+            problems, fetched = _console_crawl(base)
+            if problems:
+                return Result(
+                    False,
+                    "console is up but its pages would not load: " + "; ".join(problems[:3]) + (f" (+{len(problems) - 3} more)" if len(problems) > 3 else ""),
+                )
+            if fetched <= len(CONSOLE_PAGES):
+                return Result(False, "console pages reference no script or stylesheet; nothing would render")
+            return Result(True, f"console serves its stage and phone pages and the {fetched - len(CONSOLE_PAGES)} assets they reference, on fixtures")
         finally:
             proc.terminate()
             proc.wait(timeout=5)
@@ -757,11 +904,11 @@ CHECKS: list[Check] = [
         ["data/seeds/cases/*.yaml"],
         [
             Proof("the hello-world cases are missing", _delete("data/seeds/cases/taco-hello-world.yaml")),
+            Proof("the cases file lists no cases (zero episodes run)", _write("data/seeds/cases/taco-hello-world.yaml", "schema: cases/v1-loose\ncases: []\n")),
             Proof("hook-fault:lock (the agent swaps a locked safe food)", lambda root: None),
             Proof("hook-fault:reject (every episode ends in an unacceptable cart)", lambda root: None),
         ],
         host=True,
-        hole="#38 [3]: passes with zero episodes",
     ),
     Check(
         "console_on_fixtures",
@@ -771,9 +918,35 @@ CHECKS: list[Check] = [
         [
             Proof("the engine fixtures were never built", _delete("apps/demo-console/fixtures/engine/deltas.json")),
             Proof("the stage page is missing", _delete("apps/demo-console/web/stage.html")),
+            Proof("the phone page is missing", _delete("apps/demo-console/web/phone.html")),
+            Proof("the stage page's script is deleted", _delete("apps/demo-console/web/js/stage.js")),
+            Proof("the phone page's stylesheet is deleted", _delete("apps/demo-console/web/css/phone.css")),
+            Proof("a module the page scripts import is deleted", _delete("apps/demo-console/web/js/dom.js")),
+            Proof("a stylesheet the page stylesheets import is deleted", _delete("apps/demo-console/web/css/cards.css")),
+            Proof(
+                "the stage page names a responsive image that is missing (srcset)",
+                _rewrite("apps/demo-console/web/stage.html", "</body>", '<img srcset="/static/img/missing.svg 1x" alt="">\n</body>'),
+            ),
+            Proof(
+                "the stage page names a missing script with spaces around `=`",
+                _rewrite("apps/demo-console/web/stage.html", "</body>", '<script type="module" src = "/static/js/missing.js"></script>\n</body>'),
+            ),
+            Proof(
+                "a script imports a missing module through a template literal",
+                _append("apps/demo-console/web/js/stage.js", "\nimport(`./missing-lazy.js`);\n"),
+            ),
+            Proof(
+                # Without the <base>, "static/js/phone.js" from /p is the real script, so only a crawl that honours
+                # <base href> goes red here.
+                "the page's <base href> sends a relative reference to a folder that lacks it",
+                _rewrite(
+                    "apps/demo-console/web/phone.html",
+                    "<head>",
+                    '<head>\n<base href="/static/nowhere/">\n<script type="module" src="static/js/phone.js"></script>',
+                ),
+            ),
         ],
         host=True,
-        hole="#38 [8]: passes with the pages' scripts deleted",
     ),
     Check(
         "ci_runs_locally",
