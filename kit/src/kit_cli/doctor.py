@@ -355,6 +355,11 @@ def runners_hosted(root: Path) -> Result:
     return Result(not bad, "every job runs on a GitHub-hosted runner" if not bad else "; ".join(bad))
 
 
+def _job_needs(job: dict) -> list[str]:
+    needs = job.get("needs") or []
+    return [needs] if isinstance(needs, str) else [str(n) for n in needs]
+
+
 def required_checks_exist(root: Path) -> Result:
     ruleset = json.loads((root / ".github/rulesets/main.json").read_text())
     want = [c["context"] for r in ruleset["rules"] if r["type"] == "required_status_checks" for c in r["parameters"]["required_status_checks"]]
@@ -366,16 +371,27 @@ def required_checks_exist(root: Path) -> Result:
     missing = [c for c in want if c not in emitted]
     if missing:
         return Result(False, f"the ruleset requires checks no workflow produces (merges would block forever): {', '.join(missing)}")
-    # A required check stands for its whole workflow, so it must wait for every other job in it.
-    loose = []
+    problems = []
+    covered: dict[str, set[str]] = {}  # workflow -> jobs whose failure a required check reports
     for c in want:
         wf_name, job_id = emitted[c]
-        jobs = workflows[wf_name].get("jobs") or {}
-        needs = jobs[job_id].get("needs") or []
-        unwaited = sorted(set(jobs) - {job_id} - set([needs] if isinstance(needs, str) else needs))
-        if unwaited:
-            loose.append(f"`{c}` ({wf_name}) can go green without: {', '.join(unwaited)}")
-    return Result(not loose, f"required checks all exist as jobs and wait for their whole workflow: {', '.join(want)}" if not loose else "; ".join(loose))
+        job = (workflows[wf_name].get("jobs") or {})[job_id]
+        needs = _job_needs(job)
+        covered.setdefault(wf_name, set()).update({job_id, *needs})
+        # A required job that needs others is skipped, not failed, when one of them fails, unless it is an
+        # aggregate: `if: always()` and one step that fails unless every need succeeded (kit check's definition).
+        if needs and not check_mod.is_aggregate(job):
+            problems.append(f"`{c}` ({wf_name}) needs {', '.join(needs)} but is not an aggregate, so a failure there leaves it skipped, not red")
+    # Every job in a workflow that has a required check must be required itself or reported by a required aggregate.
+    for wf_name, jobs_seen in covered.items():
+        loose = sorted(set(workflows[wf_name].get("jobs") or {}) - jobs_seen)
+        if loose:
+            problems.append(f"{wf_name}: no required check fails when these fail: {', '.join(loose)}")
+    if problems:
+        return Result(False, "; ".join(problems))
+    return Result(
+        True, f"required checks all exist as jobs, and every job in their workflows is required or reported by a required aggregate: {', '.join(want)}"
+    )
 
 
 def no_forbidden_files(root: Path) -> Result:
@@ -504,19 +520,70 @@ def python_pin(root: Path, running: str | None = None) -> Result:
 
 
 IMPORT_PROBE = """
-import importlib, importlib.metadata as md, json
+import importlib, importlib.metadata as md, json, sys
+workspace = json.loads(sys.argv[1])  # [[module, attribute or null], ...]: what the workspace's own code imports
 unimportable, missing = [], []
 for name in sorted(n for n in md.packages_distributions() if not n.startswith("_")):
     try:
         importlib.import_module(name)
     except Exception as e:
         unimportable.append(f"{name} ({type(e).__name__})")
+for module, attr in workspace:
+    try:
+        importlib.import_module(f"{module}.{attr}" if attr else module)
+    except ModuleNotFoundError as e:
+        if not attr or e.name != f"{module}.{attr}":
+            unimportable.append(f"{module}.{attr or ''} ({type(e).__name__}: {e})".replace(". (", " ("))
+            continue
+        try:
+            getattr(importlib.import_module(module), attr)  # `from module import name` of a function or class
+        except Exception as e2:
+            unimportable.append(f"{module}.{attr} ({type(e2).__name__})")
+    except Exception as e:
+        unimportable.append(f"{module}.{attr or ''} ({type(e).__name__}: {e})")
 for dist in md.distributions():
     for f in dist.files or []:
         if "__pycache__" not in f.parts and not f.locate().exists():
             missing.append(f"{dist.metadata['Name']}: {f}")
 print(json.dumps({"unimportable": unimportable, "missing": missing}))
 """
+
+
+def _workspace_imports(root: Path) -> list[tuple[str, str | None]]:
+    """Every import of a workspace package by the workspace's own source, as (module, name or None).
+
+    An editable install lists no source files in its metadata, so a deleted module is only noticed when
+    something imports it; the `kit` commands import theirs inside functions. This finds each such import.
+    """
+    import ast
+
+    packages: dict[str, Path] = {}  # import name -> its directory
+    for member in _members(root):
+        base = root / member / "src" if (root / member / "src").is_dir() else root / member
+        for init in base.glob("*/__init__.py"):
+            packages[init.parent.name] = init.parent
+    found: set[tuple[str, str | None]] = set()
+    for top, pkg_dir in packages.items():
+        for py in pkg_dir.rglob("*.py"):
+            if "__pycache__" in py.parts:
+                continue
+            here = ".".join([top, *py.relative_to(pkg_dir).with_suffix("").parts]).removesuffix(".__init__")
+            try:
+                tree = ast.parse(py.read_text())
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    found.update((a.name, None) for a in node.names if a.name.split(".")[0] in packages)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.level:  # relative: resolve against this module's package
+                        parts = here.split(".")[: -node.level] if py.name != "__init__.py" else here.split(".")[: len(here.split(".")) - node.level + 1]
+                        module = ".".join([*parts, *([node.module] if node.module else [])])
+                    else:
+                        module = node.module or ""
+                    if module.split(".")[0] in packages:
+                        found.update((module, a.name if a.name != "*" else None) for a in node.names)
+    return sorted(found, key=lambda t: (t[0], t[1] or ""))
 
 
 def sync_frozen(root: Path) -> Result:
@@ -526,18 +593,20 @@ def sync_frozen(root: Path) -> Result:
     if out.returncode != 0:
         return Result(False, "environment differs from uv.lock: run `uv sync --frozen`")
     # uv compares metadata. A package whose files are gone but whose metadata is left still "matches", so ask the
-    # environment's own interpreter, in a fresh isolated process, to import every installed module and find every file.
+    # environment's own interpreter, in a fresh isolated process, to import every installed module, every module the
+    # workspace's own code imports from the workspace, and to find every installed file.
     python = root / ".venv/bin/python"
     if not python.exists():
         return Result(False, "environment has no interpreter at .venv/bin/python: run `uv sync --frozen`")
-    probe = subprocess.run([str(python), "-I", "-c", IMPORT_PROBE], cwd=root, capture_output=True, text=True)
+    targets = json.dumps(_workspace_imports(root))
+    probe = subprocess.run([str(python), "-I", "-c", IMPORT_PROBE, targets], cwd=root, capture_output=True, text=True)
     if probe.returncode != 0:
         return Result(False, f"the environment's interpreter could not run the import probe: {probe.stderr.strip()[-160:]}")
     report = json.loads(probe.stdout)
     if report["unimportable"] or report["missing"]:
         shown = [*report["unimportable"][:3], *(f"missing file {m}" for m in report["missing"][:2])]
         return Result(False, "environment matches uv.lock on paper but is damaged (run `uv sync --frozen --reinstall`): " + "; ".join(shown))
-    return Result(True, "environment matches uv.lock, and every installed module imports")
+    return Result(True, f"environment matches uv.lock; every installed module and the {len(json.loads(targets))} workspace imports resolve")
 
 
 def hello_world_smoke(root: Path, hook: object | None = None) -> Result:
@@ -754,19 +823,17 @@ def ports_free(root: Path) -> Result:
         return Result(False, f"not a real port in contracts/ports.yaml (0 means any free port, so nothing would be checked): {', '.join(unreal)}")
     busy = []
     for name, port in ports.items():
-        # The console listens on every interface, so the port must be free on every interface. A plain bind to the
-        # wildcard address fails when any one address already holds the port; loopback alone would miss that.
-        for family, wildcard in ((socket.AF_INET, "0.0.0.0"), (socket.AF_INET6, "::")):
-            try:
-                with socket.socket(family) as s:
-                    s.bind((wildcard, port))
-            except OSError as e:
-                if e.errno == errno.EADDRINUSE:
-                    busy.append(f"{name} {port}")
-                    break
-                if family == socket.AF_INET:  # no IPv6 on this host is fine; no IPv4 bind at all is not an answer
-                    return Result(False, f"could not test {name} {port}: {e}")
-    return Result(not busy, "default ports are free on every interface of this host" if not busy else f"already in use on this host: {', '.join(busy)}")
+        # Every service here listens on IPv4 (the console on 0.0.0.0, the engine on 127.0.0.1), so the port must be free
+        # on every IPv4 address. A plain bind to the IPv4 wildcard fails when any one of them already holds it;
+        # loopback alone would miss that. An IPv6-only listener does not stop an IPv4 bind, so it is not a clash.
+        try:
+            with socket.socket(socket.AF_INET) as s:
+                s.bind(("0.0.0.0", port))
+        except OSError as e:
+            if e.errno != errno.EADDRINUSE:
+                return Result(False, f"could not test {name} {port}: {e}")
+            busy.append(f"{name} {port}")
+    return Result(not busy, "default ports are free on every IPv4 address of this host" if not busy else f"already in use on this host: {', '.join(busy)}")
 
 
 # ------------------------------------------------------------------------------------------------ proofs
@@ -885,6 +952,21 @@ def _remove_installed(module: str) -> Callable[[Path], None]:
             raise FileNotFoundError(f"{module} is not installed in the working copy; the break cannot be planted")
         for d in found:
             shutil.rmtree(d)
+
+    return go
+
+
+def _relock_bumped(rel: str) -> Callable[[Path], None]:
+    """A valid newer lock: bump a workspace member's version and re-lock offline, leaving the environment as synced."""
+
+    def go(root: Path) -> None:
+        text = (root / rel).read_text()
+        m = re.search(r'^version = "(\d+)\.(\d+)\.(\d+)"$', text, re.M)
+        if not m:
+            raise ValueError(f"{rel} has no plain version line; the break cannot be planted")
+        bumped = f'version = "{m.group(1)}.{m.group(2)}.{int(m.group(3)) + 1}"'
+        (root / rel).write_text(text[: m.start()] + bumped + text[m.end() :])
+        _uv(root, "lock", "--offline", "-q").check_returncode()
 
     return go
 
@@ -1024,6 +1106,20 @@ CHECKS: list[Check] = [
                 "the aggregate stops waiting for the tests",
                 _rewrite(".github/workflows/ci.yml", "needs: [lint, tests, contracts, doctor]", "needs: [lint, contracts, doctor]"),
             ),
+            Proof(
+                "the aggregate loses `if: always()` (a failed job then skips it instead of failing it)",
+                _rewrite(
+                    ".github/workflows/ci.yml", "    if: always()\n    needs: [lint, tests, contracts, doctor]", "    needs: [lint, tests, contracts, doctor]"
+                ),
+            ),
+            Proof(
+                "the aggregate's step stops checking its jobs' results",
+                _rewrite(
+                    ".github/workflows/ci.yml",
+                    "      - run: |\n          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | all(.value.result == \"success\")'",
+                    "      - run: true",
+                ),
+            ),
         ],
     ),
     Check(
@@ -1099,10 +1195,8 @@ CHECKS: list[Check] = [
         ["pyproject.toml", "uv.lock", ".python-version", "kit/**/*", "packages/**/*"],
         [
             Proof("the environment was never synced", lambda root: shutil.rmtree(root / ".venv")),
-            Proof(
-                "a dependency was added to the lock after the last sync",
-                _rewrite("uv.lock", '[[package]]\nname = "pyyaml"', '[[package]]\nname = "pyyaml-not-installed"'),
-            ),
+            Proof("the lock moved on after the last sync (a member's version bumped and re-locked)", _relock_bumped("packages/kit-gate/pyproject.toml")),
+            Proof("a workspace module the kit commands import is deleted after the sync", _delete("packages/kit-gate/src/kit_gate/digest.py")),
             Proof("an installed package's files are removed and its metadata left", _remove_installed("yaml")),
             Proof(
                 "never synced, with UV_PROJECT pointing the check at a synced project",
