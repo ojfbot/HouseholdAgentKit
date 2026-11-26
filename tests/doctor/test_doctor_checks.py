@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -141,3 +143,61 @@ def test_known_holes_are_in_the_json_and_the_self_test_summary(capsys: pytest.Ca
     row = next(r for r in json.loads(capsys.readouterr().out)["rungs"]["0"] if r["check"] == check.id)
     assert row["ok"] is True and row["unproven"].startswith("#38 [20]")
     assert check.id in doctor.holes_summary() and "#38" in doctor.holes_summary()
+
+
+# ---- Review of #48 (Codex): the date probes judged the reference stand-in, never the setup's own inputs.
+
+
+def _reference_full_result() -> dict:
+    from kit_eval import hello_world
+
+    return hello_world.run("full", "doctor", cases_dir=doctor.ROOT / "data/seeds/cases")
+
+
+def test_the_engine_date_judges_the_result_it_is_pointed_at(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A setup whose real hello-world result is a full pass gets past stage 0; doctor must not read it red."""
+    passing = {**_reference_full_result(), "status": "pass", "mode": "full"}
+    (tmp_path / "hw.json").write_text(json.dumps(passing))
+    monkeypatch.setenv("KIT_HELLO_WORLD_RESULT", str(tmp_path / "hw.json"))
+    engine = next(d for d in doctor.deadlines(doctor.ROOT) if "stage 0" in d.what)
+    verdict = engine.ask(doctor.ROOT, date(2026, 11, 29))
+    assert verdict.ok, verdict.detail
+    assert str(tmp_path / "hw.json") in verdict.detail
+
+
+def test_without_a_result_the_engine_date_says_it_judged_the_stand_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("KIT_HELLO_WORLD_RESULT", raising=False)
+    engine = next(d for d in doctor.deadlines(doctor.ROOT) if "stage 0" in d.what)
+    verdict = engine.ask(doctor.ROOT, date(2026, 11, 29))
+    assert not verdict.ok and "stand-in" in verdict.detail and "KIT_HELLO_WORLD_RESULT" in verdict.detail
+
+
+def _reference_report() -> dict:
+    from kit_eval.cases import load_cases
+    from kit_eval.report import build_report, load_hook, run_hello_world
+
+    cases, hook = load_cases(str(doctor.ROOT / "data/seeds/cases")), load_hook(None)
+    return build_report(run_hello_world(hook, cases, k=5, seed=0), cases, bundle_id="doctor", hook_name=hook.name, k=5)
+
+
+def test_the_gate_date_judges_the_candidate_it_is_pointed_at(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """After the waiver lapses, a candidate that reports parity_floors 0 passes `kit gate`; doctor must agree."""
+    report = _reference_report()
+    report["metrics"]["parity_floors"] = {"value": 0, "direction": "lower", "n": 1}
+    (tmp_path / "candidate.json").write_text(json.dumps(report))
+    monkeypatch.setenv("KIT_GATE_CANDIDATE", str(tmp_path / "candidate.json"))
+    waiver = next(d for d in doctor.deadlines(doctor.ROOT) if "waiver" in d.what)
+    verdict = waiver.ask(doctor.ROOT, date(2026, 11, 29))
+    assert verdict.ok, verdict.detail
+    assert str(tmp_path / "candidate.json") in verdict.detail
+
+
+def test_a_gate_already_red_before_its_date_reads_red_now(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    """Before the waiver lapses, a candidate with a lock violation already fails `kit gate`: no countdown, red today."""
+    report = _reference_report()
+    report["metrics"]["locks"]["value"] = 1
+    (tmp_path / "candidate.json").write_text(json.dumps(report))
+    monkeypatch.setenv("KIT_GATE_CANDIDATE", str(tmp_path / "candidate.json"))
+    doctor.run(upto=0, today=date(2026, 11, 26))
+    line = _date_lines(capsys.readouterr().out)["2026-11-28"]
+    assert "RED" in line and "already" in line and "in 2 d" not in line

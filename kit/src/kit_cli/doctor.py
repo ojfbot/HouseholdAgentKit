@@ -1025,33 +1025,62 @@ class Deadline:
     ask: Callable[[Path, date], Result]
 
 
+STAND_IN = "today's reference hello world (iq-reference-tier-none, the stand-in)"
+
+
 def _ask_engine_stage0(root: Path, day: date) -> Result:
-    """Would `discovery_engine run` get past stage 0 on that day, with today's hello world from a `full` run?"""
+    """Would `discovery_engine run` get past stage 0 on that day, given the hello-world result it will be given?
+
+    That is the file in KIT_HELLO_WORLD_RESULT, the one the run's `hello_world_result` names. Without it, doctor
+    judges today's reference run and says so: a stand-in's verdict is not the setup's verdict.
+    """
     from discovery_engine import pipeline
     from kit_eval import hello_world
 
-    res = hello_world.run("full", "doctor", cases_dir=root / "data/seeds/cases")
+    given = os.environ.get("KIT_HELLO_WORLD_RESULT")
     with tempfile.TemporaryDirectory() as tmp:
-        result_file = Path(tmp) / "hello-world.json"
-        result_file.write_text(json.dumps(res))
+        if given:
+            result_file, judged = Path(given), f"judged on {given}"
+            res = json.loads(result_file.read_text())
+        else:
+            res = hello_world.run("full", "doctor", cases_dir=root / "data/seeds/cases")
+            result_file, judged = Path(tmp) / "hello-world.json", f"judged on {STAND_IN}; set KIT_HELLO_WORLD_RESULT to the result the engine run is given"
+            result_file.write_text(json.dumps(res))
         cfg = pipeline.RunConfig(hello_world_result=str(result_file), as_of=day.isoformat())
         try:
             pipeline.stage0(cfg, pipeline.load_seeds()[1], pipeline.e06_ladder.load_cover())
         except RuntimeError as e:
-            return Result(False, f"hello world is `{res.get('status')}` from a `{res.get('mode')}` run; {e}")
-    return Result(True, f"stage 0 accepts hello world `{res.get('status')}`")
+            return Result(False, f"hello world is `{res.get('status')}` from a `{res.get('mode')}` run; {e} ({judged})")
+    return Result(True, f"stage 0 accepts hello world `{res.get('status')}` ({judged})")
 
 
 def _ask_kit_gate(root: Path, day: date) -> Result:
-    """Would `kit gate` be green on that day, for today's hello-world report against bundles/gate-config.yaml?"""
-    from kit_eval.cases import load_cases
-    from kit_eval.report import build_report, load_hook, run_hello_world
+    """Would `kit gate` be green on that day, with the inputs it is given?
+
+    Those are the report in KIT_GATE_CANDIDATE and, if set, the baseline report and bundle diff in
+    KIT_GATE_BASELINE and KIT_GATE_DIFF, as `kit gate --candidate --baseline --diff` takes them. Without a
+    candidate, doctor judges today's reference report with no baseline and no diff, and says so.
+    """
     from kit_gate.gate import GateConfig, run_gate
 
-    cases, hook = load_cases(str(root / "data/seeds/cases")), load_hook(None)
-    report = build_report(run_hello_world(hook, cases, k=5, seed=0), cases, bundle_id="doctor", hook_name=hook.name, k=5)  # `kit eval` defaults
-    record = run_gate(report, None, None, GateConfig.load(root / "bundles/gate-config.yaml"), day)
-    return Result(record["verdict"] == "green", "`kit gate` is green" if record["verdict"] == "green" else "`kit gate` is red: " + "; ".join(record["reasons"]))
+    def load(var: str) -> dict | None:
+        path = os.environ.get(var)
+        return json.loads(Path(path).read_text()) if path else None
+
+    candidate, baseline, diff = load("KIT_GATE_CANDIDATE"), load("KIT_GATE_BASELINE"), load("KIT_GATE_DIFF")
+    if candidate is not None:
+        judged = f"judged on {os.environ['KIT_GATE_CANDIDATE']}" + (", with its baseline" if baseline else "") + (" and bundle diff" if diff else "")
+    else:
+        from kit_eval.cases import load_cases
+        from kit_eval.report import build_report, load_hook, run_hello_world
+
+        cases, hook = load_cases(str(root / "data/seeds/cases")), load_hook(None)
+        candidate = build_report(run_hello_world(hook, cases, k=5, seed=0), cases, bundle_id="doctor", hook_name=hook.name, k=5)  # `kit eval` defaults
+        judged = f"judged on {STAND_IN}'s report, no baseline, no diff; set KIT_GATE_CANDIDATE (and KIT_GATE_BASELINE, KIT_GATE_DIFF) to the real inputs"
+    record = run_gate(candidate, baseline, diff, GateConfig.load(root / "bundles/gate-config.yaml"), day)
+    if record["verdict"] == "green":
+        return Result(True, f"`kit gate` is green ({judged})")
+    return Result(False, "`kit gate` is red: " + "; ".join(record["reasons"]) + f" ({judged})")
 
 
 def deadlines(root: Path) -> list[Deadline]:
@@ -1081,8 +1110,9 @@ def deadlines(root: Path) -> list[Deadline]:
 def date_lines(root: Path, today: date) -> tuple[list[str], list[dict]]:
     """One line per date whose gate is not passing: a countdown before the date, red from the date on.
 
-    A gate is asked as of its date, or as of today once the date has arrived. The line goes only when the gate
-    passes. A gate that cannot be asked, or a source that cannot be read, is red: silence is not a pass.
+    A gate is asked today and, before its date, as of its date. A gate already red today reads red now, not as a
+    countdown. The line goes only when the gate passes. A gate that cannot be asked, or a source that cannot be
+    read, is red: silence is not a pass. Each line says which inputs the gate was judged on.
     """
     try:
         found = deadlines(root)
@@ -1094,18 +1124,25 @@ def date_lines(root: Path, today: date) -> tuple[list[str], list[dict]]:
     for d in found:
         days = (d.when - today).days
         try:
-            verdict = d.ask(root, max(today, d.when))
+            # Before the date, the gate is asked twice: today, because it may already be red for another reason,
+            # and as of the date, for the countdown. From the date on, it is asked as of today.
+            now = d.ask(root, today)
+            then = d.ask(root, d.when) if days > 0 and now.ok else now
         except Exception as e:
-            verdict = Result(False, f"could not ask the gate ({type(e).__name__}: {e})")
-            days = min(days, 0)  # an unanswerable gate is red now, whatever the calendar says
-        if verdict.ok:
+            now = then = Result(False, f"could not ask the gate ({type(e).__name__}: {e})")
+        if now.ok and then.ok:
             continue
-        if days > 0:
-            lines.append(f"date    {d.when.isoformat():24} in {days} d  {d.what}")
+        if not now.ok and days > 0:
+            lines.append(f"date    {d.when.isoformat():24} RED     already, {days} d before its date: {d.what}. Red now: {now.detail}")
+            status = "red"
+        elif days > 0:
+            lines.append(f"date    {d.when.isoformat():24} in {days} d  {d.what}. On the day: {then.detail}")
+            status = "upcoming"
         else:
             since = "today" if days == 0 else f"{-days} d ago"
-            lines.append(f"date    {d.when.isoformat():24} RED     {since}: {d.what}. Still red: {verdict.detail}")
-        rows.append({"date": d.when.isoformat(), "days": days, "status": "upcoming" if days > 0 else "red", "what": d.what, "detail": verdict.detail})
+            lines.append(f"date    {d.when.isoformat():24} RED     {since}: {d.what}. Still red: {now.detail}")
+            status = "red"
+        rows.append({"date": d.when.isoformat(), "days": days, "status": status, "what": d.what, "detail": (now if not now.ok else then).detail})
     return lines, rows
 
 
